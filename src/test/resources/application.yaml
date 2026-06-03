@@ -1,0 +1,36 @@
+# ================================================================
+# テスト用設定（H2インメモリDB使用）
+# 本番のPostgreSQLとは完全に独立して動作する。
+# テスト実行時はこのファイルが src/main/resources/application.yaml を上書きする。
+# ================================================================
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop   # テスト開始時にテーブル作成、終了時に削除
+    show-sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
+
+  h2:
+    console:
+      enabled: false
+
+  thymeleaf:
+    cache: false
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  # Spring Security をテスト中は無効化しない（MockMvcで制御）
+  security:
+    user:
+      name: testuser
+      password: testpass

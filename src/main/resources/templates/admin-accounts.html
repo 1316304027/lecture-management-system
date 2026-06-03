@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>ユーザー管理</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
+<body>
+<nav class="navbar navbar-dark bg-dark px-3">
+    <a class="navbar-brand" href="/admin/home">← 管理者ホーム</a>
+    <span class="text-white">ユーザー管理</span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+</nav>
+<div class="container mt-4">
+    <!-- メッセージ -->
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+    <!-- ユーザー新規作成フォーム -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">新規ユーザー作成</div>
+        <div class="card-body">
+            <form th:action="@{/admin/accounts/create}" method="post" class="row g-2">
+                <div class="col-md-2"><input type="text" name="name" class="form-control" placeholder="氏名" required></div>
+                <div class="col-md-3"><input type="email" name="email" class="form-control" placeholder="メールアドレス" required></div>
+                <div class="col-md-2"><input type="password" name="password" class="form-control" placeholder="パスワード" required></div>
+                <div class="col-md-2">
+                    <select name="role" class="form-select" required>
+                        <option value="ADMIN">管理者</option>
+                        <option value="INSTRUCTOR">講師</option>
+                        <option value="STUDENT" selected>受講者</option>
+                    </select>
+                </div>
+                <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">作成</button></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ユーザー一覧 -->
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr><th>ID</th><th>氏名</th><th>メール</th><th>ロール</th><th>状態</th><th>操作</th></tr>
+        </thead>
+        <tbody>
+            <tr th:each="user : ${userList}">
+                <td th:text="${user.id}"></td>
+                <td th:text="${user.name}"></td>
+                <td th:text="${user.email}"></td>
+                <td>
+                    <span th:switch="${user.role}">
+                        <span th:case="'ADMIN'" class="badge bg-danger">管理者</span>
+                        <span th:case="'INSTRUCTOR'" class="badge bg-primary">講師</span>
+                        <span th:case="'STUDENT'" class="badge bg-success">受講者</span>
+                    </span>
+                </td>
+                <td>
+                    <span th:if="${user.locked}" class="badge bg-warning text-dark">ロック</span>
+                    <span th:unless="${user.locked}" class="badge bg-light text-dark">正常</span>
+                </td>
+                <td>
+                    <!-- 更新フォーム（モーダル代わりにインラインで表示） -->
+                    <button class="btn btn-sm btn-outline-secondary"
+                            onclick="toggleEdit(this)"
+                            th:data-id="${user.id}">編集</button>
+                    <!-- ロック解除 -->
+                    <form th:if="${user.locked}"
+                          th:action="@{/admin/accounts/unlock/{id}(id=${user.id})}"
+                          method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-warning">ロック解除</button>
+                    </form>
+                    <!-- 代理ログイン（管理者自身は不可） -->
+                    <form th:unless="${user.role == 'ADMIN'}"
+                          th:action="@{/admin/proxy-login/{id}(id=${user.id})}"
+                          method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-info">代理ログイン</button>
+                    </form>
+                    <!-- 削除（管理者自身は不可） -->
+                    <form th:unless="${user.role == 'ADMIN'}"
+                          th:action="@{/admin/accounts/delete/{id}(id=${user.id})}"
+                          method="post" class="d-inline"
+                          onsubmit="return confirm('削除してよろしいですか？')">
+                        <button type="submit" class="btn btn-sm btn-danger">削除</button>
+                    </form>
+
+                    <!-- 編集フォーム（初期非表示） -->
+                    <div th:id="'edit-' + ${user.id}" class="mt-2 p-2 border rounded bg-light" style="display:none">
+                        <form th:action="@{/admin/accounts/update/{id}(id=${user.id})}" method="post" class="row g-2">
+                            <div class="col-md-3"><input type="text" name="name" class="form-control form-control-sm" th:value="${user.name}" required></div>
+                            <div class="col-md-3"><input type="email" name="email" class="form-control form-control-sm" th:value="${user.email}" required></div>
+                            <div class="col-md-3"><input type="password" name="password" class="form-control form-control-sm" placeholder="変更する場合のみ入力"></div>
+                            <div class="col-md-2">
+                                <select name="role" class="form-select form-select-sm">
+                                    <option value="ADMIN" th:selected="${user.role == 'ADMIN'}">管理者</option>
+                                    <option value="INSTRUCTOR" th:selected="${user.role == 'INSTRUCTOR'}">講師</option>
+                                    <option value="STUDENT" th:selected="${user.role == 'STUDENT'}">受講者</option>
+                                </select>
+                            </div>
+                            <div class="col-md-1"><button type="submit" class="btn btn-sm btn-primary">保存</button></div>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<script>
+function toggleEdit(btn) {
+    const id = btn.getAttribute('data-id');
+    const div = document.getElementById('edit-' + id);
+    div.style.display = div.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+</body></html>

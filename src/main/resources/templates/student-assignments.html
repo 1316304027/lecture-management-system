@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<!--
+  学生課題提出画面（SCR-005）/ Student Assignment Submission Screen
+  ================================================================
+  【修正①】評価スコアを学生側でも表示（講師が採点した点数が見える）
+  Fix①: Show evaluation score to students (shows score set by instructor)
+  【修正②】画面デザインを改善
+  Fix②: Improved screen design
+-->
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>課題提出</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f0f2f5; }
+        /* スコア色分け / Score color coding */
+        .score-high { color: #198754; font-weight: 600; }
+        .score-mid  { color: #fd7e14; font-weight: 600; }
+        .score-low  { color: #dc3545; font-weight: 600; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-success px-4 shadow-sm">
+    <a class="navbar-brand" href="/student/home">← ホームへ戻る</a>
+    <span class="text-white fw-bold" th:text="'課題提出 - ' + ${course.name}"></span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+</nav>
+
+<div class="container mt-4">
+
+    <!-- メッセージ / Message -->
+    <div th:if="${message}" class="alert alert-dismissible fade show"
+         th:classappend="${message.contains('完了')} ? 'alert-success' : 'alert-warning'"
+         role="alert">
+        <strong th:text="${message}"></strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <h5 class="fw-bold mb-3">📝 課題一覧</h5>
+
+    <div class="table-responsive">
+    <table class="table table-bordered table-hover bg-white align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>課題名</th>
+                <th style="width:150px">提出期限</th>
+                <th class="text-center" style="width:100px">状態</th>
+                <!--
+                    【修正①】スコア列を追加 / Fix①: Added score column
+                    講師が InstructorController.evaluate() で保存したスコアを表示する。
+                    Displays score saved by instructor via InstructorController.evaluate().
+                -->
+                <th class="text-center" style="width:90px">スコア</th>
+                <th>評価コメント</th>
+                <th style="min-width:260px">提出操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!--
+                submitted : mySubmissions の中にこの課題のレコードがあるか
+                expired   : 提出期限が現在より前か
+                sub       : 提出済みの場合のレコード（リスト。先頭が実際の提出データ）
+            -->
+            <tr th:each="a : ${assignmentList}"
+                th:with="
+                    submitted=${mySubmissions.?[assignment.id == __${a.id}__].size() > 0},
+                    expired=${#temporals.createNow().isAfter(a.deadline)},
+                    sub=${mySubmissions.?[assignment.id == __${a.id}__]}">
+
+                <!-- 課題名 / Assignment title -->
+                <td class="fw-semibold" th:text="${a.title}"></td>
+
+                <!-- 提出期限 / Deadline -->
+                <td class="small">
+                    <span th:text="${#temporals.format(a.deadline, 'yyyy/MM/dd HH:mm')}"></span>
+                    <span th:if="${expired and !submitted}" class="badge bg-danger ms-1 small">期限切れ</span>
+                </td>
+
+                <!-- 提出状態 / Submission status -->
+                <td class="text-center">
+                    <span th:if="${submitted}" class="badge bg-success">提出済み ✅</span>
+                    <span th:unless="${submitted}">
+                        <span th:if="${expired}" class="badge bg-danger">期限切れ ❌</span>
+                        <span th:unless="${expired}" class="badge bg-warning text-dark">未提出</span>
+                    </span>
+                </td>
+
+                <!--
+                    【修正①】スコア表示セル / Fix①: Score display cell
+
+                    提出済みで講師がスコアを設定している場合に色分けして表示。
+                    採点待ち（スコア未設定）の場合は「採点待ち」と表示。
+                    未提出の場合は「―」
+
+                    Display with color coding when submitted and instructor set a score.
+                    Show "採点待ち" if not yet evaluated.
+                    Show "―" if not submitted.
+                -->
+                <td class="text-center">
+                    <span th:if="${!sub.empty and sub[0].score != null}">
+                        <span th:if="${sub[0].score >= 80}" class="score-high" th:text="${sub[0].score} + '点'"></span>
+                        <span th:if="${sub[0].score >= 60 and sub[0].score < 80}" class="score-mid" th:text="${sub[0].score} + '点'"></span>
+                        <span th:if="${sub[0].score < 60}" class="score-low" th:text="${sub[0].score} + '点'"></span>
+                    </span>
+                    <span th:if="${!sub.empty and sub[0].score == null}" class="text-muted small">採点待ち</span>
+                    <span th:if="${sub.empty}" class="text-muted">―</span>
+                </td>
+
+                <!-- 評価コメント / Evaluation comment -->
+                <td class="small">
+                    <span th:if="${!sub.empty and sub[0].evaluationComment != null}"
+                          class="text-success" th:text="${sub[0].evaluationComment}"></span>
+                    <span th:if="${!sub.empty and sub[0].evaluationComment == null}"
+                          class="text-muted">コメントなし</span>
+                    <span th:if="${sub.empty}" class="text-muted">―</span>
+                </td>
+
+                <!-- 提出フォーム / Submission form -->
+                <td>
+                    <!--
+                        未提出かつ期限内の場合のみフォームを表示。
+                        enctype="multipart/form-data" は必須（ないとファイルが届かない）。
+                        ファイルサイズ上限は application.yaml の
+                        spring.servlet.multipart.max-file-size=10MB で設定済み。
+                        Show form only when not submitted and within deadline.
+                        enctype="multipart/form-data" is required.
+                        Max file size set in application.yaml (10MB).
+                    -->
+                    <form th:unless="${submitted or expired}"
+                          th:action="@{/student/assignments/submit}"
+                          method="post" enctype="multipart/form-data"
+                          class="d-flex gap-1 align-items-center">
+                        <input type="hidden" name="assignmentId" th:value="${a.id}">
+                        <input type="hidden" name="courseId" th:value="${course.id}">
+                        <input type="file" name="file" class="form-control form-control-sm"
+                               accept=".pdf" required style="max-width:180px;">
+                        <button type="submit" class="btn btn-sm btn-primary text-nowrap">
+                            📤 提出
+                        </button>
+                    </form>
+
+                    <span th:if="${submitted}" class="text-muted small">提出完了</span>
+                    <span th:if="${expired and !submitted}" class="text-muted small">期限切れ</span>
+                </td>
+            </tr>
+
+            <tr th:if="${assignmentList.empty}">
+                <td colspan="6" class="text-muted text-center py-4">公開中の課題はありません</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+
+    <div class="text-muted small mt-1">
+        ※ アップロード可能なファイル形式：PDF（最大10MB）
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

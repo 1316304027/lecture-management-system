@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>講師ホーム</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
+<body>
+<nav class="navbar navbar-dark bg-primary px-3">
+    <span class="navbar-brand">PCFA受講管理システム</span>
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-white" th:text="${loginUser.name} + ' 先生'"></span>
+        <form th:if="${isProxy}" action="/admin/restore-session" method="post" class="d-inline">
+            <button type="submit" class="btn btn-warning btn-sm">管理者へ戻る</button>
+        </form>
+        <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+    </div>
+</nav>
+<div class="container mt-4">
+    <h2>担当コース一覧</h2>
+    <div th:if="${courseList.empty}" class="alert alert-info">
+        担当コースがありません。管理者にお問い合わせください。
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-4" th:each="course : ${courseList}">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0" th:text="${course.name}"></h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted" th:text="${course.description}"></p>
+                </div>
+                <div class="card-footer d-flex gap-2 flex-wrap">
+                    <a th:href="@{/instructor/materials(courseId=${course.id})}"
+                       class="btn btn-sm btn-outline-primary">📄 教材管理</a>
+                    <a th:href="@{/instructor/assignments(courseId=${course.id})}"
+                       class="btn btn-sm btn-outline-warning">📝 課題管理</a>
+                    <a th:href="@{/instructor/submissions(courseId=${course.id})}"
+                       class="btn btn-sm btn-outline-success">📥 提出確認</a>
+                    <a th:href="@{/instructor/attendance(courseId=${course.id})}"
+                       class="btn btn-sm btn-outline-secondary">📋 出欠確認</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body></html>

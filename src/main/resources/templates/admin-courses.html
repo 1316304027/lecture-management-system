@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta charset="UTF-8"><title>コース管理</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body { background-color:#f0f2f5; }
+.sidebar { min-height:calc(100vh - 56px); background:#fff; border-right:1px solid #dee2e6; }
+.course-item.active { background:#0d6efd; color:#fff; }
+.course-item.active small { color:#cfe2ff !important; }
+.section-title { font-size:.75rem; font-weight:700; color:#6c757d;
+                 text-transform:uppercase; letter-spacing:.05em; margin-bottom:.5rem; }
+.tag-instructor { background:#cfe2ff; color:#084298; }
+.tag-student    { background:#d1e7dd; color:#0a3622; }
+</style>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark px-4">
+    <a class="navbar-brand" href="/admin/home">← 管理者ホーム</a>
+    <span class="text-white fw-bold">🏫 コース管理</span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+</nav>
+
+<div class="container-fluid p-0">
+<div class="row g-0">
+
+<!-- ===================== 左サイドバー：コース一覧 ===================== -->
+<div class="col-md-3 sidebar p-3">
+    <!-- コース新規作成 -->
+    <p class="section-title">コース新規作成</p>
+    <form th:action="@{/admin/courses/create}" method="post" class="mb-3">
+        <input type="text" name="name" class="form-control form-control-sm mb-1"
+               placeholder="コース名" required>
+        <textarea name="description" class="form-control form-control-sm mb-1"
+                  placeholder="説明（任意）" rows="2"></textarea>
+        <button type="submit" class="btn btn-success btn-sm w-100">＋ 作成</button>
+    </form>
+
+    <hr class="my-2">
+
+    <!-- コース検索（JS絞り込み） -->
+    <p class="section-title mb-1">コース一覧</p>
+    <input type="text" id="courseSearch" class="form-control form-control-sm mb-2"
+           placeholder="🔍 コース名で検索…" oninput="filterCourses(this.value)">
+
+    <div class="list-group list-group-flush" id="courseList">
+        <a th:each="c : ${courseList}"
+           th:href="@{/admin/courses(courseId=${c.id})}"
+           class="list-group-item list-group-item-action course-item py-2 px-2"
+           th:classappend="${selectedCourse != null and selectedCourse.id == c.id} ? ' active' : ''"
+           th:attr="data-name=${c.name}">
+            <div class="fw-bold small" th:text="${c.name}"></div>
+        </a>
+        <span th:if="${courseList.empty}" class="text-muted small">コースなし</span>
+    </div>
+</div>
+
+<!-- ===================== 右カラム：コース詳細 ===================== -->
+<div class="col-md-9 p-4" th:if="${selectedCourse != null}">
+
+    <!-- ヘッダー -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0 fw-bold">
+            🏫 <span th:text="${selectedCourse.name}"></span>
+        </h5>
+        <form th:action="@{/admin/courses/delete/{id}(id=${selectedCourse.id})}"
+              method="post" class="d-inline"
+              onsubmit="return confirm('コース「' + document.title + '」と関連する全データ（出席・課題・提出物）を削除します。よろしいですか？')">
+            <button type="submit" class="btn btn-sm btn-danger">🗑️ コース削除</button>
+        </form>
+    </div>
+
+    <!-- コース名・説明更新 -->
+    <div class="card mb-3">
+        <div class="card-header bg-primary text-white py-2 small fw-bold">📝 基本情報編集</div>
+        <div class="card-body">
+            <form th:action="@{/admin/courses/update/{id}(id=${selectedCourse.id})}" method="post" class="row g-2">
+                <div class="col-md-4">
+                    <input type="text" name="name" class="form-control form-control-sm"
+                           th:value="${selectedCourse.name}" placeholder="コース名" required>
+                </div>
+                <div class="col-md-6">
+                    <input type="text" name="description" class="form-control form-control-sm"
+                           th:value="${selectedCourse.description}" placeholder="説明">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100">更新</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="row g-3">
+
+        <!-- ========== 担当講師 ========== -->
+        <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-info text-white py-2 small fw-bold">👨‍🏫 担当講師</div>
+            <div class="card-body">
+                <!-- 講師検索 -->
+                <input type="text" id="instructorSearch" class="form-control form-control-sm mb-2"
+                       placeholder="🔍 講師名で検索…"
+                       oninput="filterTable('instructorSearch','instructorTable')">
+
+                <!-- 現在の担当講師テーブル（解除ボタン付き） -->
+                <table class="table table-sm table-bordered mb-2" id="instructorTable">
+                    <thead class="table-secondary">
+                        <tr><th>氏名</th><th>メール</th><th style="width:60px">操作</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${courseInstructors}">
+                            <td th:text="${u.name}"></td>
+                            <td class="small text-muted" th:text="${u.email}"></td>
+                            <td>
+                                <form th:action="@{/admin/courses/{cid}/remove-user(cid=${selectedCourse.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('担当講師を解除しますか？')">
+                                    <input type="hidden" name="userId" th:value="${u.id}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-0">解除</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${courseInstructors.empty}">
+                            <td colspan="3" class="text-muted text-center small">未割当</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- 講師追加 -->
+                <form th:action="@{/admin/courses/{id}/assign-instructor(id=${selectedCourse.id})}"
+                      method="post" class="d-flex gap-2">
+                    <select name="userId" class="form-select form-select-sm">
+                        <option th:each="u : ${instructorCandidates}"
+                                th:value="${u.id}" th:text="${u.name}"></option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-info text-white text-nowrap">追加</button>
+                </form>
+            </div>
+        </div>
+        </div>
+
+        <!-- ========== 受講学生 ========== -->
+        <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-success text-white py-2 small fw-bold">👩‍🎓 受講学生</div>
+            <div class="card-body">
+                <!-- 学生検索 -->
+                <input type="text" id="studentSearch" class="form-control form-control-sm mb-2"
+                       placeholder="🔍 学生名で検索…"
+                       oninput="filterTable('studentSearch','studentTable')">
+
+                <table class="table table-sm table-bordered mb-2" id="studentTable">
+                    <thead class="table-secondary">
+                        <tr><th>氏名</th><th>メール</th><th style="width:60px">操作</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${courseStudents}">
+                            <td th:text="${u.name}"></td>
+                            <td class="small text-muted" th:text="${u.email}"></td>
+                            <td>
+                                <form th:action="@{/admin/courses/{cid}/remove-user(cid=${selectedCourse.id})}"
+                                      method="post"
+                                      onsubmit="return confirm('受講学生を解除しますか？')">
+                                    <input type="hidden" name="userId" th:value="${u.id}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger py-0">解除</button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${courseStudents.empty}">
+                            <td colspan="3" class="text-muted text-center small">未割当</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <!-- 学生追加 -->
+                <form th:action="@{/admin/courses/{id}/assign-student(id=${selectedCourse.id})}"
+                      method="post" class="d-flex gap-2">
+                    <select name="userId" class="form-select form-select-sm">
+                        <option th:each="u : ${studentCandidates}"
+                                th:value="${u.id}" th:text="${u.name}"></option>
+                    </select>
+                    <button type="submit" class="btn btn-sm btn-success text-nowrap">追加</button>
+                </form>
+            </div>
+        </div>
+        </div>
+
+    </div><!-- /row -->
+
+    <!-- ========== 授業日管理 ========== -->
+    <div class="card mt-3">
+        <div class="card-header bg-warning text-dark py-2 small fw-bold">📅 授業日管理</div>
+        <div class="card-body">
+
+            <!-- 授業日一覧テーブル -->
+            <table class="table table-sm table-bordered mb-3">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width:130px">授業日</th>
+                        <th style="width:100px">開始時刻</th>
+                        <th style="width:100px">終了時刻</th>
+                        <th style="width:200px" class="text-muted small">出席受付時間帯</th>
+                        <th style="width:60px">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="s : ${schedules}">
+                        <td th:text="${s.lessonDate}"></td>
+                        <td>
+                            <span th:if="${s.startTime != null}"
+                                  th:text="${#temporals.format(s.startTime,'HH:mm')}"></span>
+                            <span th:unless="${s.startTime != null}" class="text-muted small">―</span>
+                        </td>
+                        <td>
+                            <span th:if="${s.endTime != null}"
+                                  th:text="${#temporals.format(s.endTime,'HH:mm')}"></span>
+                            <span th:unless="${s.endTime != null}" class="text-muted small">―</span>
+                        </td>
+                        <td class="small text-muted">
+                            <span th:if="${s.startTime != null}"
+                                  th:text="${#temporals.format(s.startTime.minusMinutes(30),'HH:mm')}
+                                      + ' 〜 ' + ${#temporals.format(s.startTime.plusMinutes(30),'HH:mm')}">
+                            </span>
+                            <span th:unless="${s.startTime != null}">終日受付</span>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/courses/{cid}/schedule/delete/{sid}(cid=${selectedCourse.id},sid=${s.id})}"
+                                  method="post">
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-0">削除</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${schedules.empty}">
+                        <td colspan="5" class="text-muted text-center small py-3">授業日未登録</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- タブ：1件追加 / 一括追加 -->
+            <ul class="nav nav-tabs mb-3" id="scheduleTab">
+                <li class="nav-item">
+                    <button class="nav-link active small" data-bs-toggle="tab"
+                            data-bs-target="#tabSingle">📌 1件追加</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link small" data-bs-toggle="tab"
+                            data-bs-target="#tabBulk">📋 一括追加（曜日指定）</button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+
+                <!-- 1件追加 -->
+                <div class="tab-pane fade show active" id="tabSingle">
+                    <form th:action="@{/admin/courses/{id}/schedule/add(id=${selectedCourse.id})}"
+                          method="post" class="row g-2 align-items-end">
+                        <div class="col-auto">
+                            <label class="form-label small mb-0">授業日</label>
+                            <input type="date" name="lessonDate" class="form-control form-control-sm" required>
+                        </div>
+                        <div class="col-auto">
+                            <label class="form-label small mb-0">開始時刻（任意）</label>
+                            <input type="time" name="startTime" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-auto">
+                            <label class="form-label small mb-0">終了時刻（任意）</label>
+                            <input type="time" name="endTime" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-sm btn-warning">追加</button>
+                        </div>
+                    </form>
+                    <p class="text-muted small mt-2 mb-0">
+                        ※ 開始時刻を設定すると、学生の出席受付時間帯が
+                        <strong>開始30分前〜開始30分後</strong>に制限されます。
+                        未設定の場合は終日受付。
+                    </p>
+                </div>
+
+                <!-- 一括追加 -->
+                <div class="tab-pane fade" id="tabBulk">
+                    <form th:action="@{/admin/courses/{id}/schedule/bulk-add(id=${selectedCourse.id})}"
+                          method="post">
+                        <div class="row g-2 align-items-end mb-2">
+                            <div class="col-auto">
+                                <label class="form-label small mb-0">開始日</label>
+                                <input type="date" name="rangeFrom" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-auto">
+                                <label class="form-label small mb-0">終了日</label>
+                                <input type="date" name="rangeTo" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-auto">
+                                <label class="form-label small mb-0">開始時刻（任意）</label>
+                                <input type="time" name="startTime" class="form-control form-control-sm">
+                            </div>
+                            <div class="col-auto">
+                                <label class="form-label small mb-0">終了時刻（任意）</label>
+                                <input type="time" name="endTime" class="form-control form-control-sm">
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small mb-1">曜日を選択（複数可）</label>
+                            <div class="d-flex gap-3 flex-wrap">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dayOfWeeks" value="MONDAY" id="dow1">
+                                    <label class="form-check-label small" for="dow1">月</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dayOfWeeks" value="TUESDAY" id="dow2">
+                                    <label class="form-check-label small" for="dow2">火</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dayOfWeeks" value="WEDNESDAY" id="dow3">
+                                    <label class="form-check-label small" for="dow3">水</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dayOfWeeks" value="THURSDAY" id="dow4">
+                                    <label class="form-check-label small" for="dow4">木</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dayOfWeeks" value="FRIDAY" id="dow5">
+                                    <label class="form-check-label small" for="dow5">金</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dayOfWeeks" value="SATURDAY" id="dow6">
+                                    <label class="form-check-label small" for="dow6">土</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dayOfWeeks" value="SUNDAY" id="dow7">
+                                    <label class="form-check-label small" for="dow7">日</label>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-warning"
+                                onclick="return checkBulkForm()">一括追加</button>
+                    </form>
+                    <p class="text-muted small mt-2 mb-0">
+                        ※ 既に登録済みの日付はスキップされます。重複登録の心配はありません。
+                    </p>
+                </div>
+
+            </div><!-- /tab-content -->
+        </div>
+    </div><!-- /授業日カード -->
+
+</div><!-- /右カラム -->
+
+<!-- コース未選択 -->
+<div class="col-md-9 d-flex align-items-center justify-content-center text-muted"
+     th:unless="${selectedCourse != null}">
+    <div class="text-center py-5">
+        <div class="fs-1 mb-2">🏫</div>
+        <p>← 左のコースを選択してください</p>
+    </div>
+</div>
+
+</div><!-- /row -->
+</div><!-- /container-fluid -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// コース一覧絞り込み
+function filterCourses(query) {
+    const q = query.toLowerCase();
+    document.querySelectorAll('#courseList .course-item').forEach(el => {
+        const name = (el.dataset.name || '').toLowerCase();
+        el.style.display = name.includes(q) ? '' : 'none';
+    });
+}
+
+// テーブル行絞り込み（講師・学生テーブル共通）
+function filterTable(inputId, tableId) {
+    const q = document.getElementById(inputId).value.toLowerCase();
+    document.querySelectorAll('#' + tableId + ' tbody tr').forEach(tr => {
+        if (tr.cells.length < 2) return;
+        const text = (tr.cells[0].textContent + tr.cells[1].textContent).toLowerCase();
+        tr.style.display = text.includes(q) ? '' : 'none';
+    });
+}
+
+// 一括追加バリデーション
+function checkBulkForm() {
+    const checked = document.querySelectorAll('input[name="dayOfWeeks"]:checked');
+    if (checked.length === 0) {
+        alert('曜日を1つ以上選択してください');
+        return false;
+    }
+    const from = document.querySelector('input[name="rangeFrom"]').value;
+    const to   = document.querySelector('input[name="rangeTo"]').value;
+    if (from && to && from > to) {
+        alert('終了日は開始日より後の日付を選択してください');
+        return false;
+    }
+    return true;
+}
+</script>
+</body>
+</html>

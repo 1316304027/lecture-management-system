@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<!--
+  教材管理画面（SCR-102）/ Material Management Screen
+  ====================================================
+  【修正】PDFアップロードが「このページは動作していません」になっていた問題は
+  application.yaml の spring.servlet.multipart 設定で解決済み。
+  このHTMLでは enctype="multipart/form-data" が正しく設定されていることを確認。
+  Fix: PDF upload bug fixed by application.yaml multipart settings.
+  This HTML confirms enctype="multipart/form-data" is correctly set.
+-->
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>教材管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f0f2f5; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-primary px-4 shadow-sm">
+    <a class="navbar-brand" href="/instructor/home">← ホームへ戻る</a>
+    <span class="text-white fw-bold" th:text="'教材管理 - ' + ${course.name}"></span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+</nav>
+
+<div class="container mt-4">
+
+    <!-- メッセージ / Message -->
+    <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <strong th:text="${message}"></strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong th:text="${errorMessage}"></strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- アップロードフォーム / Upload form -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-header bg-primary text-white fw-bold py-2">
+            📤 教材アップロード（PDF・10MB以内）
+        </div>
+        <div class="card-body">
+            <!--
+                enctype="multipart/form-data" は必須。
+                これがないとファイルがサーバーに届かない。
+                サーバー側の上限は application.yaml で設定済み:
+                  spring.servlet.multipart.max-file-size: 10MB
+                  spring.servlet.multipart.max-request-size: 10MB
+                enctype="multipart/form-data" is REQUIRED.
+                Without it, the file never reaches the server.
+                Server-side size limit configured in application.yaml.
+            -->
+            <form th:action="@{/instructor/materials}" method="post"
+                  enctype="multipart/form-data" class="row g-2 align-items-end">
+                <input type="hidden" name="courseId" th:value="${course.id}">
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">タイトル（必須・100文字以内）</label>
+                    <input type="text" name="title" class="form-control"
+                           placeholder="例：第1回 イントロダクション" required maxlength="100">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label small text-muted">PDFファイル（必須）</label>
+                    <input type="file" name="file" class="form-control" accept=".pdf" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small text-muted d-block">公開設定</label>
+                    <div class="form-check mt-1">
+                        <input class="form-check-input" type="checkbox"
+                               name="published" id="pub" value="true">
+                        <label class="form-check-label small" for="pub">即時公開する</label>
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">📤 アップロード</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 教材一覧 / Material list -->
+    <h6 class="fw-bold mb-2">📚 登録済み教材</h6>
+    <div class="table-responsive">
+    <table class="table table-bordered table-hover bg-white align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>タイトル</th>
+                <th class="text-center" style="width:120px">公開状態</th>
+                <th style="width:200px">操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="m : ${materialList}">
+                <td class="fw-semibold" th:text="${m.title}"></td>
+                <td class="text-center">
+                    <span th:if="${m.published}" class="badge bg-success">公開中 🔓</span>
+                    <span th:unless="${m.published}" class="badge bg-secondary">非公開 🔒</span>
+                </td>
+                <td class="d-flex gap-1">
+                    <!-- 公開・非公開切替 / Toggle publish -->
+                    <form th:action="@{/instructor/materials/{id}/toggle(id=${m.id})}" method="post">
+                        <input type="hidden" name="courseId" th:value="${course.id}">
+                        <button type="submit" class="btn btn-sm"
+                                th:classappend="${m.published} ? 'btn-outline-secondary' : 'btn-outline-success'"
+                                th:text="${m.published} ? '🔒 非公開' : '🔓 公開'">
+                        </button>
+                    </form>
+                    <!-- 削除 / Delete -->
+                    <form th:action="@{/instructor/materials/{id}/delete(id=${m.id})}" method="post"
+                          onsubmit="return confirm('この教材を削除してよろしいですか？')">
+                        <input type="hidden" name="courseId" th:value="${course.id}">
+                        <button type="submit" class="btn btn-sm btn-outline-danger">🗑️ 削除</button>
+                    </form>
+                </td>
+            </tr>
+            <tr th:if="${materialList.empty}">
+                <td colspan="3" class="text-muted text-center py-3">教材が登録されていません</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

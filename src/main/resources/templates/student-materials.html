@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><title>教材一覧</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
+<body>
+<nav class="navbar navbar-dark bg-success px-3">
+    <a class="navbar-brand" href="/student/home">← ホームへ戻る</a>
+    <span class="text-white" th:text="'教材一覧 - ' + ${course.name}"></span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+</nav>
+<div class="container mt-4">
+    <h4>教材一覧</h4>
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark"><tr><th>教材タイトル</th><th>ダウンロード</th></tr></thead>
+        <tbody>
+            <tr th:each="m : ${materialList}">
+                <td th:text="${m.title}"></td>
+                <td>
+                    <a th:href="@{/student/materials/{id}/download(id=${m.id})}"
+                       class="btn btn-sm btn-outline-primary">
+                        📄 PDFダウンロード
+                    </a>
+                </td>
+            </tr>
+            <tr th:if="${materialList.empty}">
+                <td colspan="2" class="text-muted text-center">公開中の教材はありません</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</body></html>

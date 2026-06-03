@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>出欠修正</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f0f2f5; }
+        .sidebar { background:#fff; border-right:1px solid #dee2e6;
+                   min-height: calc(100vh - 56px); }
+        tr.future-row td { color:#adb5bd !important; background:#f8f9fa; }
+        tr.orphan-row td { background:#fff3cd; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark px-4">
+    <a class="navbar-brand" href="/admin/home">← 管理者ホーム</a>
+    <span class="text-white fw-bold">📋 出欠修正</span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+</nav>
+
+<div class="container-fluid p-0">
+
+    <div th:if="${message}"
+         class="alert alert-success alert-dismissible fade show rounded-0 border-start-0 border-end-0 mb-0"
+         role="alert">
+        <strong th:text="${message}"></strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMessage}"
+         class="alert alert-warning alert-dismissible fade show rounded-0 border-start-0 border-end-0 mb-0"
+         role="alert">
+        <strong th:text="${errorMessage}"></strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+<div class="row g-0">
+
+    <!-- ① コース選択 -->
+    <div class="col-md-2 sidebar p-3">
+        <p class="text-muted fw-bold small mb-2 border-bottom pb-1">① コース選択</p>
+        <div class="list-group list-group-flush">
+            <a th:each="c : ${courseList}"
+               th:href="@{/admin/attendance(courseId=${c.id})}"
+               class="list-group-item list-group-item-action py-2 px-2 small"
+               th:classappend="${selectedCourse != null and selectedCourse.id == c.id} ? 'active' : ''"
+               th:text="${c.name}"></a>
+            <span th:if="${courseList.empty}" class="text-muted small">コースなし</span>
+        </div>
+    </div>
+
+    <!-- ② 学生選択 -->
+    <div class="col-md-2 sidebar p-3" th:if="${selectedCourse != null}">
+        <p class="text-muted fw-bold small mb-2 border-bottom pb-1">② 学生選択</p>
+        <div class="list-group list-group-flush">
+            <a th:each="u : ${studentList}"
+               th:href="@{/admin/attendance(courseId=${selectedCourse.id}, studentId=${u.id})}"
+               class="list-group-item list-group-item-action py-2 px-2 small"
+               th:classappend="${selectedStudent != null and selectedStudent.id == u.id} ? 'active' : ''"
+               th:text="${u.name}"></a>
+            <span th:if="${studentList.empty}" class="text-muted small">学生未登録</span>
+        </div>
+    </div>
+
+    <!-- ③ 出欠修正テーブル -->
+    <div class="col p-4" th:if="${selectedStudent != null}">
+        <h6 class="fw-bold mb-1">
+            ③ 出欠修正：<span th:text="${selectedStudent.name}" class="text-primary"></span> さん
+        </h6>
+        <p class="text-muted small mb-3">
+            ※ 本日以前の授業日のみ修正できます。修正後は画面上部にメッセージが表示されます。
+        </p>
+
+        <!-- 孤立レコード（授業日未登録の出席データ）表示 -->
+        <div th:if="${orphanAttendances != null and !orphanAttendances.empty}" class="mb-4">
+            <div class="alert alert-warning py-2">
+                <strong>⚠️ 授業日未登録の出席データが存在します</strong>（出席率に含まれています）
+            </div>
+            <table class="table table-bordered table-sm bg-white align-middle">
+                <thead class="table-warning">
+                    <tr>
+                        <th style="width:140px">日付</th>
+                        <th>状態</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="oa : ${orphanAttendances}" class="orphan-row">
+                        <td th:text="${oa.date}"></td>
+                        <td><span class="badge bg-warning text-dark">孤立データ</span></td>
+                        <td>
+                            <form th:action="@{/admin/attendance/delete}" method="post" class="d-inline">
+                                <input type="hidden" name="courseId" th:value="${selectedCourse.id}">
+                                <input type="hidden" name="studentId" th:value="${selectedStudent.id}">
+                                <input type="hidden" name="attendanceId" th:value="${oa.id}">
+                                <button type="submit" class="btn btn-sm btn-danger"
+                                        onclick="return confirm('この出席データを削除しますか？')">
+                                    🗑️ 削除
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-responsive">
+        <table class="table table-bordered table-sm bg-white align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width:140px">授業日</th>
+                    <th style="width:90px" class="text-center">出席状態</th>
+                    <th>修正操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!--
+                    【修正】Thymeleaf のインライン式バグを回避するため
+                    attendanceMap（Controller で構築した Map<LocalDate, Boolean>）を使用する。
+                    attendanceMap.get(s.lessonDate) → true=出席, null/false=欠席
+                -->
+                <tr th:each="s : ${schedules}"
+                    th:with="
+                        isFuture=${s.lessonDate.isAfter(#temporals.createToday())},
+                        isToday=${s.lessonDate.equals(#temporals.createToday())},
+                        attended=${attendanceMap != null and attendanceMap.containsKey(s.lessonDate) and attendanceMap[s.lessonDate]}"
+                    th:class="${isFuture} ? 'future-row' : ''">
+
+                    <!-- 授業日 -->
+                    <td>
+                        <span th:text="${s.lessonDate}"></span>
+                        <span th:if="${isToday}"
+                              class="badge bg-primary ms-1" style="font-size:10px">今日</span>
+                        <span th:if="${isFuture}"
+                              class="badge bg-secondary ms-1" style="font-size:10px">未実施</span>
+                    </td>
+
+                    <!-- 出席状態 -->
+                    <td class="text-center">
+                        <span th:unless="${isFuture}">
+                            <span th:if="${attended}" class="badge bg-success">出席</span>
+                            <span th:unless="${attended}" class="badge bg-danger">欠席</span>
+                        </span>
+                        <span th:if="${isFuture}" class="text-muted">―</span>
+                    </td>
+
+                    <!-- 修正ボタン -->
+                    <td>
+                        <span th:if="${isFuture}" class="text-muted small">
+                            ⚠️ まだ授業が実施されていないため修正できません
+                        </span>
+
+                        <span th:unless="${isFuture}" class="d-flex gap-2">
+                            <!-- 出席に修正 -->
+                            <form th:action="@{/admin/attendance/update}" method="post">
+                                <input type="hidden" name="courseId" th:value="${selectedCourse.id}">
+                                <input type="hidden" name="studentId" th:value="${selectedStudent.id}">
+                                <input type="hidden" name="lessonDate" th:value="${s.lessonDate}">
+                                <input type="hidden" name="attended" value="true">
+                                <button type="submit" class="btn btn-sm"
+                                        th:classappend="${attended} ? 'btn-success disabled' : 'btn-outline-success'"
+                                        th:disabled="${attended}">
+                                    ✅ 出席に修正
+                                </button>
+                            </form>
+                            <!-- 欠席に修正 -->
+                            <form th:action="@{/admin/attendance/update}" method="post">
+                                <input type="hidden" name="courseId" th:value="${selectedCourse.id}">
+                                <input type="hidden" name="studentId" th:value="${selectedStudent.id}">
+                                <input type="hidden" name="lessonDate" th:value="${s.lessonDate}">
+                                <input type="hidden" name="attended" value="false">
+                                <button type="submit" class="btn btn-sm"
+                                        th:classappend="${!attended} ? 'btn-danger disabled' : 'btn-outline-danger'"
+                                        th:disabled="${!attended}">
+                                    ❌ 欠席に修正
+                                </button>
+                            </form>
+                        </span>
+                    </td>
+                </tr>
+
+                <tr th:if="${schedules.empty}">
+                    <td colspan="3" class="text-muted text-center py-4">授業日が登録されていません</td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="text-muted small mt-2">
+            <span class="badge bg-success me-1">出席</span>
+            <span class="badge bg-danger me-1">欠席</span>
+            <span class="badge bg-secondary me-1">未実施</span>
+            ※ 現在と同じ状態のボタンは操作できません。
+        </div>
+    </div>
+
+    <!-- 学生未選択 -->
+    <div class="col d-flex align-items-center justify-content-center text-muted"
+         th:if="${selectedStudent == null and selectedCourse != null}">
+        <div class="text-center py-5"><div class="fs-1">👤</div><p>← 学生を選択してください</p></div>
+    </div>
+    <!-- コース未選択 -->
+    <div class="col d-flex align-items-center justify-content-center text-muted"
+         th:if="${selectedCourse == null}">
+        <div class="text-center py-5"><div class="fs-1">📚</div><p>← コースを選択してください</p></div>
+    </div>
+
+</div><!-- /row -->
+</div><!-- /container-fluid -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

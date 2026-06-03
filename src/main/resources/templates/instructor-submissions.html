@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<!--
+  提出物確認画面（SCR-104）/ Submission Review Screen
+  =====================================================
+  【修正】評価スコア（0〜100点）入力フィールドと現在スコア表示を追加
+  Fix: Added evaluation score (0-100) input + current score display
+-->
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>提出物確認</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f0f2f5; }
+        .score-high { color: #198754; font-weight: 600; }
+        .score-mid  { color: #fd7e14; font-weight: 600; }
+        .score-low  { color: #dc3545; font-weight: 600; }
+        .sidebar { min-height: calc(100vh - 58px); background:#fff; border-right:1px solid #dee2e6; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-primary px-4 shadow-sm">
+    <a class="navbar-brand" href="/instructor/home">← ホームへ戻る</a>
+    <span class="text-white fw-bold" th:text="'提出物確認 - ' + ${course.name}"></span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+</nav>
+
+<div class="container-fluid p-0">
+<div class="row g-0">
+
+    <!-- 課題選択サイドバー / Assignment selection sidebar -->
+    <div class="col-md-3 sidebar p-3">
+        <p class="text-muted fw-bold small mb-2 border-bottom pb-1">📋 課題一覧</p>
+        <div class="list-group list-group-flush">
+            <a th:each="a : ${assignmentList}"
+               th:href="@{/instructor/submissions(courseId=${course.id}, assignmentId=${a.id})}"
+               class="list-group-item list-group-item-action py-2 small"
+               th:classappend="${selectedAssignment != null and selectedAssignment.id == a.id} ? 'active' : ''">
+                <div class="fw-semibold" th:text="${a.title}"></div>
+                <small class="text-muted" th:text="'期限：' + ${#temporals.format(a.deadline, 'MM/dd HH:mm')}"></small>
+            </a>
+            <span th:if="${assignmentList.empty}" class="text-muted small list-group-item">課題未登録</span>
+        </div>
+    </div>
+
+    <!-- 提出一覧 / Submission list -->
+    <div class="col p-4" th:if="${selectedAssignment != null}">
+        <h6 class="fw-bold mb-3">📄 提出一覧：<span th:text="${selectedAssignment.title}"></span></h6>
+
+        <div class="table-responsive">
+        <table class="table table-bordered table-hover bg-white align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>受講者名</th>
+                    <th>提出日時</th>
+                    <th class="text-center">ファイル</th>
+                    <th class="text-center">スコア</th>
+                    <th>評価コメント</th>
+                    <th style="min-width:300px">評価入力・保存</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- 提出済みの行 / Submitted rows -->
+                <tr th:each="s : ${submissionList}">
+                    <td>
+                        <span th:text="${s.student.name}"></span>
+                        <span th:if="${s.score != null}" class="badge bg-success ms-1 small">評価済み</span>
+                    </td>
+                    <td class="small" th:text="${#temporals.format(s.submittedAt, 'yyyy/MM/dd HH:mm')}"></td>
+                    <td class="text-center">
+                        <a th:href="@{/instructor/submissions/{id}/download(id=${s.id})}"
+                           class="btn btn-sm btn-outline-primary">📄 DL</a>
+                    </td>
+
+                    <!-- 現在スコア / Current score -->
+                    <td class="text-center">
+                        <span th:if="${s.score != null}">
+                            <span th:if="${s.score >= 80}" class="score-high" th:text="${s.score} + '点'"></span>
+                            <span th:if="${s.score >= 60 and s.score < 80}" class="score-mid" th:text="${s.score} + '点'"></span>
+                            <span th:if="${s.score < 60}" class="score-low" th:text="${s.score} + '点'"></span>
+                        </span>
+                        <span th:unless="${s.score != null}" class="text-muted small">未採点</span>
+                    </td>
+
+                    <!-- 現在コメント / Current comment -->
+                    <td class="small">
+                        <span th:if="${s.evaluationComment != null}" class="text-success" th:text="${s.evaluationComment}"></span>
+                        <span th:unless="${s.evaluationComment != null}" class="text-muted">なし</span>
+                    </td>
+
+                    <!--
+                        評価入力フォーム（スコア＋コメント）/ Evaluation form (score + comment)
+                        POST /instructor/submissions/{id}/evaluate
+                        → InstructorController.evaluate(id, comment, score, courseId, assignmentId)
+                        → SubmissionService.saveEvaluation(id, comment, score) を呼び出す
+                    -->
+                    <td>
+                        <form th:action="@{/instructor/submissions/{id}/evaluate(id=${s.id})}"
+                              method="post">
+                            <input type="hidden" name="courseId" th:value="${course.id}">
+                            <input type="hidden" name="assignmentId" th:value="${selectedAssignment.id}">
+                            <!-- スコア入力（0〜100整数）/ Score input (0-100) -->
+                            <div class="input-group input-group-sm mb-1">
+                                <span class="input-group-text">点数</span>
+                                <input type="number" name="score" class="form-control"
+                                       th:value="${s.score}" min="0" max="100" placeholder="0〜100">
+                                <span class="input-group-text">点</span>
+                            </div>
+                            <!-- コメント＋保存ボタン / Comment + save button -->
+                            <div class="input-group input-group-sm">
+                                <input type="text" name="comment" class="form-control"
+                                       th:value="${s.evaluationComment}"
+                                       placeholder="評価コメント" maxlength="500">
+                                <button type="submit" class="btn btn-success btn-sm">💾 保存</button>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+
+                <!-- 未提出者 / Non-submitted students -->
+                <tr th:each="u : ${studentList}"
+                    th:unless="${submissionList.?[student.id == __${u.id}__].size() > 0}"
+                    class="table-light">
+                    <td th:text="${u.name}" class="text-muted"></td>
+                    <td colspan="4" class="text-muted small">― 未提出</td>
+                    <td><span class="badge bg-secondary">未提出</span></td>
+                </tr>
+
+                <tr th:if="${submissionList.empty and studentList.empty}">
+                    <td colspan="6" class="text-muted text-center py-3">提出なし</td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+        <div class="text-muted small mt-1">
+            <span class="score-high">●80点以上</span> /
+            <span class="score-mid ms-1">●60〜79点</span> /
+            <span class="score-low ms-1">●60点未満</span>
+            ／ スコア空欄で保存すると「未採点」になります。
+        </div>
+    </div>
+
+    <!-- 課題未選択 / No assignment selected -->
+    <div class="col d-flex align-items-center justify-content-center text-muted"
+         th:unless="${selectedAssignment != null}">
+        <div class="text-center py-5"><div class="fs-1">📋</div><p>← 課題を選択してください</p></div>
+    </div>
+
+</div>
+</div>
+</body>
+</html>

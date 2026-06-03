@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<!--
+  実績レポート画面（SCR-205）/ Achievement Report Screen
+  ========================================================
+  【修正①】出席率の「低」バッジを廃止し、文字色で色分け表示
+  Fix①: Replaced "低" badge with color-coded text for attendance rate
+  【修正②】平均スコア列を追加（評価済み提出のスコア平均）
+  Fix②: Added average score column (average of evaluated submission scores)
+  【修正③】凡例（カラーの説明）を画面下部に追加
+  Fix③: Added color coding legend at bottom
+-->
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>実績レポート</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f0f2f5; }
+        /* 出席率の色分け / Attendance rate color coding */
+        .rate-high { color: #198754; font-weight: 600; } /* 80%以上 green */
+        .rate-mid  { color: #fd7e14; font-weight: 600; } /* 70-79% orange */
+        .rate-low  { color: #dc3545; font-weight: 600; } /* 70%未満 red */
+        /* スコアの色分け / Score color coding */
+        .score-high { color: #198754; font-weight: 600; } /* 80点以上 green */
+        .score-mid  { color: #fd7e14; font-weight: 600; } /* 60-79 orange */
+        .score-low  { color: #dc3545; font-weight: 600; } /* 60未満 red */
+        .sidebar { min-height: calc(100vh - 58px); background: #fff; border-right: 1px solid #dee2e6; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark px-4 shadow-sm">
+    <a class="navbar-brand" href="/admin/home">← 管理者ホーム</a>
+    <span class="text-white fw-bold">📊 実績レポート</span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+</nav>
+
+<div class="container-fluid p-0">
+<div class="row g-0">
+
+    <!-- コース選択サイドバー / Course selection sidebar -->
+    <div class="col-md-2 sidebar p-3">
+        <p class="text-muted fw-bold small mb-2 border-bottom pb-1">コース選択</p>
+        <div class="list-group list-group-flush">
+            <a th:each="c : ${courseList}"
+               th:href="@{/admin/reports(courseId=${c.id})}"
+               class="list-group-item list-group-item-action py-2 px-2 small"
+               th:classappend="${selectedCourse != null and selectedCourse.id == c.id} ? 'active' : ''"
+               th:text="${c.name}"></a>
+            <span th:if="${courseList.empty}" class="text-muted small">コースなし</span>
+        </div>
+    </div>
+
+    <!-- レポートテーブル / Report table -->
+    <div class="col p-4" th:if="${selectedCourse != null}">
+        <h5 class="fw-bold mb-3">
+            📊 実績レポート：<span th:text="${selectedCourse.name}"></span>
+        </h5>
+
+        <div class="table-responsive">
+        <table class="table table-bordered table-hover table-sm bg-white align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th>氏名</th>
+                    <th>メール</th>
+                    <th class="text-center">出席数</th>
+                    <th class="text-center">授業数</th>
+                    <!-- 【修正①】出席率列 / Fix①: Attendance rate column (color-coded text) -->
+                    <th class="text-center">出席率</th>
+                    <th class="text-center">提出数</th>
+                    <th class="text-center">課題数</th>
+                    <th class="text-center">提出率</th>
+                    <th class="text-center">未提出</th>
+                    <!-- 【修正②】平均スコア列を追加 / Fix②: Added average score column -->
+                    <th class="text-center">平均スコア</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="r : ${reportList}">
+                    <td class="fw-semibold" th:text="${r.studentName}"></td>
+                    <td class="small text-muted" th:text="${r.studentEmail}"></td>
+                    <td class="text-center" th:text="${r.attendedCount}"></td>
+                    <td class="text-center" th:text="${r.totalLessons}"></td>
+
+                    <!--
+                        【修正①】出席率を文字色で色分け（「低」バッジを廃止）
+                        Fix①: Color-coded attendance rate text (removed "低" badge)
+
+                        授業なし（totalLessons=0）→ グレー「―」
+                        80%以上 → 緑（rate-high）
+                        70〜79% → オレンジ（rate-mid）
+                        70%未満 → 赤（rate-low）※ここが以前の「低」に相当
+                    -->
+                    <td class="text-center">
+                        <span th:if="${r.totalLessons == 0}" class="text-muted">―</span>
+                        <span th:if="${r.totalLessons > 0 and r.attendanceRate >= 80}"
+                              class="rate-high" th:text="${r.attendanceRate} + '%'"></span>
+                        <span th:if="${r.totalLessons > 0 and r.attendanceRate >= 70 and r.attendanceRate < 80}"
+                              class="rate-mid" th:text="${r.attendanceRate} + '%'"></span>
+                        <span th:if="${r.totalLessons > 0 and r.attendanceRate < 70}"
+                              class="rate-low" th:text="${r.attendanceRate} + '%'"></span>
+                    </td>
+
+                    <td class="text-center" th:text="${r.submittedCount}"></td>
+                    <td class="text-center" th:text="${r.totalAssignments}"></td>
+                    <td class="text-center" th:text="${r.submissionRate} + '%'"></td>
+                    <td class="text-center">
+                        <span th:text="${r.unsubmittedCount}"></span>
+                        <span th:if="${r.unsubmittedCount > 0}"
+                              class="badge bg-warning text-dark ms-1 small">未提出あり</span>
+                    </td>
+
+                    <!--
+                        平均スコアセル（修正後の仕様）
+                        計算方式：採点済み提出スコア合計 ÷ 公開課題総数
+                        未提出・未採点は0点扱い。公開課題が0件の場合は「採点待ち」。
+
+                        80点以上 → 緑 / 60〜79点 → オレンジ / 60点未満 → 赤
+                    -->
+                    <td class="text-center">
+                        <span th:if="${r.averageScore == null}" class="text-muted small">採点待ち</span>
+                        <span th:if="${r.averageScore != null and r.averageScore >= 80}"
+                              class="score-high" th:text="${r.averageScore} + '点'"></span>
+                        <span th:if="${r.averageScore != null and r.averageScore >= 60 and r.averageScore < 80}"
+                              class="score-mid" th:text="${r.averageScore} + '点'"></span>
+                        <span th:if="${r.averageScore != null and r.averageScore < 60}"
+                              class="score-low" th:text="${r.averageScore} + '点'"></span>
+                    </td>
+                </tr>
+                <tr th:if="${reportList.empty}">
+                    <td colspan="10" class="text-muted text-center py-4">受講者が登録されていません</td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+
+        <!--
+            【修正③】凡例（カラー説明）を追加 / Fix③: Added color coding legend
+            「低」バッジが消えたので代わりに凡例で意味を説明する。
+            Explains color coding to replace the removed "低" badge.
+        -->
+        <div class="card border mt-3">
+            <div class="card-body py-2 px-3 d-flex flex-wrap gap-3 align-items-center">
+                <span class="text-muted small fw-bold">■ 凡例（色の意味）</span>
+                <span class="small">
+                    出席率：
+                    <span class="rate-high">● 80%以上</span>
+                    <span class="rate-mid ms-1">● 70〜79%</span>
+                    <span class="rate-low ms-1">● 70%未満（要注意）</span>
+                </span>
+                <span class="small">
+                    平均スコア：
+                    <span class="score-high">● 80点以上</span>
+                    <span class="score-mid ms-1">● 60〜79点</span>
+                    <span class="score-low ms-1">● 60点未満</span>
+                    <span class="text-muted ms-1">※未提出・未採点は0点扱い、公開課題数で割った平均</span>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- コース未選択ガイド / No course selected guide -->
+    <div class="col d-flex align-items-center justify-content-center text-muted"
+         th:unless="${selectedCourse != null}">
+        <div class="text-center py-5">
+            <div class="fs-1">📊</div>
+            <p>← コースを選択してレポートを表示</p>
+        </div>
+    </div>
+
+</div>
+</div>
+</body>
+</html>

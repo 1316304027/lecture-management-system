@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<!--
+  管理者ホーム / Admin Home
+  【修正】${realAdminUser.name} を使って管理者名を表示する
+  AdminController.home() が model に "realAdminUser" を必ずセットする。
+  代理ログイン中でも管理者本人の名前が正しく表示される。
+-->
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>管理者ホーム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f0f2f5; }
+        .nav-btn { min-height: 100px; border-radius: 12px;
+                   transition: transform .15s, box-shadow .15s; }
+        .nav-btn:hover { transform: translateY(-3px);
+                         box-shadow: 0 6px 16px rgba(0,0,0,.12); }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark px-4 py-2">
+    <span class="navbar-brand fw-bold">🏫 PCFA管理システム</span>
+    <div class="d-flex align-items-center gap-3">
+        <!--
+            【修正ポイント】
+            ×旧: ${loginUser.name}  → 代理ログイン中は学生名が表示されていた
+            ○新: ${realAdminUser.name} → 常に管理者名が表示される
+            AdminController.home() で
+              User adminUser = session.getAttribute("adminUser");
+              model.addAttribute("realAdminUser", adminUser != null ? adminUser : loginUser);
+            とセットしているため、代理ログイン中でも正しい管理者名になる。
+        -->
+        <span class="text-white small">
+            👤 管理者：<strong th:text="${realAdminUser.name}">管理者</strong>
+        </span>
+        <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h2 class="fw-bold mb-1">管理者ポータル</h2>
+    <p class="text-muted mb-4">システム全体の管理・設定を行います。</p>
+
+    <!-- 統計カード -->
+    <div class="row g-3 mb-5">
+        <div class="col-md-3">
+            <div class="card text-center text-white bg-primary h-100">
+                <div class="card-body py-4">
+                    <div class="fs-1 mb-1">👥</div>
+                    <h6>登録ユーザー数</h6>
+                    <h2 class="fw-bold" th:text="${userCount}">0</h2>
+                    <small class="opacity-75">アカウント</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center text-white bg-success h-100">
+                <div class="card-body py-4">
+                    <div class="fs-1 mb-1">📚</div>
+                    <h6>開設コース数</h6>
+                    <h2 class="fw-bold" th:text="${courseCount}">0</h2>
+                    <small class="opacity-75">コース</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 機能メニュー -->
+    <h5 class="text-muted fw-bold mb-3">機能メニュー</h5>
+    <div class="row g-3">
+        <div class="col-md-3">
+            <a href="/admin/accounts"
+               class="btn btn-outline-primary w-100 nav-btn d-flex flex-column
+                      align-items-center justify-content-center gap-1 text-decoration-none">
+                <span class="fs-2">👤</span>
+                <strong>ユーザー管理</strong>
+                <small class="text-muted">アカウントの作成・編集・削除</small>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="/admin/courses"
+               class="btn btn-outline-success w-100 nav-btn d-flex flex-column
+                      align-items-center justify-content-center gap-1 text-decoration-none">
+                <span class="fs-2">📚</span>
+                <strong>コース管理</strong>
+                <small class="text-muted">コース・授業日・受講者の設定</small>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="/admin/attendance"
+               class="btn btn-outline-warning w-100 nav-btn d-flex flex-column
+                      align-items-center justify-content-center gap-1 text-decoration-none">
+                <span class="fs-2">📋</span>
+                <strong>出欠修正</strong>
+                <small class="text-muted">学生の出欠状態を手動修正</small>
+            </a>
+        </div>
+        <div class="col-md-3">
+            <a href="/admin/reports"
+               class="btn btn-outline-danger w-100 nav-btn d-flex flex-column
+                      align-items-center justify-content-center gap-1 text-decoration-none">
+                <span class="fs-2">📊</span>
+                <strong>実績レポート</strong>
+                <small class="text-muted">出席率・提出率・スコア確認</small>
+            </a>
+        </div>
+    </div>
+</div>
+</body>
+</html>
