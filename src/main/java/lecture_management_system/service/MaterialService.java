@@ -3,16 +3,14 @@ package lecture_management_system.service;
 import lecture_management_system.entity.*;
 import lecture_management_system.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
-import java.nio.file.*;
 import java.util.List;
 
 /**
  * 教材業務Service
- * 教材のアップロード・一覧取得・ダウンロード・公開管理を担当する。
+ * 【S3対応】ファイル保存先をローカルディスクからS3に変更。
  */
 @Service
 public class MaterialService {
@@ -23,31 +21,27 @@ public class MaterialService {
     @Autowired
     private CourseRepository courseRepository;
 
-    /** ファイル保存ディレクトリ（application.yamlで設定） */
-    @Value("${app.upload-dir:uploads}")
-    private String uploadDir;
+    @Autowired
+    private S3Service s3Service;
 
-    /** コース別教材一覧取得（講師用：公開・非公開全件） */
+    /** S3上のフォルダ名（プレフィックス） */
+    private static final String S3_PREFIX = "materials/";
+
     public List<Material> findByCourseId(Long courseId) {
         return materialRepository.findByCourse_Id(courseId);
     }
 
-    /** コース別公開教材一覧取得（受講者用） */
     public List<Material> findPublishedByCourseId(Long courseId) {
         return materialRepository.findByCourse_IdAndPublishedTrue(courseId);
     }
 
-    /** 教材詳細取得 */
     public Material findById(Long id) {
         return materialRepository.findById(id).orElse(null);
     }
 
     /**
      * 教材アップロード（講師SCR-102から使用）
-     *
-     * 【バリデーション】
-     * - PDF形式のみ
-     * - 10MB以内
+     * 【S3対応】ファイルをS3にアップロードし、S3キーをDBに保存する。
      *
      * @return エラーメッセージ（null = 成功）
      */
@@ -55,7 +49,7 @@ public class MaterialService {
                                  boolean published, MultipartFile file,
                                  User createdBy) throws IOException {
         // バリデーション
-        if (file.isEmpty()) return "ファイルを選択してください";
+        if (file == null || file.isEmpty()) return "ファイルを選択してください";
         String originalName = file.getOriginalFilename();
         if (originalName == null || !originalName.toLowerCase().endsWith(".pdf")) {
             return "PDF形式のみアップロード可能です";
@@ -66,29 +60,23 @@ public class MaterialService {
         if (title == null || title.trim().isEmpty()) return "教材タイトルを入力してください";
         if (title.length() > 100) return "100文字以内で入力してください";
 
-        // ファイル保存（タイムスタンプ+元ファイル名で一意なファイル名生成）
-        Files.createDirectories(Paths.get(uploadDir));
+        // S3にアップロード（キー名 = materials/タイムスタンプ_ファイル名）
         String storedFileName = System.currentTimeMillis() + "_" + originalName;
-        Files.copy(file.getInputStream(),
-                Paths.get(uploadDir, storedFileName),
-                StandardCopyOption.REPLACE_EXISTING);
+        String s3Key = S3_PREFIX + storedFileName;
+        s3Service.uploadFile(file, s3Key);
 
-        // DB登録
+        // DBにはS3キーを保存する
         Course course = courseRepository.findById(courseId).orElse(null);
         Material material = new Material();
         material.setCourse(course);
         material.setTitle(title.trim());
-        material.setStoredFileName(storedFileName);
+        material.setStoredFileName(s3Key);   // S3キーを保存
         material.setPublished(published);
         material.setCreatedBy(createdBy);
         materialRepository.save(material);
         return null;
     }
 
-    /**
-     * 公開状態の切り替え（講師SCR-102から使用）
-     * published=true にすれば受講者に表示される。
-     */
     public void togglePublished(Long materialId) {
         Material material = materialRepository.findById(materialId).orElse(null);
         if (material != null) {
@@ -97,15 +85,24 @@ public class MaterialService {
         }
     }
 
-    /** 教材削除（講師SCR-102から使用） */
+    /**
+     * 教材削除
+     * 【S3対応】S3からファイルも削除する。
+     */
     public void deleteMaterial(Long materialId) {
-        materialRepository.deleteById(materialId);
+        Material material = materialRepository.findById(materialId).orElse(null);
+        if (material != null) {
+            s3Service.deleteFile(material.getStoredFileName());
+            materialRepository.deleteById(materialId);
+        }
     }
 
     /**
-     * ファイルパス取得（ダウンロード時にControllerで使用）
+     * ダウンロード用S3署名付きURLを取得する
+     * 【S3対応】ローカルパスの代わりに署名付きURLを返す。
+     * 有効期限：10分
      */
-    public Path getFilePath(String storedFileName) {
-        return Paths.get(uploadDir, storedFileName);
+    public String getDownloadUrl(String storedFileName) {
+        return s3Service.generatePresignedUrl(storedFileName);
     }
 }

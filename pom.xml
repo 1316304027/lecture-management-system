@@ -102,6 +102,12 @@
 			<artifactId>h2</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<!-- AWS SDK v2 S3（ファイルをS3にアップロード・ダウンロードするために必要） -->
+		<dependency>
+			<groupId>software.amazon.awssdk</groupId>
+			<artifactId>s3</artifactId>
+			<version>2.25.11</version>
+		</dependency>
 	</dependencies>
 
 	<build>

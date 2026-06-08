@@ -286,25 +286,14 @@ public class InstructorController {
 
     /**
      * 提出物PDFダウンロード（GET /instructor/submissions/{id}/download）
-     * Download submission PDF
+     * 【S3対応】ローカルファイルではなくS3署名付きURLにリダイレクトする。
      */
     @GetMapping("/instructor/submissions/{id}/download")
-    @ResponseBody
-    public ResponseEntity<Resource> downloadSubmission(
-            @PathVariable Long id) throws IOException {
+    public String downloadSubmission(@PathVariable Long id) {
         Submission submission = submissionService.findById(id);
-        if (submission == null) return ResponseEntity.notFound().build();
-
-        Path path = submissionService.getFilePath(submission.getStoredFileName());
-        Resource resource = new UrlResource(path.toUri());
-        String fileName = submission.getOriginalFileName() != null
-                ? submission.getOriginalFileName() : "submission.pdf";
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename*=UTF-8''"
-                        + URLEncoder.encode(fileName, StandardCharsets.UTF_8))
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(resource);
+        if (submission == null) return "redirect:/instructor/home";
+        String url = submissionService.getDownloadUrl(submission.getStoredFileName());
+        return "redirect:" + url;
     }
 
     // ===================== 出欠確認（SCR-105）/ Attendance Confirmation =====================

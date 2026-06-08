@@ -39,7 +39,12 @@ spring:
 
 # ================================================================
 # アプリ独自設定 / Application Custom Settings
-# アップロードしたPDFファイルの保存先ディレクトリ
-# Directory where uploaded PDF files are stored
 # ================================================================
+
+# AWS S3設定
+# EC2上ではIAMロールで自動認証されるためアクセスキーは不要
+aws:
+  s3:
+    bucket-name: lecture-system-files-wei
+    region: ap-northeast-1
 

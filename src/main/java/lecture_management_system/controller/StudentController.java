@@ -149,21 +149,12 @@ public class StudentController {
     }
 
     @GetMapping("/student/materials/{id}/download")
-    @ResponseBody
-    public ResponseEntity<Resource> downloadMaterial(
-            @PathVariable Long id, HttpSession session) throws IOException {
-        if (getLoginUser(session) == null)
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    public String downloadMaterial(@PathVariable Long id, HttpSession session) {
+        if (getLoginUser(session) == null) return "redirect:/login";
         Material material = materialService.findById(id);
-        if (material == null) return ResponseEntity.notFound().build();
-        Path path = materialService.getFilePath(material.getStoredFileName());
-        Resource resource = new UrlResource(path.toUri());
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename*=UTF-8''"
-                        + URLEncoder.encode(material.getTitle() + ".pdf", StandardCharsets.UTF_8))
-                .contentType(MediaType.APPLICATION_PDF)
-                .body(resource);
+        if (material == null) return "redirect:/student/home";
+        String url = materialService.getDownloadUrl(material.getStoredFileName());
+        return "redirect:" + url;
     }
 
     // ===================== 課題提出（SCR-005）=====================
