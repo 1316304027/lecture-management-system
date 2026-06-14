@@ -38,6 +38,9 @@
                        class="btn btn-sm btn-outline-secondary flex-fill">📄 教材</a>
                     <a th:href="@{/student/assignments(courseId=${course.id})}"
                        class="btn btn-sm btn-outline-warning flex-fill">📝 課題</a>
+                    <!-- チャットボタン：courseIdをパラメータで渡す -->
+                    <a th:href="@{/chat(courseId=${course.id})}"
+                       class="btn btn-sm btn-outline-info flex-fill">💬 チャット</a>
                 </div>
             </div>
         </div>

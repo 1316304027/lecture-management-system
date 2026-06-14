@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>全チャット閲覧</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { background-color: #f0f2f5; }
+        .role-admin      { background: #dc3545; }
+        .role-instructor { background: #198754; }
+        .role-student    { background: #0dcaf0; color: #000 !important; }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-dark bg-dark px-4">
+    <a class="navbar-brand" href="/admin/home">← 管理者ホーム</a>
+    <span class="text-white fw-bold">💬 全チャット閲覧</span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+</nav>
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white fw-bold">
+            💬 全コースのチャットメッセージ一覧
+            （新しい順）
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover table-bordered mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width:160px">送信日時</th>
+                        <th style="width:80px">ロール</th>
+                        <th style="width:120px">送信者</th>
+                        <th style="width:150px">コース</th>
+                        <th>メッセージ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!--
+                        管理者は全コースのメッセージを見ることができる
+                        新しい順（sentAt降順）で表示
+                    -->
+                    <tr th:each="msg : ${messages}">
+                        <td class="small"
+                            th:text="${#temporals.format(msg.sentAt, 'yyyy/MM/dd HH:mm')}">
+                        </td>
+                        <td>
+                            <span class="badge text-white"
+                                  th:classappend="${msg.sender.role == 'ADMIN'} ? 'role-admin' :
+                                                  (${msg.sender.role == 'INSTRUCTOR'} ? 'role-instructor' : 'role-student')"
+                                  th:text="${msg.sender.role == 'ADMIN'} ? '管理者' :
+                                           (${msg.sender.role == 'INSTRUCTOR'} ? '教師' : '学生')">
+                            </span>
+                        </td>
+                        <td th:text="${msg.sender.name}"></td>
+                        <td class="small" th:text="${msg.course.name}"></td>
+                        <td th:text="${msg.content}"></td>
+                    </tr>
+                    <tr th:if="${messages.empty}">
+                        <td colspan="5" class="text-center text-muted py-4">
+                            チャットメッセージはありません
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer text-muted small">
+            合計 <strong th:text="${messages.size()}"></strong> 件のメッセージ
+        </div>
+    </div>
+</div>
+</body>
+</html>

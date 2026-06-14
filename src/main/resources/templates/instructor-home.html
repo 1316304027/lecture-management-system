@@ -36,6 +36,9 @@
                        class="btn btn-sm btn-outline-success">📥 提出確認</a>
                     <a th:href="@{/instructor/attendance(courseId=${course.id})}"
                        class="btn btn-sm btn-outline-secondary">📋 出欠確認</a>
+                    <!-- チャットボタン：courseIdをパラメータで渡す -->
+                    <a th:href="@{/chat(courseId=${course.id})}"
+                       class="btn btn-sm btn-outline-info">💬 チャット</a>
                 </div>
             </div>
         </div>
