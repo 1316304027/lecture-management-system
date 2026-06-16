@@ -5,7 +5,7 @@
 spring:
   # データソース設定 / Datasource Configuration
   datasource:
-    url: lecture-db.cp04q6mmszba.ap-northeast-1.rds.amazonaws.com
+    url: jdbc:postgresql://lecture-db.cp04q6mmszba.ap-northeast-1.rds.amazonaws.com:5432/lecturedb
     username: postgres
     password: postgres
 
