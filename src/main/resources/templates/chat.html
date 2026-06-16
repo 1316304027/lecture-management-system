@@ -7,62 +7,79 @@
     <style>
         body { background-color: #f0f2f5; }
 
-        /* チャット画面全体のコンテナ */
         .chat-container {
             max-width: 800px;
             margin: 20px auto;
         }
 
-        /* メッセージ一覧エリア（スクロール可能） */
         .chat-box {
-            height: 450px;          /* 高さを固定 */
-            overflow-y: auto;       /* 縦スクロールを有効化 */
+            height: 500px;
+            overflow-y: auto;
             background: white;
             border-radius: 12px;
             padding: 16px;
             border: 1px solid #dee2e6;
         }
 
-        /* 自分のメッセージ（右側に表示） */
+        /* 自分のメッセージ（右側） */
         .message-mine {
             display: flex;
-            justify-content: flex-end;  /* 右寄せ */
-            margin-bottom: 12px;
-        }
-        .message-mine .bubble {
-            background: #0d6efd;        /* 青色の吹き出し */
-            color: white;
-            border-radius: 18px 18px 4px 18px;
-            padding: 10px 14px;
-            max-width: 70%;
+            justify-content: flex-end;
+            margin-bottom: 14px;
         }
 
-        /* 相手のメッセージ（左側に表示） */
+        .message-mine .bubble {
+            background: #0d6efd;
+            color: white;
+            /* 【修正】min-widthとword-breakを追加 */
+            border-radius: 18px 18px 4px 18px;
+            padding: 10px 16px;
+            max-width: 65%;
+            min-width: 60px;          /* 最小幅を確保 */
+            word-break: break-word;   /* 長い単語を折り返す */
+            word-wrap: break-word;
+            white-space: pre-wrap;    /* 改行を保持 */
+            display: inline-block;    /* インラインブロックで幅を確保 */
+        }
+
+        /* 相手のメッセージ（左側） */
         .message-other {
             display: flex;
-            justify-content: flex-start;  /* 左寄せ */
-            margin-bottom: 12px;
-        }
-        .message-other .bubble {
-            background: #e9ecef;           /* グレーの吹き出し */
-            color: #212529;
-            border-radius: 18px 18px 18px 4px;
-            padding: 10px 14px;
-            max-width: 70%;
+            justify-content: flex-start;
+            margin-bottom: 14px;
         }
 
-        /* 送信者名・時刻の表示 */
+        .message-other .bubble {
+            background: #e9ecef;
+            color: #212529;
+            border-radius: 18px 18px 18px 4px;
+            padding: 10px 16px;
+            max-width: 65%;
+            min-width: 60px;          /* 最小幅を確保 */
+            word-break: break-word;   /* 長い単語を折り返す */
+            word-wrap: break-word;
+            white-space: pre-wrap;    /* 改行を保持 */
+            display: inline-block;    /* インラインブロックで幅を確保 */
+        }
+
         .msg-meta {
             font-size: 11px;
             color: #6c757d;
-            margin-bottom: 3px;
+            margin-bottom: 4px;
+        }
+
+        /* 送信フォームのスタイル */
+        .chat-input-area {
+            padding: 12px;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
         }
     </style>
 </head>
 <body>
 <nav class="navbar navbar-dark bg-primary px-4">
-    <!-- ロールによってホームのURLを変える -->
-    <a class="navbar-brand" th:href="${loginUser.role == 'STUDENT'} ? '/student/home' : '/instructor/home'">
+    <a class="navbar-brand"
+       th:href="${loginUser.role == 'STUDENT'} ? '/student/home' : '/instructor/home'">
         ← ホームへ戻る
     </a>
     <span class="text-white fw-bold"
@@ -72,18 +89,16 @@
 
 <div class="chat-container">
     <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white fw-bold">
-            💬 <span th:text="${course.name}"></span> のチャット
+        <div class="card-header bg-primary text-white fw-bold d-flex justify-content-between">
+            <span>💬 <span th:text="${course.name}"></span> のチャット</span>
+            <small class="opacity-75">メッセージは500文字以内</small>
         </div>
 
         <!-- メッセージ一覧 -->
         <div class="chat-box" id="chatBox">
-            <!--
-                th:each でメッセージリストをループ処理
-                自分のメッセージは右側、相手のメッセージは左側に表示
-            -->
             <div th:each="msg : ${messages}">
-                <!-- 自分のメッセージ -->
+
+                <!-- 自分のメッセージ（右側・青） -->
                 <div th:if="${msg.sender.id == loginUser.id}"
                      class="message-mine">
                     <div>
@@ -93,53 +108,59 @@
                         <div class="bubble" th:text="${msg.content}"></div>
                     </div>
                 </div>
-                <!-- 相手のメッセージ -->
+
+                <!-- 相手のメッセージ（左側・グレー） -->
                 <div th:unless="${msg.sender.id == loginUser.id}"
                      class="message-other">
                     <div>
                         <div class="msg-meta">
-                            <!-- ロール表示（学生=青・教師=緑） -->
                             <span th:if="${msg.sender.role == 'STUDENT'}"
                                   class="badge bg-info text-dark me-1">学生</span>
                             <span th:if="${msg.sender.role == 'INSTRUCTOR'}"
                                   class="badge bg-success me-1">教師</span>
-                            <span th:text="${msg.sender.name}"></span>
+                            <span th:if="${msg.sender.role == 'ADMIN'}"
+                                  class="badge bg-danger me-1">管理者</span>
+                            <strong th:text="${msg.sender.name}"></strong>
                             <span class="ms-2"
                                   th:text="${#temporals.format(msg.sentAt, 'MM/dd HH:mm')}"></span>
                         </div>
                         <div class="bubble" th:text="${msg.content}"></div>
                     </div>
                 </div>
+
             </div>
 
-            <!-- メッセージが1件もない場合 -->
+            <!-- メッセージなしの場合 -->
             <div th:if="${messages.empty}"
                  class="text-center text-muted py-5">
-                まだメッセージはありません。最初のメッセージを送りましょう！
+                <div class="fs-1">💬</div>
+                <p>まだメッセージはありません。<br>最初のメッセージを送りましょう！</p>
             </div>
         </div>
 
-        <!-- メッセージ送信フォーム -->
-        <div class="card-footer">
+        <!-- 送信フォーム -->
+        <div class="chat-input-area">
             <form th:action="@{/chat/send}" method="post"
                   class="d-flex gap-2">
                 <input type="hidden" name="courseId" th:value="${courseId}">
-                <input type="text" name="content"
+                <input type="text"
+                       name="content"
                        class="form-control"
-                       placeholder="メッセージを入力..."
+                       placeholder="メッセージを入力... （最大500文字）"
                        maxlength="500"
                        required
                        autocomplete="off">
                 <button type="submit"
-                        class="btn btn-primary text-nowrap">送信</button>
+                        class="btn btn-primary px-4 text-nowrap">
+                    送信
+                </button>
             </form>
         </div>
     </div>
 </div>
 
 <script>
-    // ページ読み込み時にチャットボックスを一番下までスクロール
-    // これにより最新のメッセージが表示される
+    // ページ読み込み時に最新メッセージまでスクロール
     window.onload = function() {
         const chatBox = document.getElementById('chatBox');
         chatBox.scrollTop = chatBox.scrollHeight;
