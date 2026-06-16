@@ -3,6 +3,11 @@
 # ================================================================
 
 spring:
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Tokyo
   # データソース設定 / Datasource Configuration
   datasource:
     url: jdbc:postgresql://localhost:5432/lecture_management

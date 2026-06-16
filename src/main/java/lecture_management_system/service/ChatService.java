@@ -13,22 +13,19 @@ import org.slf4j.LoggerFactory;
  * チャット業務Service
  *
  * 【機能説明】
- * チャットメッセージの送信・取得を担当する。
+ * ・メッセージ送信 → RDSに保存 + CloudWatchログ出力（Lambda連携）
+ * ・メッセージ取得 → コース別・全件
+ * ・メッセージ削除 → 管理者のみ使用可能
  *
  * 【Lambda連携の仕組み】
- * メッセージを送信するたびにログを出力する。
- * このログはdocker-composeの「awslogs」設定でCloudWatchに送られる。
- * CloudWatchのログをLambdaのトリガーにすることで、
- * 「メッセージが送信された」イベントを検知してLambdaを起動できる。
- *
- * 【RDS連携】
- * メッセージはRDSのchat_messagesテーブルに保存される。
- * サーバーを再起動してもメッセージが消えない。
+ * sendMessage()でlogger.info()を呼ぶと
+ * CloudWatchにログが送られる。
+ * このログをLambdaのトリガーにすることで
+ * 「メッセージが送信された」イベントを検知できる。
  */
 @Service
 public class ChatService {
 
-    // ログ出力用（CloudWatch連携のために使用）
     private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
     @Autowired
@@ -38,29 +35,18 @@ public class ChatService {
     private CourseRepository courseRepository;
 
     /**
-     * メッセージを送信する（RDSに保存）
-     *
-     * 処理の流れ：
-     * 1. Courseエンティティを取得
-     * 2. ChatMessageエンティティを作成
-     * 3. 送信日時を現在時刻にセット
-     * 4. RDS（PostgreSQL）に保存
-     * 5. CloudWatchログに記録（Lambda連携用）
-     *
-     * @param sender   送信者（ログイン中のUser）
-     * @param courseId 対象コースID
-     * @param content  メッセージ本文
+     * メッセージを送信する
+     * 1. バリデーション（空・500文字超）
+     * 2. RDSに保存
+     * 3. CloudWatchログ出力（Lambda連携用）
      */
     public void sendMessage(User sender, Long courseId, String content) {
-        // バリデーション：空メッセージは保存しない
         if (content == null || content.trim().isEmpty()) return;
         if (content.length() > 500) content = content.substring(0, 500);
 
-        // コースを取得
         Course course = courseRepository.findById(courseId).orElse(null);
         if (course == null) return;
 
-        // メッセージエンティティを作成してRDSに保存
         ChatMessage message = new ChatMessage();
         message.setSender(sender);
         message.setCourse(course);
@@ -68,28 +54,30 @@ public class ChatService {
         message.setSentAt(LocalDateTime.now());
         chatMessageRepository.save(message);
 
-        // CloudWatchログに記録（Lambda連携用）
-        // このログがCloudWatchに送られ、Lambdaのトリガーになる
+        // CloudWatchログ出力（Lambda連携用）
         logger.info("[CHAT_EVENT] courseId={} sender={} role={} content={}",
                 courseId, sender.getName(), sender.getRole(), content.trim());
     }
 
     /**
-     * コースのチャット履歴を取得する（古い順）
-     *
-     * @param courseId 対象コースID
-     * @return メッセージリスト（古い順）
+     * コースのメッセージ一覧取得（古い順）
      */
     public List<ChatMessage> getMessages(Long courseId) {
         return chatMessageRepository.findByCourse_IdOrderBySentAtAsc(courseId);
     }
 
     /**
-     * 全コースのメッセージを取得する（管理者用・新しい順）
-     *
-     * @return 全メッセージリスト
+     * 全メッセージ取得（管理者用・新しい順）
      */
     public List<ChatMessage> getAllMessages() {
         return chatMessageRepository.findAllByOrderBySentAtDesc();
+    }
+
+    /**
+     * メッセージ削除（管理者のみ）
+     * IDで1件削除する
+     */
+    public void deleteMessage(Long messageId) {
+        chatMessageRepository.deleteById(messageId);
     }
 }

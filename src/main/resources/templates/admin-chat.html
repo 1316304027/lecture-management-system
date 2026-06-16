@@ -9,37 +9,36 @@
         .role-admin      { background: #dc3545; }
         .role-instructor { background: #198754; }
         .role-student    { background: #0dcaf0; color: #000 !important; }
+        .msg-content { white-space: pre-wrap; word-break: break-word; }
     </style>
 </head>
 <body>
 <nav class="navbar navbar-dark bg-dark px-4">
     <a class="navbar-brand" href="/admin/home">← 管理者ホーム</a>
-    <span class="text-white fw-bold">💬 全チャット閲覧</span>
+    <span class="text-white fw-bold">💬 全チャット閲覧・管理</span>
     <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
 </nav>
 
 <div class="container mt-4">
     <div class="card shadow-sm">
-        <div class="card-header bg-dark text-white fw-bold">
-            💬 全コースのチャットメッセージ一覧
-            （新しい順）
+        <div class="card-header bg-dark text-white fw-bold d-flex justify-content-between">
+            <span>💬 全コースのチャットメッセージ（新しい順）</span>
+            <span class="badge bg-secondary" th:text="${messages.size()} + ' 件'"></span>
         </div>
         <div class="card-body p-0">
-            <table class="table table-hover table-bordered mb-0">
+            <table class="table table-hover table-bordered mb-0 align-middle">
                 <thead class="table-dark">
                     <tr>
-                        <th style="width:160px">送信日時</th>
+                        <th style="width:140px">送信日時</th>
                         <th style="width:80px">ロール</th>
-                        <th style="width:120px">送信者</th>
+                        <th style="width:130px">送信者</th>
                         <th style="width:150px">コース</th>
                         <th>メッセージ</th>
+                        <!-- 管理者のみ削除ボタン列を表示 -->
+                        <th style="width:80px" class="text-center">操作</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!--
-                        管理者は全コースのメッセージを見ることができる
-                        新しい順（sentAt降順）で表示
-                    -->
                     <tr th:each="msg : ${messages}">
                         <td class="small"
                             th:text="${#temporals.format(msg.sentAt, 'yyyy/MM/dd HH:mm')}">
@@ -54,10 +53,28 @@
                         </td>
                         <td th:text="${msg.sender.name}"></td>
                         <td class="small" th:text="${msg.course.name}"></td>
-                        <td th:text="${msg.content}"></td>
+                        <td>
+                            <!-- 改行を保持して表示 -->
+                            <span class="msg-content"
+                                  th:text="${msg.content}"></span>
+                        </td>
+                        <td class="text-center">
+                            <!--
+                                管理者のみ削除ボタンを表示
+                                confirmで確認ダイアログを表示してから削除
+                            -->
+                            <form th:action="@{/admin/chat/delete/{id}(id=${msg.id})}"
+                                  method="post"
+                                  onsubmit="return confirm('このメッセージを削除しますか？')">
+                                <button type="submit"
+                                        class="btn btn-sm btn-outline-danger">
+                                    🗑️
+                                </button>
+                            </form>
+                        </td>
                     </tr>
                     <tr th:if="${messages.empty}">
-                        <td colspan="5" class="text-center text-muted py-4">
+                        <td colspan="6" class="text-center text-muted py-4">
                             チャットメッセージはありません
                         </td>
                     </tr>
@@ -65,7 +82,8 @@
             </table>
         </div>
         <div class="card-footer text-muted small">
-            合計 <strong th:text="${messages.size()}"></strong> 件のメッセージ
+            合計 <strong th:text="${messages.size()}"></strong> 件 ／
+            管理者のみメッセージを削除できます
         </div>
     </div>
 </div>

@@ -6,11 +6,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { background-color: #f0f2f5; }
-
-        .chat-container {
-            max-width: 800px;
-            margin: 20px auto;
-        }
+        .chat-container { max-width: 800px; margin: 20px auto; }
 
         .chat-box {
             height: 500px;
@@ -21,45 +17,39 @@
             border: 1px solid #dee2e6;
         }
 
-        /* 自分のメッセージ（右側） */
+        /* 自分のメッセージ（右・青） */
         .message-mine {
             display: flex;
             justify-content: flex-end;
             margin-bottom: 14px;
         }
-
         .message-mine .bubble {
             background: #0d6efd;
             color: white;
-            /* 【修正】min-widthとword-breakを追加 */
             border-radius: 18px 18px 4px 18px;
             padding: 10px 16px;
             max-width: 65%;
-            min-width: 60px;          /* 最小幅を確保 */
-            word-break: break-word;   /* 長い単語を折り返す */
+            /* 【修正】pre-wrapをnormalに変更→改行コードで折り返さない */
+            word-break: break-word;
             word-wrap: break-word;
-            white-space: pre-wrap;    /* 改行を保持 */
-            display: inline-block;    /* インラインブロックで幅を確保 */
+            white-space: normal;
         }
 
-        /* 相手のメッセージ（左側） */
+        /* 相手のメッセージ（左・グレー） */
         .message-other {
             display: flex;
             justify-content: flex-start;
             margin-bottom: 14px;
         }
-
         .message-other .bubble {
             background: #e9ecef;
             color: #212529;
             border-radius: 18px 18px 18px 4px;
             padding: 10px 16px;
             max-width: 65%;
-            min-width: 60px;          /* 最小幅を確保 */
-            word-break: break-word;   /* 長い単語を折り返す */
+            word-break: break-word;
             word-wrap: break-word;
-            white-space: pre-wrap;    /* 改行を保持 */
-            display: inline-block;    /* インラインブロックで幅を確保 */
+            white-space: normal;
         }
 
         .msg-meta {
@@ -68,11 +58,16 @@
             margin-bottom: 4px;
         }
 
-        /* 送信フォームのスタイル */
-        .chat-input-area {
-            padding: 12px;
-            background: #f8f9fa;
-            border-top: 1px solid #dee2e6;
+        /* 【追加】テキストエリアのスタイル */
+        .chat-textarea {
+            resize: none;
+            border-radius: 20px;
+            padding: 10px 16px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        .chat-textarea:focus {
+            box-shadow: 0 0 0 0.2rem rgba(13,110,253,.25);
         }
     </style>
 </head>
@@ -91,25 +86,30 @@
     <div class="card shadow-sm">
         <div class="card-header bg-primary text-white fw-bold d-flex justify-content-between">
             <span>💬 <span th:text="${course.name}"></span> のチャット</span>
-            <small class="opacity-75">メッセージは500文字以内</small>
+            <small class="opacity-75">Shift+Enterで改行 / Enterで送信</small>
         </div>
 
         <!-- メッセージ一覧 -->
         <div class="chat-box" id="chatBox">
             <div th:each="msg : ${messages}">
 
-                <!-- 自分のメッセージ（右側・青） -->
+                <!-- 自分のメッセージ（右側） -->
                 <div th:if="${msg.sender.id == loginUser.id}"
                      class="message-mine">
                     <div>
                         <div class="msg-meta text-end">
                             <span th:text="${#temporals.format(msg.sentAt, 'MM/dd HH:mm')}"></span>
                         </div>
-                        <div class="bubble" th:text="${msg.content}"></div>
+                        <!-- 【修正】th:utext でHTMLの改行タグを有効化 -->
+                        <div class="bubble"
+                             th:utext="${#strings.replace(
+                                 #strings.escapeXml(msg.content),
+                                 '&#xA;','&lt;br&gt;')}">
+                        </div>
                     </div>
                 </div>
 
-                <!-- 相手のメッセージ（左側・グレー） -->
+                <!-- 相手のメッセージ（左側） -->
                 <div th:unless="${msg.sender.id == loginUser.id}"
                      class="message-other">
                     <div>
@@ -124,7 +124,11 @@
                             <span class="ms-2"
                                   th:text="${#temporals.format(msg.sentAt, 'MM/dd HH:mm')}"></span>
                         </div>
-                        <div class="bubble" th:text="${msg.content}"></div>
+                        <div class="bubble"
+                             th:utext="${#strings.replace(
+                                 #strings.escapeXml(msg.content),
+                                 '&#xA;','&lt;br&gt;')}">
+                        </div>
                     </div>
                 </div>
 
@@ -138,22 +142,25 @@
             </div>
         </div>
 
-        <!-- 送信フォーム -->
-        <div class="chat-input-area">
-            <form th:action="@{/chat/send}" method="post"
-                  class="d-flex gap-2">
+        <!-- 【修正】送信フォーム：inputからtextareaに変更 -->
+        <div class="p-3 bg-light border-top">
+            <form th:action="@{/chat/send}" method="post" id="chatForm">
                 <input type="hidden" name="courseId" th:value="${courseId}">
-                <input type="text"
-                       name="content"
-                       class="form-control"
-                       placeholder="メッセージを入力... （最大500文字）"
-                       maxlength="500"
-                       required
-                       autocomplete="off">
-                <button type="submit"
-                        class="btn btn-primary px-4 text-nowrap">
-                    送信
-                </button>
+                <div class="d-flex gap-2 align-items-end">
+                    <!-- 【修正】textarea使用でShift+Enterで改行可能 -->
+                    <textarea name="content"
+                              id="messageInput"
+                              class="form-control chat-textarea"
+                              placeholder="メッセージを入力... （Shift+Enterで改行）"
+                              maxlength="500"
+                              rows="2"
+                              required></textarea>
+                    <button type="submit"
+                            class="btn btn-primary px-4"
+                            style="height:42px">
+                        送信
+                    </button>
+                </div>
             </form>
         </div>
     </div>
@@ -165,6 +172,17 @@
         const chatBox = document.getElementById('chatBox');
         chatBox.scrollTop = chatBox.scrollHeight;
     };
+
+    // Enterで送信、Shift+Enterで改行
+    document.getElementById('messageInput').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault(); // デフォルトの改行を防ぐ
+            const content = this.value.trim();
+            if (content) {
+                document.getElementById('chatForm').submit();
+            }
+        }
+    });
 </script>
 </body>
 </html>
