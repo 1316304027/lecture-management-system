@@ -7,7 +7,7 @@ spring:
   datasource:
     url: jdbc:postgresql://lecture-db.cp04q6mmszba.ap-northeast-1.rds.amazonaws.com:5432/lecturedb
     username: postgres
-    password: postgres
+    password: LecturePass123!
 
   jpa:
     hibernate:
