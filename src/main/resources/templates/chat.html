@@ -101,7 +101,7 @@
                 <div th:if="${msg.sender.id == loginUser.id}" class="msg-row mine">
                     <div>
                         <div class="msg-meta text-end"
-                             th:text="${#temporals.format(msg.sentAt, 'MM/dd HH:mm')}"></div>
+                             th:text="${#temporals.format(msg.sentAt.atZoneSameInstant(T(java.time.ZoneId).of('Asia/Tokyo')).toLocalDateTime(), 'MM/dd HH:mm')}"></div>
                         <div class="bubble mine" th:text="${msg.content}"></div>
                     </div>
                 </div>
@@ -118,7 +118,7 @@
                                   class="badge bg-danger me-1">管理者</span>
                             <strong th:text="${msg.sender.name}"></strong>
                             <span class="ms-1"
-                                  th:text="${#temporals.format(msg.sentAt, 'MM/dd HH:mm')}"></span>
+                                  th:text="${#temporals.format(msg.sentAt.atZoneSameInstant(T(java.time.ZoneId).of('Asia/Tokyo')).toLocalDateTime(), 'MM/dd HH:mm')}"></span>
                         </div>
                         <div class="bubble other" th:text="${msg.content}"></div>
                     </div>
