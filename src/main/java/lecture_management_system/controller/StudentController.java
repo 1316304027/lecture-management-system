@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lecture_management_system.dto.PresignUploadResponse;
+import lecture_management_system.dto.UploadPrepareResult;
 
 /**
  * 学生機能Controller / Student Feature Controller
@@ -171,6 +173,24 @@ public class StudentController {
         model.addAttribute("mySubmissions",
                 submissionService.getByStudent(loginUser.getId()));
         return "student-assignments";
+    }
+
+    /** 項番43: PUT Presigned URL 発行 */
+    @GetMapping("/student/assignments/{assignmentId}/presign-upload")
+    @ResponseBody
+    public ResponseEntity<?> presignUpload(
+            @PathVariable Long assignmentId,
+            @RequestParam Long courseId,
+            @RequestParam String originalFileName,
+            HttpSession session) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
+        Assignment assignment = assignmentService.findById(assignmentId);
+        if (assignment == null) return ResponseEntity.badRequest().body(Map.of("error", "not_found"));
+        UploadPrepareResult r = submissionService.prepareDirectUpload(loginUser, assignment, originalFileName);
+        if (!r.isOk()) return ResponseEntity.badRequest().body(Map.of("error", r.errorCode()));
+        PresignUploadResponse p = r.response();
+        return ResponseEntity.ok(Map.of("uploadUrl", p.uploadUrl(), "s3Key", p.s3Key()));
     }
 
     @PostMapping("/student/assignments/submit")

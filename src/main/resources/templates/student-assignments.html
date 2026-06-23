@@ -117,29 +117,16 @@
                 </td>
 
                 <!-- 提出フォーム / Submission form -->
-                <td>
-                    <!--
-                        未提出かつ期限内の場合のみフォームを表示。
-                        enctype="multipart/form-data" は必須（ないとファイルが届かない）。
-                        ファイルサイズ上限は application.yaml の
-                        spring.servlet.multipart.max-file-size=10MB で設定済み。
-                        Show form only when not submitted and within deadline.
-                        enctype="multipart/form-data" is required.
-                        Max file size set in application.yaml (10MB).
-                    -->
-                    <form th:unless="${submitted or expired}"
-                          th:action="@{/student/assignments/submit}"
-                          method="post" enctype="multipart/form-data"
-                          class="d-flex gap-1 align-items-center">
-                        <input type="hidden" name="assignmentId" th:value="${a.id}">
-                        <input type="hidden" name="courseId" th:value="${course.id}">
-                        <input type="file" name="file" class="form-control form-control-sm"
-                               accept=".pdf" required style="max-width:180px;">
-                        <button type="submit" class="btn btn-sm btn-primary text-nowrap">
-                            📤 提出
+                                <td>
+                    <div th:unless="${submitted or expired}"
+                         class="d-flex gap-1 align-items-center direct-upload-row"
+                         th:attr="data-assignment-id=${a.id},data-course-id=${course.id}">
+                        <input type="file" class="form-control form-control-sm upload-file"
+                               accept=".pdf" style="max-width:180px;">
+                        <button type="button" class="btn btn-sm btn-primary text-nowrap btn-direct-upload">
+                            📤 直传提出
                         </button>
-                    </form>
-
+                    </div>
                     <span th:if="${submitted}" class="text-muted small">提出完了</span>
                     <span th:if="${expired and !submitted}" class="text-muted small">期限切れ</span>
                 </td>
@@ -155,7 +142,40 @@
     <div class="text-muted small mt-1">
         ※ アップロード可能なファイル形式：PDF（最大10MB）
     </div>
+
+    <div id="upload-msg" class="alert alert-info mt-2 d-none"></div>
 </div>
+<script>
+document.querySelectorAll('.btn-direct-upload').forEach(function(btn) {
+    btn.addEventListener('click', async function() {
+        var row = btn.closest('.direct-upload-row');
+        var fileInput = row.querySelector('.upload-file');
+        var file = fileInput.files[0];
+        var msg = document.getElementById('upload-msg');
+        msg.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
+        if (!file) { msg.classList.add('alert-danger'); msg.textContent = 'PDFを選択してください'; return; }
+        if (!file.name.toLowerCase().endsWith('.pdf')) { msg.classList.add('alert-danger'); msg.textContent = 'PDFのみ'; return; }
+        if (file.size > 10 * 1024 * 1024) { msg.classList.add('alert-danger'); msg.textContent = '10MB以内'; return; }
+        var aid = row.dataset.assignmentId;
+        var cid = row.dataset.courseId;
+        btn.disabled = true;
+        try {
+            var presignRes = await fetch('/student/assignments/' + aid + '/presign-upload?courseId=' + cid + '&originalFileName=' + encodeURIComponent(file.name));
+            var presign = await presignRes.json();
+            if (!presignRes.ok) throw new Error(presign.error || 'presign failed');
+            var putRes = await fetch(presign.uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': 'application/pdf' } });
+            if (!putRes.ok) throw new Error('S3 PUT failed: ' + putRes.status);
+            msg.classList.add('alert-success');
+            msg.textContent = 'S3アップロード完了。LambdaがDB登録します（30秒後に更新してください）';
+            setTimeout(function() { location.reload(); }, 30000);
+        } catch (e) {
+            msg.classList.add('alert-danger');
+            msg.textContent = 'エラー: ' + e.message;
+            btn.disabled = false;
+        }
+    });
+});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

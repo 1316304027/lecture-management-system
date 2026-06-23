@@ -1,5 +1,7 @@
 package lecture_management_system.service;
 
+import lecture_management_system.dto.PresignUploadResponse;
+import lecture_management_system.dto.UploadPrepareResult;
 import lecture_management_system.entity.*;
 import lecture_management_system.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +23,9 @@ public class SubmissionService {
 
     @Autowired
     private AssignmentRepository assignmentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private S3Service s3Service;
@@ -60,6 +65,42 @@ public class SubmissionService {
         submission.setAssignment(assignment);
         submission.setStoredFileName(s3Key);
         submission.setOriginalFileName(originalName);
+        submission.setSubmittedAt(LocalDateTime.now());
+        submissionRepository.save(submission);
+        return "success";
+    }
+
+    /** 項番42-43: 直传用 PUT Presigned URL を発行 */
+    public UploadPrepareResult prepareDirectUpload(User student, Assignment assignment, String originalFileName) {
+        if (LocalDateTime.now().isAfter(assignment.getDeadline())) return UploadPrepareResult.err("deadline");
+        if (submissionRepository.findByStudent_IdAndAssignment_Id(
+                student.getId(), assignment.getId()).isPresent()) return UploadPrepareResult.err("already");
+        if (originalFileName == null || originalFileName.isBlank()) return UploadPrepareResult.err("empty");
+        if (!originalFileName.toLowerCase().endsWith(".pdf")) return UploadPrepareResult.err("pdf_only");
+        String safe = originalFileName.replaceAll("[\\\\/]", "_");
+        String s3Key = S3_PREFIX + student.getId() + "/" + assignment.getId() + "/"
+                + System.currentTimeMillis() + "_" + safe;
+        String uploadUrl = s3Service.generatePresignedUploadUrl(s3Key);
+        return UploadPrepareResult.ok(new PresignUploadResponse(uploadUrl, s3Key));
+    }
+
+    /** 項番44: Lambda 回调后 DB 登记 */
+    public String registerFromS3(Long studentId, Long assignmentId, String s3Key, String originalFileName) {
+        if (studentId == null || assignmentId == null || s3Key == null || !s3Key.startsWith(S3_PREFIX))
+            return "invalid";
+        String expectedPrefix = S3_PREFIX + studentId + "/" + assignmentId + "/";
+        if (!s3Key.startsWith(expectedPrefix)) return "invalid";
+        if (submissionRepository.findByStudent_IdAndAssignment_Id(studentId, assignmentId).isPresent())
+            return "already";
+        Assignment assignment = assignmentRepository.findById(assignmentId).orElse(null);
+        if (assignment == null) return "not_found";
+        User student = userRepository.findById(studentId).orElse(null);
+        if (student == null) return "not_found";
+        Submission submission = new Submission();
+        submission.setStudent(student);
+        submission.setAssignment(assignment);
+        submission.setStoredFileName(s3Key);
+        submission.setOriginalFileName(originalFileName != null ? originalFileName : "submission.pdf");
         submission.setSubmittedAt(LocalDateTime.now());
         submissionRepository.save(submission);
         return "success";

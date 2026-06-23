@@ -9,6 +9,7 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
+import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignRequest;
 import java.io.IOException;
 import java.time.Duration;
 
@@ -63,6 +64,21 @@ public class S3Service {
                 .build();
 
         String url = presigner.presignGetObject(presignRequest).url().toString();
+        presigner.close();
+        return url;
+    }
+
+    /** 項番43: PUT Presigned URL（ブラウザ→S3直传） */
+    public String generatePresignedUploadUrl(String s3Key) {
+        S3Presigner presigner = S3Presigner.builder()
+                .region(Region.of(region))
+                .build();
+        PutObjectPresignRequest req = PutObjectPresignRequest.builder()
+                .signatureDuration(Duration.ofMinutes(10))
+                .putObjectRequest(PutObjectRequest.builder()
+                        .bucket(bucketName).key(s3Key).contentType("application/pdf").build())
+                .build();
+        String url = presigner.presignPutObject(req).url().toString();
         presigner.close();
         return url;
     }
