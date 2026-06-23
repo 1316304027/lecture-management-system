@@ -124,7 +124,7 @@
                         <input type="file" class="form-control form-control-sm upload-file"
                                accept=".pdf" style="max-width:180px;">
                         <button type="button" class="btn btn-sm btn-primary text-nowrap btn-direct-upload">
-                            📤 直传提出
+                            📤 提出
                         </button>
                     </div>
                     <span th:if="${submitted}" class="text-muted small">提出完了</span>
@@ -166,7 +166,7 @@ document.querySelectorAll('.btn-direct-upload').forEach(function(btn) {
             var putRes = await fetch(presign.uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': 'application/pdf' } });
             if (!putRes.ok) throw new Error('S3 PUT failed: ' + putRes.status);
             msg.classList.add('alert-success');
-            msg.textContent = 'S3アップロード完了。LambdaがDB登録します（30秒後に更新してください）';
+            msg.textContent = '提出が完了しました ✅ 画面を更新しています…';
             setTimeout(function() { location.reload(); }, 30000);
         } catch (e) {
             msg.classList.add('alert-danger');
