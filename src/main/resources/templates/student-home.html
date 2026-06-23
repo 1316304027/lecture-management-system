@@ -10,9 +10,14 @@
 <body class="pcfa-body">
 
 <nav class="navbar navbar-dark pcfa-navbar">
-    <span class="navbar-brand mb-0">🏫 PCFA受講管理システム</span>
+    <span class="navbar-brand mb-0">PCFA受講管理システム</span>
     <div class="d-flex align-items-center gap-2">
-        <span class="text-white small" th:text="${loginUser.name} + ' さん'"></span>
+        <a th:href="@{/student/profile}" class="d-flex align-items-center gap-2 text-white text-decoration-none">
+            <img th:if="${avatarUrl}" th:src="${avatarUrl}" alt="" class="pcfa-avatar-sm">
+            <span th:unless="${avatarUrl}" class="pcfa-avatar-placeholder-sm"
+                  th:text="${#strings.substring(loginUser.name,0,1)}"></span>
+            <span class="small" th:text="${loginUser.name} + ' さん'"></span>
+        </a>
         <form th:if="${isProxy}" action="/admin/restore-session" method="post" class="d-inline">
             <button type="submit" class="btn btn-warning btn-sm">管理者へ戻る</button>
         </form>
@@ -20,62 +25,54 @@
     </div>
 </nav>
 
-<div class="container py-4">
+<div class="container py-4" style="max-width: 960px;">
 
     <div class="pcfa-page-header">
-        <h1>受講者ダッシュボード</h1>
-        <p th:text="'ようこそ、' + ${loginUser.name} + ' さん。受講中のコースから機能を選んでください。'"></p>
+        <h1>受講者ホーム</h1>
+        <p th:text="'ようこそ、' + ${loginUser.name} + ' さん。'"></p>
     </div>
 
-    <div class="row g-3 mb-4" th:unless="${courseList.empty}">
-        <div class="col-md-4">
-            <div class="pcfa-stat-card">
-                <div class="stat-value" th:text="${courseList.size()}">0</div>
-                <div class="stat-label">受講コース数</div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="pcfa-stat-card" style="border-left-color: #0d6efd;">
-                <div class="stat-value" style="color:#0d6efd;">📋</div>
-                <div class="stat-label">出席登録</div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="pcfa-stat-card" style="border-left-color: #fd7e14;">
-                <div class="stat-value" style="color:#fd7e14;">📝</div>
-                <div class="stat-label">課題提出</div>
-            </div>
-        </div>
+    <!-- 受講コース数のみ表示（飾りのボタンは置かない） -->
+    <div class="pcfa-info-bar mb-4" th:unless="${courseList.empty}">
+        <span class="pcfa-info-bar-label">受講コース数</span>
+        <span class="pcfa-info-bar-value" th:text="${courseList.size()} + ' 件'">0 件</span>
+        <a th:href="@{/student/profile}" class="btn btn-sm btn-outline-success ms-auto">プロフィール編集</a>
     </div>
-
-    <h5 class="fw-bold mb-3" th:unless="${courseList.empty}">📚 受講コース一覧</h5>
 
     <div th:if="${courseList.empty}" class="pcfa-empty-state">
-        <div class="fs-1 mb-3">📭</div>
         <p class="text-muted mb-0">受講中のコースがありません。管理者にお問い合わせください。</p>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-6 col-lg-4" th:each="course : ${courseList}">
-            <div class="card pcfa-course-card">
+    <h2 class="h5 fw-bold mb-3" th:unless="${courseList.empty}">受講コース一覧</h2>
+
+    <div class="row g-4" th:unless="${courseList.empty}">
+        <div class="col-12 col-md-6" th:each="course : ${courseList}">
+            <div class="card pcfa-course-card h-100">
                 <div class="card-header">
                     <h5 class="mb-0" th:text="${course.name}">コース名</h5>
                 </div>
                 <div class="card-body">
                     <p class="text-muted small mb-0" th:text="${course.description} ?: '（説明なし）'"></p>
                 </div>
-                <div class="card-footer d-grid gap-2">
-                    <div class="d-flex gap-2">
-                        <a th:href="@{/student/attendance(courseId=${course.id})}"
-                           class="btn btn-sm btn-outline-primary pcfa-action-btn flex-fill">📋 出席</a>
-                        <a th:href="@{/student/materials(courseId=${course.id})}"
-                           class="btn btn-sm btn-outline-secondary pcfa-action-btn flex-fill">📄 教材</a>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <a th:href="@{/student/assignments(courseId=${course.id})}"
-                           class="btn btn-sm btn-outline-warning pcfa-action-btn flex-fill">📝 課題</a>
-                        <a th:href="@{/chat(courseId=${course.id})}"
-                           class="btn btn-sm btn-outline-info pcfa-action-btn flex-fill">💬 チャット</a>
+                <div class="card-footer bg-white border-0 pt-0 pb-3 px-3">
+                    <!-- 2×2 均等グリッド：幅・高さそろえ -->
+                    <div class="row g-2 pcfa-action-grid">
+                        <div class="col-6">
+                            <a th:href="@{/student/attendance(courseId=${course.id})}"
+                               class="btn btn-outline-primary pcfa-course-action w-100">出席登録</a>
+                        </div>
+                        <div class="col-6">
+                            <a th:href="@{/student/materials(courseId=${course.id})}"
+                               class="btn btn-outline-secondary pcfa-course-action w-100">教材一覧</a>
+                        </div>
+                        <div class="col-6">
+                            <a th:href="@{/student/assignments(courseId=${course.id})}"
+                               class="btn btn-outline-warning pcfa-course-action w-100">課題提出</a>
+                        </div>
+                        <div class="col-6">
+                            <a th:href="@{/chat(courseId=${course.id})}"
+                               class="btn btn-outline-info pcfa-course-action w-100">チャット</a>
+                        </div>
                     </div>
                 </div>
             </div>

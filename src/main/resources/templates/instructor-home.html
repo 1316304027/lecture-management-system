@@ -1,47 +1,72 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>講師ホーム</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
-<body>
-<nav class="navbar navbar-dark bg-primary px-3">
-    <span class="navbar-brand">PCFA受講管理システム</span>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>講師ホーム | PCFA受講管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+</head>
+<body class="pcfa-body">
+<nav class="navbar navbar-dark pcfa-navbar">
+    <span class="navbar-brand mb-0">PCFA受講管理システム</span>
     <div class="d-flex align-items-center gap-2">
-        <span class="text-white" th:text="${loginUser.name} + ' 先生'"></span>
+        <span class="text-white small" th:text="${loginUser.name} + ' 先生'"></span>
         <form th:if="${isProxy}" action="/admin/restore-session" method="post" class="d-inline">
             <button type="submit" class="btn btn-warning btn-sm">管理者へ戻る</button>
         </form>
         <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
     </div>
 </nav>
-<div class="container mt-4">
-    <h2>担当コース一覧</h2>
-    <div th:if="${courseList.empty}" class="alert alert-info">
-        担当コースがありません。管理者にお問い合わせください。
+
+<div class="container py-4" style="max-width: 960px;">
+    <div class="pcfa-page-header">
+        <h1>講師ホーム</h1>
+        <p th:text="'ようこそ、' + ${loginUser.name} + ' 先生。'"></p>
     </div>
-    <div class="row">
-        <div class="col-md-6 mb-4" th:each="course : ${courseList}">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0" th:text="${course.name}"></h5>
+
+    <div th:if="${courseList.empty}" class="pcfa-empty-state">
+        <p class="text-muted mb-0">担当コースがありません。管理者にお問い合わせください。</p>
+    </div>
+
+    <h2 class="h5 fw-bold mb-3" th:unless="${courseList.empty}">担当コース一覧</h2>
+
+    <div class="row g-4" th:unless="${courseList.empty}">
+        <div class="col-12 col-md-6" th:each="course : ${courseList}">
+            <div class="card pcfa-course-card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0" th:text="${course.name}">コース名</h5>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted" th:text="${course.description}"></p>
+                    <p class="text-muted small mb-0" th:text="${course.description} ?: '（説明なし）'"></p>
                 </div>
-                <div class="card-footer d-flex gap-2 flex-wrap">
-                    <a th:href="@{/instructor/materials(courseId=${course.id})}"
-                       class="btn btn-sm btn-outline-primary">📄 教材管理</a>
-                    <a th:href="@{/instructor/assignments(courseId=${course.id})}"
-                       class="btn btn-sm btn-outline-warning">📝 課題管理</a>
-                    <a th:href="@{/instructor/submissions(courseId=${course.id})}"
-                       class="btn btn-sm btn-outline-success">📥 提出確認</a>
-                    <a th:href="@{/instructor/attendance(courseId=${course.id})}"
-                       class="btn btn-sm btn-outline-secondary">📋 出欠確認</a>
-                    <!-- チャットボタン：courseIdをパラメータで渡す -->
-                    <a th:href="@{/chat(courseId=${course.id})}"
-                       class="btn btn-sm btn-outline-info">💬 チャット</a>
+                <div class="card-footer bg-white border-0 pt-0 pb-3 px-3">
+                    <div class="row g-2 pcfa-action-grid">
+                        <div class="col-6">
+                            <a th:href="@{/instructor/materials(courseId=${course.id})}"
+                               class="btn btn-outline-primary pcfa-course-action w-100">教材管理</a>
+                        </div>
+                        <div class="col-6">
+                            <a th:href="@{/instructor/assignments(courseId=${course.id})}"
+                               class="btn btn-outline-warning pcfa-course-action w-100">課題管理</a>
+                        </div>
+                        <div class="col-6">
+                            <a th:href="@{/instructor/submissions(courseId=${course.id})}"
+                               class="btn btn-outline-success pcfa-course-action w-100">提出確認</a>
+                        </div>
+                        <div class="col-6">
+                            <a th:href="@{/instructor/attendance(courseId=${course.id})}"
+                               class="btn btn-outline-secondary pcfa-course-action w-100">出欠確認</a>
+                        </div>
+                        <div class="col-12">
+                            <a th:href="@{/chat(courseId=${course.id})}"
+                               class="btn btn-outline-info pcfa-course-action w-100">チャット</a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-</body></html>
+</body>
+</html>

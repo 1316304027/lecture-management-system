@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="card(user, avatarUrl)" class="card pcfa-course-card">
+    <div class="card-body text-center p-4">
+        <img th:if="${avatarUrl}" th:src="${avatarUrl}" alt="avatar" class="pcfa-avatar-lg mb-3">
+        <div th:unless="${avatarUrl}" class="pcfa-avatar-placeholder-lg mx-auto mb-3">
+            <span th:text="${#strings.substring(user.name,0,1)}">?</span>
+        </div>
+        <h4 class="fw-bold mb-1" th:text="${user.name}"></h4>
+        <p class="text-muted small mb-1" th:text="${user.email}"></p>
+        <span class="badge bg-success mb-3" th:if="${user.role == 'STUDENT'}">受講者</span>
+        <span class="badge bg-primary mb-3" th:if="${user.role == 'INSTRUCTOR'}">講師</span>
+        <span class="badge bg-danger mb-3" th:if="${user.role == 'ADMIN'}">管理者</span>
+        <hr>
+        <div class="text-start">
+            <p class="mb-2"><strong>電話：</strong>
+                <span th:text="${user.phone} ?: '未登録'"></span></p>
+            <p class="mb-0"><strong>自己紹介：</strong></p>
+            <p class="text-muted mb-0" th:text="${user.profileBio} ?: '（未登録）'"></p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

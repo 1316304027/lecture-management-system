@@ -70,13 +70,18 @@ public class S3Service {
 
     /** 項番43: PUT Presigned URL（ブラウザ→S3直传） */
     public String generatePresignedUploadUrl(String s3Key) {
+        return generatePresignedImageUploadUrl(s3Key, "application/pdf");
+    }
+
+    /** 画像アバター用 PUT Presigned URL */
+    public String generatePresignedImageUploadUrl(String s3Key, String contentType) {
         S3Presigner presigner = S3Presigner.builder()
                 .region(Region.of(region))
                 .build();
         PutObjectPresignRequest req = PutObjectPresignRequest.builder()
                 .signatureDuration(Duration.ofMinutes(10))
                 .putObjectRequest(PutObjectRequest.builder()
-                        .bucket(bucketName).key(s3Key).contentType("application/pdf").build())
+                        .bucket(bucketName).key(s3Key).contentType(contentType).build())
                 .build();
         String url = presigner.presignPutObject(req).url().toString();
         presigner.close();

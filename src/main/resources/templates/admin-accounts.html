@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head><meta charset="UTF-8"><title>ユーザー管理</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
-<body>
-<nav class="navbar navbar-dark bg-dark px-3">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" th:href="@{/pcfa-theme.css}"></head>
+<body class="pcfa-body">
+<nav class="navbar navbar-dark pcfa-navbar px-3">
     <a class="navbar-brand" href="/admin/home">← 管理者ホーム</a>
     <span class="text-white">ユーザー管理</span>
     <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
@@ -36,11 +37,16 @@
     <!-- ユーザー一覧 -->
     <table class="table table-bordered table-hover">
         <thead class="table-dark">
-            <tr><th>ID</th><th>氏名</th><th>メール</th><th>ロール</th><th>状態</th><th>操作</th></tr>
+            <tr><th>ID</th><th></th><th>氏名</th><th>メール</th><th>ロール</th><th>状態</th><th>操作</th></tr>
         </thead>
         <tbody>
             <tr th:each="user : ${userList}">
                 <td th:text="${user.id}"></td>
+                <td class="text-center">
+                    <img th:if="${avatarUrlMap[user.id]}" th:src="${avatarUrlMap[user.id]}" class="pcfa-avatar-sm" alt="">
+                    <span th:unless="${avatarUrlMap[user.id]}" class="pcfa-avatar-placeholder-sm"
+                          th:text="${#strings.substring(user.name,0,1)}"></span>
+                </td>
                 <td th:text="${user.name}"></td>
                 <td th:text="${user.email}"></td>
                 <td>
@@ -56,6 +62,9 @@
                 </td>
                 <td>
                     <!-- 更新フォーム（モーダル代わりにインラインで表示） -->
+                    <a th:if="${user.role == 'STUDENT'}"
+                       th:href="@{/admin/accounts/{id}/profile(id=${user.id})}"
+                       class="btn btn-sm btn-outline-primary">プロフィール</a>
                     <button class="btn btn-sm btn-outline-secondary"
                             onclick="toggleEdit(this)"
                             th:data-id="${user.id}">編集</button>

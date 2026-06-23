@@ -1,60 +1,85 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>出欠確認</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
-<body>
-<nav class="navbar navbar-dark bg-primary px-3">
+<head>
+    <meta charset="UTF-8">
+    <title>出欠確認</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+</head>
+<body class="pcfa-body">
+<nav class="navbar navbar-dark pcfa-navbar px-3">
     <a class="navbar-brand" href="/instructor/home">← ホームへ戻る</a>
-    <span class="text-white" th:text="'出欠確認- ' + ${course.name}"></span>
+    <span class="text-white small" th:text="'出欠確認 - ' + ${course.name}"></span>
     <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
 </nav>
-<div class="container mt-4">
-    <h4>受講者出席率一覧（授業数：<span th:text="${totalLessons}"></span>回）</h4>
-    <table class="table table-bordered table-hover">
+<div class="container py-4">
+    <h4 class="fw-bold mb-3">受講者一覧（授業数：<span th:text="${totalLessons}"></span>回）</h4>
+    <div class="table-responsive">
+    <table class="table table-bordered table-hover bg-white align-middle">
         <thead class="table-dark">
-            <tr><th>受講者名</th><th>出席回数</th><th>出席率</th><th>詳細</th></tr>
+            <tr><th style="width:56px"></th><th>受講者名</th><th>出席回数</th><th>出席率</th><th>操作</th></tr>
         </thead>
         <tbody>
             <tr th:each="u : ${studentList}">
-                <td th:text="${u.name}"></td>
+                <td class="text-center">
+                    <img th:if="${avatarUrlMap[u.id]}" th:src="${avatarUrlMap[u.id]}" class="pcfa-avatar-sm" alt="">
+                    <span th:unless="${avatarUrlMap[u.id]}" class="pcfa-avatar-placeholder-sm"
+                          th:text="${#strings.substring(u.name,0,1)}"></span>
+                </td>
+                <td class="fw-semibold" th:text="${u.name}"></td>
                 <td th:text="${countMap[u.id]}"></td>
                 <td>
                     <div class="d-flex align-items-center gap-2">
                         <div class="progress flex-grow-1" style="height:12px">
                             <div class="progress-bar"
                                  th:classappend="${rateMap[u.id] < 70} ? 'bg-danger' : 'bg-success'"
-                                 role="progressbar"
                                  th:style="'width:' + ${rateMap[u.id]} + '%'"></div>
                         </div>
-                        <span th:text="${rateMap[u.id]} + '%'"></span>
+                        <span class="small" th:text="${rateMap[u.id]} + '%'"></span>
                     </div>
                 </td>
-                <td>
+                <td class="text-nowrap">
                     <a th:href="@{/instructor/attendance(courseId=${course.id}, studentId=${u.id})}"
-                       class="btn btn-sm btn-outline-secondary">詳細表示</a>
+                       class="btn btn-sm btn-outline-secondary">出欠</a>
+                    <a th:href="@{/instructor/students/{studentId}/profile(studentId=${u.id}, courseId=${course.id})}"
+                       class="btn btn-sm btn-outline-primary">プロフィール</a>
                 </td>
             </tr>
             <tr th:if="${studentList.empty}">
-                <td colspan="4" class="text-muted text-center">受講者未登録</td>
+                <td colspan="5" class="text-muted text-center">受講者未登録</td>
             </tr>
         </tbody>
     </table>
+    </div>
 
-    <!-- 選択した学生の出席詳細 -->
-    <div th:if="${selectedStudent != null}" class="mt-4">
-        <h5><span th:text="${selectedStudent.name}"></span> さんの出席履歴</h5>
-        <table class="table table-sm table-bordered">
-            <thead class="table-light"><tr><th>日付</th><th>登録時刻</th></tr></thead>
-            <tbody>
-                <tr th:each="a : ${detailHistory}">
-                    <td th:text="${a.date}"></td>
-                    <td th:text="${#temporals.format(a.attendedAt, 'HH:mm')}"></td>
-                </tr>
-                <tr th:if="${detailHistory.empty}">
-                    <td colspan="2" class="text-muted text-center">出席記録なし</td>
-                </tr>
-            </tbody>
-        </table>
+    <div th:if="${selectedStudent != null}" class="card pcfa-course-card mt-4">
+        <div class="card-header">プロフィール・出席履歴</div>
+        <div class="card-body">
+            <div class="d-flex gap-3 mb-3 align-items-center">
+                <img th:if="${selectedAvatarUrl}" th:src="${selectedAvatarUrl}" class="pcfa-avatar-lg" alt="">
+                <div th:unless="${selectedAvatarUrl}" class="pcfa-avatar-placeholder-lg">
+                    <span th:text="${#strings.substring(selectedStudent.name,0,1)}"></span>
+                </div>
+                <div>
+                    <h5 class="mb-1" th:text="${selectedStudent.name}"></h5>
+                    <p class="text-muted small mb-1" th:text="${selectedStudent.email}"></p>
+                    <p class="small mb-0" th:text="${selectedStudent.profileBio} ?: '（自己紹介未登録）'"></p>
+                </div>
+            </div>
+            <table class="table table-sm table-bordered mb-0">
+                <thead class="table-light"><tr><th>日付</th><th>登録時刻</th></tr></thead>
+                <tbody>
+                    <tr th:each="a : ${detailHistory}">
+                        <td th:text="${a.date}"></td>
+                        <td th:text="${#temporals.format(a.attendedAt, 'HH:mm')}"></td>
+                    </tr>
+                    <tr th:if="${detailHistory.empty}">
+                        <td colspan="2" class="text-muted text-center">出席記録なし</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
-</body></html>
+</body>
+</html>

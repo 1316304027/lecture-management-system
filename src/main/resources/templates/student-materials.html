@@ -1,10 +1,12 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head><meta charset="UTF-8"><title>教材一覧</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"></head>
-<body>
-<nav class="navbar navbar-dark bg-success px-3">
-    <a class="navbar-brand" href="/student/home">← ホームへ戻る</a>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" th:href="@{/pcfa-theme.css}"></head>
+<body class="pcfa-body">
+<nav class="navbar navbar-dark pcfa-navbar px-3">
+    <a class="navbar-brand" href="/student/home">← ホーム</a>
+    <a th:href="@{/student/profile}" class="btn btn-outline-light btn-sm me-2">プロフィール</a>
     <span class="text-white" th:text="'教材一覧 - ' + ${course.name}"></span>
     <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
 </nav>

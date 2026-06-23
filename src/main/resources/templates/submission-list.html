@@ -1,118 +1,51 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>提出履歴</title>
-
-    <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet">
-
+    <title>提出履歴 | PCFA受講管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
 </head>
-<body class="bg-light">
+<body class="pcfa-body">
 
-<div class="container mt-5">
+<nav class="navbar navbar-dark pcfa-navbar">
+    <a class="navbar-brand" href="/student/home">← ホームへ戻る</a>
+    <span class="text-white small fw-bold">提出履歴</span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+</nav>
 
-    <div class="card p-5">
-
-        <h2 class="mb-4">
-            提出履歴
-        </h2>
-
-        <table class="table table-bordered">
-
-            <thead>
-
-            <tr>
-
-                <th>
-                    課題
-                </th>
-
-                <th>
-                    ファイル名
-                </th>
-
-                <th>
-                    提出日時
-                </th>
-
-                <th>
-                    点数
-                </th>
-
-                <th>
-                    評価
-                </th>
-
-            </tr>
-
-            </thead>
-
-            <tbody>
-
-            <tr
-                    th:each="submission : ${submissionList}">
-
-                <!-- 課題名 -->
-                <td
-                        th:text=
-                                "${submission.assignment.title}">
-                </td>
-
-                <!-- ファイル名 -->
-                <td>
-
-                    <a
-                            th:href=
-                                    "@{/submissions/download/{id}(id=${submission.id})}">
-
-                        <span
-                                th:text=
-                                        "${submission.originalFileName}">
-                        </span>
-
-                    </a>
-
-                </td>
-
-                <!-- 提出日時 -->
-                <td
-                        th:text=
-                                "${#temporals.format(
-                                submission.submittedAt,
-                                'yyyy/MM/dd HH:mm'
-                                )}">
-                </td>
-
-                <!-- 点数 -->
-                <td
-                        th:text="${submission.score}">
-                </td>
-
-                <!-- 評価 -->
-                <td
-                        th:text=
-                                "${submission.evaluationComment}">
-                </td>
-
-            </tr>
-
-            </tbody>
-
-        </table>
-
-        <a
-                href="/student/home"
-                class="btn btn-secondary">
-
-            戻る
-
-        </a>
-
+<div class="container py-4" style="max-width: 960px;">
+    <div class="card pcfa-course-card">
+        <div class="card-header">提出履歴</div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>課題</th>
+                    <th>ファイル名</th>
+                    <th>提出日時</th>
+                    <th>点数</th>
+                    <th>評価</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="submission : ${submissionList}">
+                    <td th:text="${submission.assignment.title}"></td>
+                    <td>
+                        <a th:href="@{/submissions/download/{id}(id=${submission.id})}"
+                           th:text="${submission.originalFileName}"></a>
+                    </td>
+                    <td th:text="${#temporals.format(submission.submittedAt, 'yyyy/MM/dd HH:mm')}"></td>
+                    <td th:text="${submission.score}"></td>
+                    <td th:text="${submission.evaluationComment}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-white">
+            <a href="/student/home" class="btn btn-outline-secondary btn-sm">ホームへ戻る</a>
+        </div>
     </div>
-
 </div>
-
 </body>
 </html>

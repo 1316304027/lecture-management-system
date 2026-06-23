@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>プロフィール | PCFA受講管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+</head>
+<body class="pcfa-body">
+
+<nav class="navbar navbar-dark pcfa-navbar">
+    <a class="navbar-brand" th:href="@{/student/home}">← ホームへ戻る</a>
+    <span class="text-white small fw-bold">プロフィール</span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+</nav>
+
+<div class="container py-4" style="max-width: 640px;">
+    <div class="card pcfa-course-card">
+        <div class="card-body text-center p-4">
+            <img th:if="${avatarUrl}" th:src="${avatarUrl}" alt="avatar" class="pcfa-avatar-lg mb-3">
+            <div th:unless="${avatarUrl}" class="pcfa-avatar-placeholder-lg mx-auto mb-3">
+                <span th:text="${#strings.substring(user.name,0,1)}">?</span>
+            </div>
+            <h4 class="fw-bold mb-1" th:text="${user.name}"></h4>
+            <p class="text-muted small mb-3" th:text="${user.email}"></p>
+            <hr>
+            <div class="text-start">
+                <p class="mb-2"><strong>電話：</strong>
+                    <span th:text="${user.phone} ?: '未登録'"></span></p>
+                <p class="mb-0"><strong>自己紹介：</strong></p>
+                <p class="text-muted" th:text="${user.profileBio} ?: '（未登録）'"></p>
+            </div>
+            <a th:href="@{/student/profile}" class="btn btn-primary pcfa-btn-primary mt-4">編集する</a>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import lecture_management_system.dto.AvatarPresignResult;
 import lecture_management_system.dto.PresignUploadResponse;
 import lecture_management_system.dto.UploadPrepareResult;
 
@@ -44,7 +45,8 @@ public class StudentController {
     @Autowired private MaterialService materialService;
     @Autowired private AssignmentService assignmentService;
     @Autowired private SubmissionService submissionService;
-    @Autowired private CourseScheduleService courseScheduleService; // ← 追加
+    @Autowired private CourseScheduleService courseScheduleService;
+    @Autowired private ProfileService profileService;
 
     // ===================== ホーム（SCR-002）=====================
 
@@ -52,10 +54,66 @@ public class StudentController {
     public String home(HttpSession session, Model model) {
         User loginUser = getLoginUser(session);
         if (loginUser == null) return "redirect:/login";
+        loginUser = profileService.refreshUser(loginUser);
+        session.setAttribute("loginUser", loginUser);
         model.addAttribute("loginUser", loginUser);
+        model.addAttribute("avatarUrl", profileService.getAvatarUrl(loginUser));
         model.addAttribute("courseList", courseService.getStudentCourses(loginUser.getId()));
         model.addAttribute("isProxy", session.getAttribute("adminUser") != null);
         return "student-home";
+    }
+
+    // ===================== プロフィール（S3アバター）=====================
+
+    @GetMapping("/student/profile")
+    public String profilePage(HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+        loginUser = profileService.refreshUser(loginUser);
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("avatarUrl", profileService.getAvatarUrl(loginUser));
+        return "student-profile";
+    }
+
+    @GetMapping("/student/profile/presign-avatar")
+    @ResponseBody
+    public ResponseEntity<?> presignAvatar(@RequestParam String fileName, HttpSession session) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
+        AvatarPresignResult r = profileService.prepareAvatarUpload(loginUser, fileName);
+        if (r == null) return ResponseEntity.badRequest().body(Map.of("error", "invalid_file"));
+        return ResponseEntity.ok(Map.of("uploadUrl", r.uploadUrl(), "s3Key", r.s3Key()));
+    }
+
+    @PostMapping("/student/profile")
+    public String saveProfile(
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String profileBio,
+            @RequestParam(required = false) String avatarS3Key,
+            HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+        profileService.updateProfile(loginUser, phone, profileBio);
+        if (avatarS3Key != null && !avatarS3Key.isBlank()) {
+            profileService.saveAvatarKey(loginUser, avatarS3Key);
+        }
+        loginUser = profileService.refreshUser(loginUser);
+        session.setAttribute("loginUser", loginUser);
+        model.addAttribute("message", "プロフィールを保存しました");
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("avatarUrl", profileService.getAvatarUrl(loginUser));
+        return "student-profile";
+    }
+
+    @GetMapping("/student/profile/view")
+    public String profileView(HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+        loginUser = profileService.refreshUser(loginUser);
+        model.addAttribute("user", loginUser);
+        model.addAttribute("avatarUrl", profileService.getAvatarUrl(loginUser));
+        model.addAttribute("loginUser", loginUser);
+        return "student-profile-view";
     }
 
     // ===================== 出席登録（SCR-003）=====================

@@ -66,4 +66,16 @@ public class User {
      */
     @Column(nullable = false)
     private Integer loginFailureCount = 0;
+
+    /** S3上の顔写真キー（例: avatars/3/uuid.jpg） */
+    @Column(name = "avatar_s3_key", length = 512)
+    private String avatarS3Key;
+
+    /** 電話番号（プロフィール） */
+    @Column(length = 50)
+    private String phone;
+
+    /** 自己紹介（プロフィール） */
+    @Column(name = "profile_bio", columnDefinition = "TEXT")
+    private String profileBio;
 }

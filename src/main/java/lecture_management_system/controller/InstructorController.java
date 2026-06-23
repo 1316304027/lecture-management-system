@@ -44,6 +44,7 @@ public class InstructorController {
     @Autowired private AttendanceService attendanceService;
     @Autowired private CourseScheduleService courseScheduleService;
     @Autowired private SubmissionRepository submissionRepository;
+    @Autowired private ProfileService profileService;
 
     // ===================== ダッシュボード（SCR-101）/ Dashboard =====================
 
@@ -314,6 +315,7 @@ public class InstructorController {
         model.addAttribute("loginUser", loginUser);
         model.addAttribute("course", courseService.findById(courseId));
         model.addAttribute("studentList", students);
+        model.addAttribute("avatarUrlMap", profileService.buildAvatarUrlMap(students));
 
         // 各学生の出席率と出席回数をMapに格納
         // Store attendance rate and count for each student in Maps
@@ -335,11 +337,29 @@ public class InstructorController {
             students.stream().filter(s -> s.getId().equals(studentId))
                     .findFirst().ifPresent(s -> {
                         model.addAttribute("selectedStudent", s);
+                        model.addAttribute("selectedAvatarUrl", profileService.getAvatarUrl(s));
                         model.addAttribute("detailHistory",
                                 attendanceService.getHistory(studentId, courseId));
                     });
         }
         return "instructor-attendance";
+    }
+
+    @GetMapping("/instructor/students/{studentId}/profile")
+    public String studentProfile(
+            @PathVariable Long studentId,
+            @RequestParam Long courseId,
+            HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+        User student = courseService.getStudents(courseId).stream()
+                .filter(s -> s.getId().equals(studentId)).findFirst().orElse(null);
+        if (student == null) return "redirect:/instructor/home";
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("course", courseService.findById(courseId));
+        model.addAttribute("user", student);
+        model.addAttribute("avatarUrl", profileService.getAvatarUrl(student));
+        return "instructor-student-profile";
     }
 
     /** セッションからログインユーザーを取得する / Get login user from session */

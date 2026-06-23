@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>プロフィール編集 | PCFA受講管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+</head>
+<body class="pcfa-body">
+
+<nav class="navbar navbar-dark pcfa-navbar">
+    <a class="navbar-brand" href="/student/home">← ホームへ戻る</a>
+    <span class="text-white small fw-bold">プロフィール編集</span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+</nav>
+
+<div class="container py-4" style="max-width: 640px;">
+
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+    <div class="card pcfa-course-card">
+        <div class="card-header">受講者プロフィール</div>
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <img th:if="${avatarUrl}" th:src="${avatarUrl}" alt="avatar" class="pcfa-avatar-lg mb-2">
+                <div th:unless="${avatarUrl}" class="pcfa-avatar-placeholder-lg mx-auto mb-2">
+                    <span th:text="${#strings.substring(loginUser.name,0,1)}">?</span>
+                </div>
+                <p class="text-muted small mb-0">JPG / PNG（2MB以内）</p>
+            </div>
+
+            <form id="profileForm" th:action="@{/student/profile}" method="post">
+                <input type="hidden" name="avatarS3Key" id="avatarS3Key" value="">
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">顔写真</label>
+                    <input type="file" id="avatarFile" class="form-control" accept="image/jpeg,image/png,.jpg,.jpeg,.png">
+                    <div id="avatarMsg" class="small mt-1 text-muted"></div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">氏名</label>
+                    <input type="text" class="form-control" th:value="${loginUser.name}" disabled>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">メール</label>
+                    <input type="email" class="form-control" th:value="${loginUser.email}" disabled>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">電話番号</label>
+                    <input type="text" name="phone" class="form-control" th:value="${loginUser.phone}" placeholder="090-1234-5678">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold small">自己紹介</label>
+                    <textarea name="profileBio" class="form-control" rows="4" maxlength="500"
+                              th:text="${loginUser.profileBio}" placeholder="自己紹介を入力してください"></textarea>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary pcfa-btn-primary flex-fill">保存する</button>
+                    <a th:href="@{/student/profile/view}" class="btn btn-outline-secondary">プレビュー</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <p class="text-muted small mt-3 mb-0">
+        ※ 顔写真は AWS S3 に保存されます（Presigned URL で直接アップロード）。
+    </p>
+</div>
+
+<script>
+document.getElementById('avatarFile').addEventListener('change', async function() {
+    var file = this.files[0];
+    var msg = document.getElementById('avatarMsg');
+    var keyInput = document.getElementById('avatarS3Key');
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { msg.className = 'small mt-1 text-danger'; msg.textContent = '2MB以内にしてください'; return; }
+    msg.className = 'small mt-1 text-muted'; msg.textContent = 'アップロード中...';
+    try {
+        var res = await fetch('/student/profile/presign-avatar?fileName=' + encodeURIComponent(file.name));
+        var data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'presign failed');
+        var ct = file.name.toLowerCase().endsWith('.png') ? 'image/png' : 'image/jpeg';
+        var put = await fetch(data.uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': ct } });
+        if (!put.ok) throw new Error('S3 upload failed');
+        keyInput.value = data.s3Key;
+        msg.className = 'small mt-1 text-success'; msg.textContent = '写真アップロード完了。保存ボタンを押してください。';
+    } catch (e) {
+        msg.className = 'small mt-1 text-danger'; msg.textContent = 'エラー: ' + e.message;
+    }
+});
+</script>
+</body>
+</html>

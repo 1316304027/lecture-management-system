@@ -158,10 +158,178 @@ body.pcfa-body {
   padding: 0.45rem 0.5rem;
 }
 
+/* コースカード内 2×2 ボタン：幅・高さを完全に揃える */
+.pcfa-action-grid {
+  margin: 0;
+}
+
+.pcfa-course-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.pcfa-info-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  background: #fff;
+  border-radius: var(--pcfa-radius);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--pcfa-card-shadow);
+  border-left: 4px solid var(--pcfa-primary);
+}
+
+.pcfa-info-bar-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 600;
+}
+
+.pcfa-info-bar-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--pcfa-primary);
+}
+
+.pcfa-info-bar-hint {
+  font-size: 0.8rem;
+}
+
+.pcfa-avatar-lg {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--pcfa-primary);
+  box-shadow: var(--pcfa-card-shadow);
+}
+
+.pcfa-avatar-sm {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #dee2e6;
+}
+
+.pcfa-avatar-placeholder-lg {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--pcfa-primary), var(--pcfa-accent));
+  color: #fff;
+  font-size: 2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pcfa-avatar-placeholder-sm {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--pcfa-primary);
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .pcfa-empty-state {
   background: #fff;
   border-radius: var(--pcfa-radius);
   padding: 3rem;
   text-align: center;
   box-shadow: var(--pcfa-card-shadow);
+}
+
+/* —— 全ページ共通（pcfa-body 付きページに自動適用）—— */
+body.pcfa-body .navbar.navbar-dark {
+  background: linear-gradient(90deg, var(--pcfa-primary-dark), var(--pcfa-primary)) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+}
+
+body.pcfa-body .card {
+  border: none;
+  border-radius: var(--pcfa-radius);
+  box-shadow: var(--pcfa-card-shadow);
+}
+
+body.pcfa-body .card-header.bg-success,
+body.pcfa-body .card-header.bg-primary,
+body.pcfa-body .card-header.bg-info,
+body.pcfa-body .card-header.bg-warning,
+body.pcfa-body .card-header.bg-dark {
+  background: linear-gradient(90deg, var(--pcfa-primary-dark), var(--pcfa-primary)) !important;
+  color: #fff !important;
+  border: none;
+}
+
+body.pcfa-body .table {
+  border-radius: var(--pcfa-radius);
+  overflow: hidden;
+}
+
+body.pcfa-body .table thead.table-dark,
+body.pcfa-body .table thead.table-secondary {
+  background: linear-gradient(90deg, #1a1a2e, #2d3a4f) !important;
+  color: #fff;
+}
+
+body.pcfa-body .table thead.table-dark th,
+body.pcfa-body .table thead.table-secondary th {
+  border: none;
+  font-size: 0.85rem;
+}
+
+body.pcfa-body .btn {
+  border-radius: 8px;
+}
+
+body.pcfa-body .sidebar {
+  background: #fff !important;
+  border-right: 1px solid #e2e8f0 !important;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.04);
+}
+
+body.pcfa-body .list-group-item.active {
+  background: var(--pcfa-primary) !important;
+  border-color: var(--pcfa-primary) !important;
+}
+
+body.pcfa-body .course-item.active {
+  background: var(--pcfa-primary) !important;
+  border-color: var(--pcfa-primary) !important;
+}
+
+body.pcfa-body h2, body.pcfa-body h5.fw-bold {
+  color: #1a1a2e;
+  font-weight: 700;
+}
+
+body.pcfa-body .chat-box {
+  border-radius: var(--pcfa-radius) !important;
+  border: none !important;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+body.pcfa-body .nav-btn {
+  min-height: 100px;
+  border-radius: var(--pcfa-radius) !important;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+body.pcfa-body .nav-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(21, 115, 71, 0.15);
 }

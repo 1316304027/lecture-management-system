@@ -21,6 +21,7 @@ public class AdminController {
     @Autowired private CourseScheduleService courseScheduleService;
     @Autowired private AttendanceService attendanceService;
     @Autowired private ReportService reportService;
+    @Autowired private ProfileService profileService;
 
     // ===================== 管理者ホーム（SCR-201）=====================
 
@@ -43,8 +44,22 @@ public class AdminController {
         User loginUser = getLoginUser(session);
         if (loginUser == null) return "redirect:/login";
         model.addAttribute("loginUser", loginUser);
-        model.addAttribute("userList", userService.findAll());
+        List<User> users = userService.findAll();
+        model.addAttribute("userList", users);
+        model.addAttribute("avatarUrlMap", profileService.buildAvatarUrlMap(users));
         return "admin-accounts";
+    }
+
+    @GetMapping("/admin/accounts/{userId}/profile")
+    public String userProfile(@PathVariable Long userId, HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+        User user = userService.findById(userId);
+        if (user == null) return "redirect:/admin/accounts";
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("user", user);
+        model.addAttribute("avatarUrl", profileService.getAvatarUrl(user));
+        return "admin-user-profile";
     }
 
     @PostMapping("/admin/accounts/create")
