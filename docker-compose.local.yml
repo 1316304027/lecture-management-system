@@ -1,0 +1,17 @@
+# 仅本地开发：启动 PostgreSQL，映射到本机 5432
+# 用法: docker compose -f docker-compose.local.yml up -d
+
+services:
+  db:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: lecturedb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: LecturePass123!
+    volumes:
+      - lecture_local_pg:/var/lib/postgresql/data
+
+volumes:
+  lecture_local_pg:

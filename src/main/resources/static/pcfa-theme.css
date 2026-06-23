@@ -1,0 +1,167 @@
+/* PCFA 受講管理システム — 共通テーマ（第一版） */
+
+:root {
+  --pcfa-primary: #157347;
+  --pcfa-primary-dark: #0f5132;
+  --pcfa-accent: #20c997;
+  --pcfa-bg: #eef2f6;
+  --pcfa-card-shadow: 0 4px 20px rgba(21, 115, 71, 0.08);
+  --pcfa-radius: 12px;
+}
+
+body.pcfa-body {
+  background: var(--pcfa-bg);
+  font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", Meiryo, sans-serif;
+}
+
+.pcfa-login-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f5132 0%, #157347 45%, #20c997 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.pcfa-login-card {
+  width: 100%;
+  max-width: 420px;
+  border: none;
+  border-radius: var(--pcfa-radius);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+.pcfa-login-card .card-header {
+  background: #fff;
+  border-bottom: none;
+  text-align: center;
+  padding: 2rem 1.5rem 0.5rem;
+}
+
+.pcfa-login-logo {
+  width: 56px;
+  height: 56px;
+  background: var(--pcfa-primary);
+  color: #fff;
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.pcfa-login-card .card-body {
+  padding: 1rem 2rem 2rem;
+}
+
+.pcfa-btn-primary {
+  background: var(--pcfa-primary);
+  border-color: var(--pcfa-primary);
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
+  font-weight: 600;
+}
+
+.pcfa-btn-primary:hover {
+  background: var(--pcfa-primary-dark);
+  border-color: var(--pcfa-primary-dark);
+}
+
+.pcfa-navbar {
+  background: linear-gradient(90deg, var(--pcfa-primary-dark), var(--pcfa-primary)) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  padding: 0.6rem 1.25rem;
+}
+
+.pcfa-navbar .navbar-brand {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.pcfa-page-header {
+  margin-bottom: 1.5rem;
+}
+
+.pcfa-page-header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 0.25rem;
+}
+
+.pcfa-page-header p {
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+.pcfa-stat-card {
+  background: #fff;
+  border-radius: var(--pcfa-radius);
+  padding: 1.1rem 1.25rem;
+  box-shadow: var(--pcfa-card-shadow);
+  border-left: 4px solid var(--pcfa-primary);
+  height: 100%;
+}
+
+.pcfa-stat-card .stat-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--pcfa-primary);
+  line-height: 1.2;
+}
+
+.pcfa-stat-card .stat-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pcfa-course-card {
+  border: none;
+  border-radius: var(--pcfa-radius);
+  box-shadow: var(--pcfa-card-shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  height: 100%;
+  overflow: hidden;
+}
+
+.pcfa-course-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 28px rgba(21, 115, 71, 0.15);
+}
+
+.pcfa-course-card .card-header {
+  background: linear-gradient(90deg, var(--pcfa-primary), #1aa179);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  padding: 1rem 1.25rem;
+}
+
+.pcfa-course-card .card-body {
+  padding: 1.25rem;
+}
+
+.pcfa-course-card .card-footer {
+  background: #f8fafb;
+  border-top: 1px solid #e9ecef;
+  padding: 1rem 1.25rem;
+}
+
+.pcfa-action-btn {
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 0.5rem;
+}
+
+.pcfa-empty-state {
+  background: #fff;
+  border-radius: var(--pcfa-radius);
+  padding: 3rem;
+  text-align: center;
+  box-shadow: var(--pcfa-card-shadow);
+}

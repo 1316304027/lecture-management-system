@@ -1,0 +1,35 @@
+# 本地开发专用 — 连本机 Docker PostgreSQL，不连 AWS RDS
+# 启动方式: ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/lecturedb
+    username: postgres
+    password: LecturePass123!
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Tokyo
+
+  thymeleaf:
+    cache: false
+
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# 本地没有 IAM 角色，S3 功能需配密钥或跳过；UI 预览不受影响
+aws:
+  s3:
+    bucket-name: lecture-system-files-wei
+    region: ap-northeast-1
+
+app:
+  internal-token: ${INTERNAL_TOKEN:LectureInternal2026!}
