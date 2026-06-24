@@ -1,6 +1,7 @@
 package lecture_management_system.controller;
 
 import jakarta.servlet.http.HttpSession;
+import lecture_management_system.dto.PasswordOperationResult;
 import lecture_management_system.entity.*;
 import lecture_management_system.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
