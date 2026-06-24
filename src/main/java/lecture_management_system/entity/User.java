@@ -81,15 +81,15 @@ public class User {
 
     /**
      * 初回ログインまたは管理者リセット後、本人がパスワード変更するまで true。
-     * 管理者はパスワードを直接設定・変更できない（リセットのみ）。
+     * 既存ユーザー行との互換のため DB 上は nullable（null は false 扱い）。
      */
-    @Column(name = "password_reset_required", nullable = false)
+    @Column(name = "password_reset_required", columnDefinition = "boolean default false")
     private Boolean passwordResetRequired = false;
 
     /**
      * true = 本人がメールリンクからパスワード未設定（ログイン不可）。
-     * 管理者はパスワードを知らない・設定しない。
+     * 既存ユーザー行との互換のため DB 上は nullable（null は false 扱い）。
      */
-    @Column(name = "password_not_set", nullable = false)
+    @Column(name = "password_not_set", columnDefinition = "boolean default false")
     private Boolean passwordNotSet = false;
 }
