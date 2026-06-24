@@ -12,7 +12,7 @@
     <span class="text-white small">プロフィール詳細</span>
 </nav>
 <div class="container py-4" style="max-width: 640px;">
-    <div th:replace="~{fragments/profile-card :: card(${user}, ${avatarUrl})}"></div>
+    <div th:replace="~{fragments/profile-card :: card(${user}, ${avatarUrl}, ${courseList})}"></div>
 </div>
 </body>
 </html>

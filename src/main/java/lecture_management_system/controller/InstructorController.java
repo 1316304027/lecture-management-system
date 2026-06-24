@@ -66,6 +66,25 @@ public class InstructorController {
         return "instructor-home";
     }
 
+    /**
+     * 受講者一覧（GET /instructor/students?courseId=X）
+     * 講師ホームから直接プロフィールへ行ける入口。
+     */
+    @GetMapping("/instructor/students")
+    public String studentsList(
+            @RequestParam Long courseId,
+            HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+
+        List<User> students = courseService.getStudents(courseId);
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("course", courseService.findById(courseId));
+        model.addAttribute("studentList", students);
+        model.addAttribute("avatarUrlMap", profileService.buildAvatarUrlMap(students));
+        return "instructor-students";
+    }
+
     // ===================== 教材管理（SCR-102）/ Material Management =====================
 
     /**
@@ -359,6 +378,7 @@ public class InstructorController {
         model.addAttribute("course", courseService.findById(courseId));
         model.addAttribute("user", student);
         model.addAttribute("avatarUrl", profileService.getAvatarUrl(student));
+        model.addAttribute("courseList", courseService.getStudentCourses(studentId));
         return "instructor-student-profile";
     }
 

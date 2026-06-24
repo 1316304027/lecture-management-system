@@ -59,7 +59,17 @@ public class AdminController {
         model.addAttribute("loginUser", loginUser);
         model.addAttribute("user", user);
         model.addAttribute("avatarUrl", profileService.getAvatarUrl(user));
+        model.addAttribute("courseList", coursesForUser(user));
         return "admin-user-profile";
+    }
+
+    private List<Course> coursesForUser(User user) {
+        if (user == null) return List.of();
+        return switch (user.getRole()) {
+            case "STUDENT" -> courseService.getStudentCourses(user.getId());
+            case "INSTRUCTOR" -> courseService.getInstructorCourses(user.getId());
+            default -> List.of();
+        };
     }
 
     @PostMapping("/admin/accounts/create")

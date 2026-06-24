@@ -113,6 +113,7 @@ public class StudentController {
         model.addAttribute("user", loginUser);
         model.addAttribute("avatarUrl", profileService.getAvatarUrl(loginUser));
         model.addAttribute("loginUser", loginUser);
+        model.addAttribute("courseList", courseService.getStudentCourses(loginUser.getId()));
         return "student-profile-view";
     }
 
