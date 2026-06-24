@@ -84,7 +84,7 @@
     <div class="row g-3">
         <div class="col-md-6">
             <div class="card pcfa-course-card h-100">
-                <div class="card-header">公開教材</div>
+                <div class="card-header">教材一覧</div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item small" th:each="m : ${materialList}" th:text="${m.title}"></li>
                     <li class="list-group-item text-muted small" th:if="${materialList.empty}">教材なし</li>
@@ -93,7 +93,7 @@
         </div>
         <div class="col-md-6">
             <div class="card pcfa-course-card h-100">
-                <div class="card-header">公開課題</div>
+                <div class="card-header">課題一覧</div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item small" th:each="asg : ${assignmentList}">
                         <span th:text="${asg.title}"></span>

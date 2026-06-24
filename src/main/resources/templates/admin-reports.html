@@ -50,7 +50,7 @@
             </div>
             <div class="pcfa-report-stat">
                 <div class="val" th:text="${reportList[0].totalAssignments}">0</div>
-                <div class="lbl">公開課題数</div>
+                <div class="lbl">課題数（受講者公開済）</div>
             </div>
             <div class="pcfa-report-stat">
                 <div class="val" th:text="${reportList[0].totalLessons}">0</div>
@@ -73,12 +73,21 @@
                                 <th class="text-center">採点済</th>
                                 <th class="text-center">採点待ち</th>
                                 <th class="text-center">平均スコア</th>
-                                <th class="text-center">操作</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr th:each="r : ${reportList}">
-                                <td class="fw-semibold" th:text="${r.studentName}"></td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <img th:if="${avatarUrlMap != null and avatarUrlMap[r.studentId] != null}"
+                                             th:src="${avatarUrlMap[r.studentId]}"
+                                             class="pcfa-avatar-sm" alt="">
+                                        <span th:unless="${avatarUrlMap != null and avatarUrlMap[r.studentId] != null}"
+                                              class="pcfa-avatar-placeholder-sm"
+                                              th:text="${#strings.substring(r.studentName,0,1)}"></span>
+                                        <span class="fw-semibold" th:text="${r.studentName}"></span>
+                                    </div>
+                                </td>
                                 <td class="small text-muted" th:text="${r.studentEmail}"></td>
                                 <td class="text-center small">
                                     <span th:text="${r.attendedCount}"></span>/<span th:text="${r.totalLessons}"></span>
@@ -114,13 +123,9 @@
                                     <span th:if="${r.averageScore != null and r.averageScore < 60}"
                                           class="score-low" th:text="${r.averageScore} + '点'"></span>
                                 </td>
-                                <td class="text-center text-nowrap">
-                                    <a th:href="@{/admin/accounts/{id}/profile(id=${r.studentId})}"
-                                       class="btn btn-sm btn-outline-primary">プロフィール</a>
-                                </td>
                             </tr>
                             <tr th:if="${reportList.empty}">
-                                <td colspan="10" class="text-muted text-center py-4">受講者が登録されていません</td>
+                                <td colspan="9" class="text-muted text-center py-4">受講者が登録されていません</td>
                             </tr>
                         </tbody>
                     </table>
@@ -132,6 +137,7 @@
             <div class="card-body py-2 px-3 small">
                 <strong>凡例：</strong>
                 平均スコアは<strong>採点済み提出のみ</strong>の平均です。提出したが講師が未採点の場合は「採点待ち」と表示し、0点にはしません。
+                受講者の詳細プロフィールは<a href="/admin/accounts">ユーザー管理</a>から確認できます。
             </div>
         </div>
     </div>

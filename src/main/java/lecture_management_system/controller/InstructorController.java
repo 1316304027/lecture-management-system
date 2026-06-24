@@ -99,8 +99,19 @@ public class InstructorController {
         model.addAttribute("loginUser", loginUser);
         model.addAttribute("course", courseService.findById(courseId));
         model.addAttribute("materialList", materialService.findByCourseId(courseId));
-        model.addAttribute("announcements", announcementService.getByCourse(courseId));
         return "instructor-materials";
+    }
+
+    @GetMapping("/instructor/announcements")
+    public String announcements(
+            @RequestParam Long courseId,
+            HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("course", courseService.findById(courseId));
+        model.addAttribute("announcements", announcementService.getByCourse(courseId));
+        return "instructor-announcements";
     }
 
     @PostMapping("/instructor/announcements")
@@ -116,11 +127,10 @@ public class InstructorController {
             model.addAttribute("errorMessage", err);
             model.addAttribute("loginUser", loginUser);
             model.addAttribute("course", courseService.findById(courseId));
-            model.addAttribute("materialList", materialService.findByCourseId(courseId));
             model.addAttribute("announcements", announcementService.getByCourse(courseId));
-            return "instructor-materials";
+            return "instructor-announcements";
         }
-        return "redirect:/instructor/materials?courseId=" + courseId;
+        return "redirect:/instructor/announcements?courseId=" + courseId;
     }
 
     /**

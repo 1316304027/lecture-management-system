@@ -183,10 +183,7 @@
                 <div class="tab-pane fade show active" id="tabSingle">
                     <form th:action="@{/admin/courses/{id}/schedule/add(id=${selectedCourse.id})}" method="post"
                           class="row g-3 align-items-end">
-                        <div class="col-auto">
-                            <label class="form-label small fw-semibold mb-1">授業日</label>
-                            <input type="date" name="lessonDate" class="form-control pcfa-date-input" required>
-                        </div>
+                        <div class="col-auto" th:replace="~{fragments/date-picker :: picker('lesson', '授業日')}"></div>
                         <div class="col-auto" th:replace="~{fragments/time-picker :: picker('start', '開始時刻（任意）')}"></div>
                         <div class="col-auto" th:replace="~{fragments/time-picker :: picker('end', '終了時刻（任意）')}"></div>
                         <div class="col-auto">
@@ -197,14 +194,8 @@
                 <div class="tab-pane fade" id="tabBulk">
                     <form th:action="@{/admin/courses/{id}/schedule/bulk-add(id=${selectedCourse.id})}" method="post">
                         <div class="row g-3 align-items-end mb-3">
-                            <div class="col-auto">
-                                <label class="form-label small fw-semibold mb-1">開始日</label>
-                                <input type="date" name="rangeFrom" class="form-control pcfa-date-input" required>
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-label small fw-semibold mb-1">終了日</label>
-                                <input type="date" name="rangeTo" class="form-control pcfa-date-input" required>
-                            </div>
+                            <div class="col-auto" th:replace="~{fragments/date-picker :: picker('rangeFrom', '開始日')}"></div>
+                            <div class="col-auto" th:replace="~{fragments/date-picker :: picker('rangeTo', '終了日')}"></div>
                             <div class="col-auto" th:replace="~{fragments/time-picker :: picker('start', '開始（任意）')}"></div>
                             <div class="col-auto" th:replace="~{fragments/time-picker :: picker('end', '終了（任意）')}"></div>
                         </div>

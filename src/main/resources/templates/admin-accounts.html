@@ -4,39 +4,57 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" th:href="@{/pcfa-theme.css}"></head>
 <body class="pcfa-body">
-<nav class="navbar navbar-dark pcfa-navbar px-3">
+<nav class="navbar navbar-dark pcfa-navbar px-4 shadow-sm">
     <a class="navbar-brand" href="/admin/home">← 管理者ホーム</a>
-    <span class="text-white">ユーザー管理</span>
+    <span class="text-white fw-bold">ユーザー管理</span>
     <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
 </nav>
-<div class="container mt-4">
-    <!-- メッセージ -->
-    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
-    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+<div class="container py-4" style="max-width: 1200px;">
+    <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${message}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <span th:text="${errorMessage}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 
-    <!-- ユーザー新規作成フォーム -->
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">新規ユーザー作成</div>
-        <div class="card-body">
-            <form th:action="@{/admin/accounts/create}" method="post" class="row g-2">
-                <div class="col-md-2"><input type="text" name="name" class="form-control" placeholder="氏名" required></div>
-                <div class="col-md-3"><input type="email" name="email" class="form-control" placeholder="メールアドレス" required></div>
-                <div class="col-md-2"><input type="password" name="password" class="form-control" placeholder="パスワード" required></div>
+    <div class="pcfa-admin-section mb-4">
+        <div class="pcfa-admin-section-header">新規ユーザー作成</div>
+        <div class="pcfa-admin-section-body">
+            <form th:action="@{/admin/accounts/create}" method="post" class="row g-2 align-items-end">
                 <div class="col-md-2">
-                    <select name="role" class="form-select" required>
+                    <label class="form-label small fw-semibold mb-1">氏名</label>
+                    <input type="text" name="name" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-semibold mb-1">メール</label>
+                    <input type="email" name="email" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold mb-1">パスワード</label>
+                    <input type="password" name="password" class="form-control form-control-sm" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-semibold mb-1">ロール</label>
+                    <select name="role" class="form-select form-select-sm" required>
                         <option value="ADMIN">管理者</option>
                         <option value="INSTRUCTOR">講師</option>
                         <option value="STUDENT" selected>受講者</option>
                     </select>
                 </div>
-                <div class="col-md-2"><button type="submit" class="btn btn-primary w-100">作成</button></div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary btn-sm w-100 pcfa-btn-primary">作成</button>
+                </div>
             </form>
         </div>
     </div>
 
-    <!-- ユーザー一覧 -->
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
+    <div class="pcfa-admin-section">
+        <div class="pcfa-admin-section-header">ユーザー一覧</div>
+        <div class="pcfa-admin-section-body p-0">
+    <table class="table table-hover align-middle mb-0">
+        <thead class="table-light">
             <tr><th>ID</th><th></th><th>氏名</th><th>メール</th><th>ロール</th><th>状態</th><th>操作</th></tr>
         </thead>
         <tbody>
@@ -108,6 +126,8 @@
             </tr>
         </tbody>
     </table>
+        </div>
+    </div>
 </div>
 <script>
 function toggleEdit(btn) {

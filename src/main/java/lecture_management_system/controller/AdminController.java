@@ -60,6 +60,8 @@ public class AdminController {
         model.addAttribute("user", user);
         model.addAttribute("avatarUrl", profileService.getAvatarUrl(user));
         model.addAttribute("courseList", coursesForUser(user));
+        model.addAttribute("returnUrl", "/admin/accounts");
+        model.addAttribute("returnLabel", "ユーザー管理");
         return "admin-user-profile";
     }
 
@@ -225,7 +227,9 @@ public class AdminController {
     @PostMapping("/admin/courses/{courseId}/schedule/add")
     public String addSchedule(
             @PathVariable Long courseId,
-            @RequestParam String lessonDate,
+            @RequestParam String lessonYear,
+            @RequestParam String lessonMonth,
+            @RequestParam String lessonDay,
             @RequestParam(required = false) String startHour,
             @RequestParam(required = false) String startMinute,
             @RequestParam(required = false) String endHour,
@@ -234,7 +238,8 @@ public class AdminController {
         if (getLoginUser(session) == null) return "redirect:/login";
         java.time.LocalTime st = parseOptionalTime(startHour, startMinute);
         java.time.LocalTime et = parseOptionalTime(endHour, endMinute);
-        courseScheduleService.addSchedule(courseId, LocalDate.parse(lessonDate), st, et);
+        courseScheduleService.addSchedule(courseId,
+                parseDate(lessonYear, lessonMonth, lessonDay), st, et);
         return "redirect:/admin/courses?courseId=" + courseId;
     }
 
@@ -245,8 +250,12 @@ public class AdminController {
     @PostMapping("/admin/courses/{courseId}/schedule/bulk-add")
     public String addScheduleBulk(
             @PathVariable Long courseId,
-            @RequestParam String rangeFrom,
-            @RequestParam String rangeTo,
+            @RequestParam String rangeFromYear,
+            @RequestParam String rangeFromMonth,
+            @RequestParam String rangeFromDay,
+            @RequestParam String rangeToYear,
+            @RequestParam String rangeToMonth,
+            @RequestParam String rangeToDay,
             @RequestParam(required = false) java.util.List<String> dayOfWeeks,
             @RequestParam(required = false) String startHour,
             @RequestParam(required = false) String startMinute,
@@ -266,8 +275,8 @@ public class AdminController {
 
         courseScheduleService.addScheduleBulk(
                 courseId,
-                LocalDate.parse(rangeFrom),
-                LocalDate.parse(rangeTo),
+                parseDate(rangeFromYear, rangeFromMonth, rangeFromDay),
+                parseDate(rangeToYear, rangeToMonth, rangeToDay),
                 dows, st, et);
         return "redirect:/admin/courses?courseId=" + courseId;
     }
@@ -426,7 +435,14 @@ public class AdminController {
         model.addAttribute("courseList", courseService.findAll());
         if (courseId != null) {
             model.addAttribute("selectedCourse", courseService.findById(courseId));
-            model.addAttribute("reportList", reportService.getCourseReport(courseId));
+            List<lecture_management_system.dto.StudentReportDto> reportList =
+                    reportService.getCourseReport(courseId);
+            model.addAttribute("reportList", reportList);
+            List<User> students = reportList.stream()
+                    .map(r -> userService.findById(r.getStudentId()))
+                    .filter(Objects::nonNull)
+                    .toList();
+            model.addAttribute("avatarUrlMap", profileService.buildAvatarUrlMap(students));
         }
         return "admin-reports";
     }
@@ -436,6 +452,13 @@ public class AdminController {
         int h = Integer.parseInt(hour);
         int m = (minute != null && !minute.isBlank()) ? Integer.parseInt(minute) : 0;
         return java.time.LocalTime.of(h, m);
+    }
+
+    private LocalDate parseDate(String year, String month, String day) {
+        return LocalDate.of(
+                Integer.parseInt(year),
+                Integer.parseInt(month),
+                Integer.parseInt(day));
     }
 
     private User getLoginUser(HttpSession session) {

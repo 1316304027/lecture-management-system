@@ -32,7 +32,7 @@
                 <div class="col-md-1">
                     <div class="form-check mt-2">
                         <input class="form-check-input" type="checkbox" name="published" value="true" id="pub2">
-                        <label class="form-check-label" for="pub2">即時公開</label>
+                        <label class="form-check-label" for="pub2">アップロード後すぐ受講者に表示</label>
                     </div>
                 </div>
                 <div class="col-md-2">
@@ -54,15 +54,15 @@
     </div>
     <table class="table table-bordered table-hover">
         <thead class="table-dark">
-            <tr><th>課題名</th><th>提出期限</th><th>公開状態</th><th>操作</th></tr>
+            <tr><th>課題名</th><th>提出期限</th><th>受講者への表示</th><th>操作</th></tr>
         </thead>
         <tbody>
             <tr th:each="a : ${assignmentList}">
                 <td th:text="${a.title}"></td>
                 <td th:text="${#temporals.format(a.deadline, 'yyyy/MM/dd HH:mm')}"></td>
                 <td>
-                    <span th:if="${a.published}" class="badge bg-success">公開中</span>
-                    <span th:unless="${a.published}" class="badge bg-secondary">非公開</span>
+                    <span th:if="${a.published}" class="badge bg-success">表示中</span>
+                    <span th:unless="${a.published}" class="badge bg-secondary">非表示</span>
                 </td>
                 <td class="d-flex gap-2">
                     <!-- 公開切替 -->
@@ -70,7 +70,7 @@
                         <input type="hidden" name="courseId" th:value="${course.id}">
                         <button type="submit" class="btn btn-sm"
                                 th:classappend="${a.published} ? 'btn-outline-secondary' : 'btn-outline-success'"
-                                th:text="${a.published} ? '非公開にする' : '公開する'"></button>
+                                th:text="${a.published} ? '非表示にする' : '表示する'"></button>
                     </form>
                     <!-- 1件削除 -->
                     <form th:action="@{/instructor/assignments/{id}/delete(id=${a.id})}" method="post"

@@ -415,6 +415,74 @@ body.pcfa-body .nav-btn:hover {
   min-width: 160px;
 }
 
+.pcfa-date-picker {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.pcfa-date-select {
+  width: 88px !important;
+  min-width: 88px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.pcfa-admin-menu-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.35rem;
+  min-height: 130px;
+  padding: 1.25rem 1rem;
+  background: #fff;
+  border-radius: var(--pcfa-radius);
+  box-shadow: var(--pcfa-card-shadow);
+  text-decoration: none;
+  color: inherit;
+  border-top: 4px solid #dee2e6;
+  transition: transform .15s, box-shadow .15s;
+}
+
+.pcfa-admin-menu-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.1);
+  color: inherit;
+}
+
+.pcfa-admin-menu-card--blue { border-top-color: #0d6efd; }
+.pcfa-admin-menu-card--green { border-top-color: var(--pcfa-primary); }
+.pcfa-admin-menu-card--amber { border-top-color: #ffc107; }
+.pcfa-admin-menu-card--red { border-top-color: #dc3545; }
+.pcfa-admin-menu-card--cyan { border-top-color: #0dcaf0; }
+
+.pcfa-admin-menu-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.pcfa-admin-menu-card small {
+  color: #6c757d;
+  font-size: 0.75rem;
+}
+
+.pcfa-report-stat .icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.pcfa-report-stat--blue .val { color: #0d6efd; }
+.pcfa-report-stat--green .val { color: var(--pcfa-primary); }
+
+.pcfa-announcement-item {
+  background: #f8fafb;
+  border-radius: 8px;
+  padding: 1rem 1.1rem;
+  border-left: 4px solid var(--pcfa-primary);
+}
+
 .pcfa-admin-section {
   background: #fff;
   border-radius: var(--pcfa-radius);
