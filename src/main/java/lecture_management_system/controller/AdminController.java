@@ -9,6 +9,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.PrintWriter;
+import lecture_management_system.dto.StudentReportDto;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -53,7 +57,10 @@ public class AdminController {
     }
 
     @GetMapping("/admin/accounts/{userId}/profile")
-    public String userProfile(@PathVariable Long userId, HttpSession session, Model model) {
+    public String userProfile(
+            @PathVariable Long userId,
+            @RequestParam(required = false) String returnTo,
+            HttpSession session, Model model) {
         User loginUser = getLoginUser(session);
         if (loginUser == null) return "redirect:/login";
         User user = userService.findById(userId);
@@ -62,8 +69,14 @@ public class AdminController {
         model.addAttribute("user", user);
         model.addAttribute("avatarUrl", profileService.getAvatarUrl(user));
         model.addAttribute("courseList", coursesForUser(user));
-        model.addAttribute("returnUrl", "/admin/accounts");
-        model.addAttribute("returnLabel", "ユーザー管理");
+        if (returnTo != null && returnTo.startsWith("/admin/")) {
+            model.addAttribute("returnUrl", returnTo);
+            model.addAttribute("returnLabel",
+                    returnTo.contains("reports") ? "実績レポート" : "ユーザー管理");
+        } else {
+            model.addAttribute("returnUrl", "/admin/accounts");
+            model.addAttribute("returnLabel", "ユーザー管理");
+        }
         return "admin-user-profile";
     }
 
@@ -458,8 +471,58 @@ public class AdminController {
                     .filter(Objects::nonNull)
                     .toList();
             model.addAttribute("avatarUrlMap", profileService.buildAvatarUrlMap(students));
+            if (!reportList.isEmpty()) {
+                double avgAtt = reportList.stream()
+                        .filter(r -> r.getTotalLessons() > 0)
+                        .mapToDouble(StudentReportDto::getAttendanceRate)
+                        .average().orElse(0);
+                double avgSub = reportList.stream()
+                        .filter(r -> r.getTotalAssignments() > 0)
+                        .mapToDouble(StudentReportDto::getSubmissionRate)
+                        .average().orElse(0);
+                model.addAttribute("avgAttendanceRate", Math.round(avgAtt * 10) / 10.0);
+                model.addAttribute("avgSubmissionRate", Math.round(avgSub * 10) / 10.0);
+            }
         }
         return "admin-reports";
+    }
+
+    @GetMapping("/admin/reports/export")
+    public void exportReportsCsv(
+            @RequestParam Long courseId,
+            HttpSession session,
+            HttpServletResponse response) throws IOException {
+        if (getLoginUser(session) == null) {
+            response.sendError(401);
+            return;
+        }
+        Course course = courseService.findById(courseId);
+        List<StudentReportDto> list = reportService.getCourseReport(courseId);
+        String filename = "report_" + courseId + ".csv";
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        response.getOutputStream().write(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
+        PrintWriter w = response.getWriter();
+        w.println("コース," + (course != null ? course.getName() : ""));
+        w.println("氏名,メール,出席,出席率%,提出,提出率%,未提出,採点済,採点待ち,平均スコア");
+        for (StudentReportDto r : list) {
+            String score = r.getAverageScore() != null ? r.getAverageScore().toString() : "採点待ち";
+            w.printf("%s,%s,%d/%d,%s,%d/%d,%s,%d,%d,%d,%s%n",
+                    csv(r.getStudentName()), csv(r.getStudentEmail()),
+                    r.getAttendedCount(), r.getTotalLessons(),
+                    r.getTotalLessons() == 0 ? "-" : r.getAttendanceRate(),
+                    r.getSubmittedCount(), r.getTotalAssignments(), r.getSubmissionRate(),
+                    r.getUnsubmittedCount(), r.getEvaluatedCount(), r.getPendingGradeCount(), score);
+        }
+        w.flush();
+    }
+
+    private String csv(String v) {
+        if (v == null) return "";
+        if (v.contains(",") || v.contains("\"")) {
+            return "\"" + v.replace("\"", "\"\"") + "\"";
+        }
+        return v;
     }
 
     private java.time.LocalTime parseOptionalTime(String hour, String minute) {

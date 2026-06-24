@@ -19,17 +19,19 @@
 <div class="container-fluid p-0">
 <div class="row g-0">
 
-<!-- 左：コース一覧 -->
-<div class="col-md-3 border-end bg-white p-3" style="min-height:calc(100vh - 56px);">
-    <p class="small fw-bold text-muted text-uppercase mb-2">コース新規作成</p>
+<!-- 左：一覧のみ（作成は名前だけ・説明は右で編集） -->
+<div class="col-md-3 pcfa-course-sidebar border-end bg-white p-3">
+    <p class="small fw-bold text-muted text-uppercase mb-2">新規コース</p>
     <form th:action="@{/admin/courses/create}" method="post" class="mb-4">
-        <input type="text" name="name" class="form-control form-control-sm mb-2" placeholder="コース名" required>
-        <textarea name="description" class="form-control form-control-sm mb-2" placeholder="説明（任意）" rows="2"></textarea>
+        <input type="text" name="name" class="form-control form-control-sm mb-2" placeholder="コース名のみ入力" required maxlength="100">
+        <input type="hidden" name="description" value="">
         <button type="submit" class="btn btn-success btn-sm w-100 pcfa-btn-primary">＋ 作成</button>
     </form>
+    <p class="small text-muted mb-3">※ 説明は作成後、右側の「基本情報」で編集します</p>
+
     <p class="small fw-bold text-muted text-uppercase mb-2">コース一覧</p>
-    <input type="text" id="courseSearch" class="form-control form-control-sm mb-2" placeholder="検索…" oninput="filterCourses(this.value)">
-    <div class="list-group list-group-flush" id="courseList">
+    <input type="text" id="courseSearch" class="form-control form-control-sm mb-2" placeholder="コース名で検索…" oninput="filterCourses(this.value)">
+    <div class="list-group list-group-flush pcfa-course-list" id="courseList">
         <a th:each="c : ${courseList}" th:href="@{/admin/courses(courseId=${c.id})}"
            class="list-group-item list-group-item-action py-2 small"
            th:classappend="${selectedCourse != null and selectedCourse.id == c.id} ? 'active' : ''"
@@ -37,136 +39,163 @@
     </div>
 </div>
 
-<!-- 右：詳細 -->
+<!-- 右：選択コースの詳細 -->
 <div class="col-md-9 p-4" th:if="${selectedCourse != null}">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-start mb-3">
         <div>
-            <h1 class="h4 fw-bold mb-0" th:text="${selectedCourse.name}"></h1>
-            <p class="text-muted small mb-0" th:text="${selectedCourse.description} ?: '（説明なし）'"></p>
+            <h1 class="h4 fw-bold mb-1" th:text="${selectedCourse.name}"></h1>
+            <p class="text-muted small mb-0">コースID: <span th:text="${selectedCourse.id}"></span></p>
         </div>
-        <form th:action="@{/admin/courses/delete/{id}(id=${selectedCourse.id})}" method="post"
-              onsubmit="return confirm('このコースと関連データを削除しますか？')">
-            <button type="submit" class="btn btn-sm btn-outline-danger">コース削除</button>
-        </form>
+        <button type="button" class="btn btn-sm btn-outline-danger"
+                data-bs-toggle="modal" data-bs-target="#deleteCourseModal">コース削除</button>
     </div>
 
-    <!-- 基本情報 -->
-    <div class="pcfa-admin-section">
-        <div class="pcfa-admin-section-header">基本情報</div>
+    <!-- 削除確認モーダル -->
+    <div class="modal fade" id="deleteCourseModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">コース削除の確認</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>コース「<strong th:text="${selectedCourse.name}"></strong>」を削除します。</p>
+                    <p class="text-danger small mb-0">授業日・講師/学生の割当・関連データも削除されます。この操作は取り消せません。</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <form th:action="@{/admin/courses/delete/{id}(id=${selectedCourse.id})}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-danger">削除する</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="pcfa-admin-section mb-3">
+        <div class="pcfa-admin-section-header">基本情報（編集はここだけ）</div>
         <div class="pcfa-admin-section-body">
-            <form th:action="@{/admin/courses/update/{id}(id=${selectedCourse.id})}" method="post" class="row g-3 align-items-end">
-                <div class="col-md-4">
-                    <label class="form-label small fw-semibold">コース名</label>
-                    <input type="text" name="name" class="form-control" th:value="${selectedCourse.name}" required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label small fw-semibold">説明</label>
-                    <input type="text" name="description" class="form-control" th:value="${selectedCourse.description}">
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-primary w-100 pcfa-btn-primary">更新</button>
+            <form th:action="@{/admin/courses/update/{id}(id=${selectedCourse.id})}" method="post">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">コース名</label>
+                        <input type="text" name="name" class="form-control" th:value="${selectedCourse.name}" required>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label small fw-semibold">説明</label>
+                        <textarea name="description" class="form-control pcfa-no-resize" rows="2"
+                                  placeholder="コースの概要を入力" th:text="${selectedCourse.description}"></textarea>
+                    </div>
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary pcfa-btn-primary">基本情報を更新</button>
+                    </div>
                 </div>
             </form>
         </div>
     </div>
 
     <div class="row g-3 mb-3">
-        <!-- 講師 -->
         <div class="col-lg-6">
             <div class="pcfa-admin-section h-100 mb-0">
-                <div class="pcfa-admin-section-header">担当講師</div>
+                <div class="pcfa-admin-section-header">担当講師の割当</div>
                 <div class="pcfa-admin-section-body">
-                    <table class="table table-sm table-hover mb-3" id="instructorTable">
-                        <thead class="table-light"><tr><th>氏名</th><th>メール</th><th></th></tr></thead>
-                        <tbody>
-                        <tr th:each="u : ${courseInstructors}">
-                            <td th:text="${u.name}"></td>
-                            <td class="small text-muted" th:text="${u.email}"></td>
-                            <td class="text-end">
-                                <form th:action="@{/admin/courses/{cid}/remove-user(cid=${selectedCourse.id})}" method="post" class="d-inline">
-                                    <input type="hidden" name="userId" th:value="${u.id}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">解除</button>
-                                </form>
-                            </td>
-                        </tr>
-                        <tr th:if="${courseInstructors.empty}"><td colspan="3" class="text-muted text-center small">未割当</td></tr>
-                        </tbody>
-                    </table>
-                    <form th:action="@{/admin/courses/{id}/assign-instructor(id=${selectedCourse.id})}" method="post" class="d-flex gap-2">
-                        <select name="userId" class="form-select form-select-sm">
-                            <option th:each="u : ${instructorCandidates}" th:value="${u.id}" th:text="${u.name}"></option>
+                    <input type="text" class="form-control form-control-sm mb-2" placeholder="登録済み講師を検索…"
+                           oninput="filterTableRows(this, 'instructorTable')">
+                    <div class="table-responsive pcfa-scroll-table mb-3">
+                        <table class="table table-sm table-hover mb-0" id="instructorTable">
+                            <thead class="table-light"><tr><th>氏名</th><th>メール</th><th></th></tr></thead>
+                            <tbody>
+                            <tr th:each="u : ${courseInstructors}" th:attr="data-search=${u.name + ' ' + u.email}">
+                                <td th:text="${u.name}"></td>
+                                <td class="small text-muted" th:text="${u.email}"></td>
+                                <td class="text-end">
+                                    <form th:action="@{/admin/courses/{cid}/remove-user(cid=${selectedCourse.id})}" method="post" class="d-inline"
+                                          onsubmit="return confirm('講師の割当を解除しますか？')">
+                                        <input type="hidden" name="userId" th:value="${u.id}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">解除</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${courseInstructors.empty}"><td colspan="3" class="text-muted text-center small">未割当</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="small fw-semibold mb-1">講師を追加</p>
+                    <form th:action="@{/admin/courses/{id}/assign-instructor(id=${selectedCourse.id})}" method="post">
+                        <input type="text" class="form-control form-control-sm mb-1" placeholder="名前・メールで検索…"
+                               oninput="filterSelectOptions(this, 'instructorSelect')">
+                        <select name="userId" id="instructorSelect" class="form-select form-select-sm pcfa-picker-select" size="6" required>
+                            <option th:each="u : ${instructorCandidates}" th:value="${u.id}"
+                                    th:attr="data-search=${u.name + ' ' + u.email}"
+                                    th:text="${u.name} + ' — ' + ${u.email}"></option>
                         </select>
-                        <button type="submit" class="btn btn-sm btn-primary text-nowrap">追加</button>
+                        <button type="submit" class="btn btn-sm btn-primary mt-2">講師を追加</button>
                     </form>
                 </div>
             </div>
         </div>
-        <!-- 学生 -->
         <div class="col-lg-6">
             <div class="pcfa-admin-section h-100 mb-0">
-                <div class="pcfa-admin-section-header">受講学生</div>
+                <div class="pcfa-admin-section-header">受講学生の割当</div>
                 <div class="pcfa-admin-section-body">
-                    <table class="table table-sm table-hover mb-3" id="studentTable">
-                        <thead class="table-light"><tr><th>氏名</th><th>メール</th><th></th></tr></thead>
-                        <tbody>
-                        <tr th:each="u : ${courseStudents}">
-                            <td th:text="${u.name}"></td>
-                            <td class="small text-muted" th:text="${u.email}"></td>
-                            <td class="text-end">
-                                <form th:action="@{/admin/courses/{cid}/remove-user(cid=${selectedCourse.id})}" method="post" class="d-inline">
-                                    <input type="hidden" name="userId" th:value="${u.id}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger">解除</button>
-                                </form>
-                            </td>
-                        </tr>
-                        <tr th:if="${courseStudents.empty}"><td colspan="3" class="text-muted text-center small">未割当</td></tr>
-                        </tbody>
-                    </table>
-                    <form th:action="@{/admin/courses/{id}/assign-student(id=${selectedCourse.id})}" method="post" class="d-flex gap-2">
-                        <select name="userId" class="form-select form-select-sm">
-                            <option th:each="u : ${studentCandidates}" th:value="${u.id}" th:text="${u.name}"></option>
+                    <input type="text" class="form-control form-control-sm mb-2" placeholder="登録済み学生を検索…"
+                           oninput="filterTableRows(this, 'studentTable')">
+                    <div class="table-responsive pcfa-scroll-table mb-3">
+                        <table class="table table-sm table-hover mb-0" id="studentTable">
+                            <thead class="table-light"><tr><th>氏名</th><th>メール</th><th></th></tr></thead>
+                            <tbody>
+                            <tr th:each="u : ${courseStudents}" th:attr="data-search=${u.name + ' ' + u.email}">
+                                <td th:text="${u.name}"></td>
+                                <td class="small text-muted" th:text="${u.email}"></td>
+                                <td class="text-end">
+                                    <form th:action="@{/admin/courses/{cid}/remove-user(cid=${selectedCourse.id})}" method="post" class="d-inline"
+                                          onsubmit="return confirm('学生の割当を解除しますか？')">
+                                        <input type="hidden" name="userId" th:value="${u.id}">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">解除</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <tr th:if="${courseStudents.empty}"><td colspan="3" class="text-muted text-center small">未割当</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="small fw-semibold mb-1">学生を追加（100名規模でも検索で選択）</p>
+                    <form th:action="@{/admin/courses/{id}/assign-student(id=${selectedCourse.id})}" method="post">
+                        <input type="text" class="form-control form-control-sm mb-1" placeholder="名前・メールで検索…"
+                               oninput="filterSelectOptions(this, 'studentSelect')">
+                        <select name="userId" id="studentSelect" class="form-select form-select-sm pcfa-picker-select" size="6" required>
+                            <option th:each="u : ${studentCandidates}" th:value="${u.id}"
+                                    th:attr="data-search=${u.name + ' ' + u.email}"
+                                    th:text="${u.name} + ' — ' + ${u.email}"></option>
                         </select>
-                        <button type="submit" class="btn btn-sm btn-success text-nowrap">追加</button>
+                        <button type="submit" class="btn btn-sm btn-success mt-2">学生を追加</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 授業日 -->
     <div class="pcfa-admin-section">
         <div class="pcfa-admin-section-header">授業日管理</div>
         <div class="pcfa-admin-section-body">
-            <div class="table-responsive mb-4">
+            <div class="table-responsive mb-4 pcfa-scroll-table">
                 <table class="table table-sm table-hover align-middle mb-0">
                     <thead class="table-light">
-                    <tr>
-                        <th>授業日</th>
-                        <th>開始</th>
-                        <th>終了</th>
-                        <th>出席受付時間帯</th>
-                        <th></th>
-                    </tr>
+                    <tr><th>授業日</th><th>開始</th><th>終了</th><th>出席受付時間帯</th><th></th></tr>
                     </thead>
                     <tbody>
                     <tr th:each="s : ${schedules}">
                         <td th:text="${s.lessonDate}"></td>
-                        <td>
-                            <span th:if="${s.startTime != null}" th:text="${#temporals.format(s.startTime,'HH:mm')}"></span>
-                            <span th:unless="${s.startTime != null}" class="text-muted">―</span>
-                        </td>
-                        <td>
-                            <span th:if="${s.endTime != null}" th:text="${#temporals.format(s.endTime,'HH:mm')}"></span>
-                            <span th:unless="${s.endTime != null}" class="text-muted">―</span>
-                        </td>
+                        <td><span th:if="${s.startTime != null}" th:text="${#temporals.format(s.startTime,'HH:mm')}"></span><span th:unless="${s.startTime != null}" class="text-muted">―</span></td>
+                        <td><span th:if="${s.endTime != null}" th:text="${#temporals.format(s.endTime,'HH:mm')}"></span><span th:unless="${s.endTime != null}" class="text-muted">―</span></td>
                         <td class="small text-muted">
-                            <span th:if="${s.startTime != null}"
-                                  th:text="${#temporals.format(s.startTime.minusMinutes(30),'HH:mm')} + ' 〜 ' + ${#temporals.format(s.startTime.plusMinutes(30),'HH:mm')}"></span>
+                            <span th:if="${s.startTime != null}" th:text="${#temporals.format(s.startTime.minusMinutes(30),'HH:mm')} + ' 〜 ' + ${#temporals.format(s.startTime.plusMinutes(30),'HH:mm')}"></span>
                             <span th:unless="${s.startTime != null}">終日受付</span>
                         </td>
                         <td class="text-end">
-                            <form th:action="@{/admin/courses/{cid}/schedule/delete/{sid}(cid=${selectedCourse.id},sid=${s.id})}" method="post" class="d-inline">
+                            <form th:action="@{/admin/courses/{cid}/schedule/delete/{sid}(cid=${selectedCourse.id},sid=${s.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('この授業日を削除しますか？')">
                                 <button type="submit" class="btn btn-sm btn-outline-danger">削除</button>
                             </form>
                         </td>
@@ -180,26 +209,23 @@
                 <li class="nav-item"><button class="nav-link active small" data-bs-toggle="tab" data-bs-target="#tabSingle">1件追加</button></li>
                 <li class="nav-item"><button class="nav-link small" data-bs-toggle="tab" data-bs-target="#tabBulk">一括追加</button></li>
             </ul>
-
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="tabSingle">
                     <form th:action="@{/admin/courses/{id}/schedule/add(id=${selectedCourse.id})}" method="post"
-                          class="row g-3 align-items-end">
-                        <div class="col-auto" th:replace="~{fragments/date-picker :: picker('lessonDate', '授業日', 'lessonDateInput')}"></div>
-                        <div class="col-auto" th:replace="~{fragments/time-picker :: picker('start', '開始時刻（任意）')}"></div>
-                        <div class="col-auto" th:replace="~{fragments/time-picker :: picker('end', '終了時刻（任意）')}"></div>
-                        <div class="col-auto">
-                            <button type="submit" class="btn btn-warning">追加</button>
-                        </div>
+                          class="d-flex flex-wrap gap-3 align-items-end">
+                        <div th:replace="~{fragments/date-picker :: picker('lessonDate', '授業日', 'lessonDateInput')}"></div>
+                        <div th:replace="~{fragments/time-picker :: picker('start', '開始（任意）')}"></div>
+                        <div th:replace="~{fragments/time-picker :: picker('end', '終了（任意）')}"></div>
+                        <button type="submit" class="btn btn-warning btn-sm">追加</button>
                     </form>
                 </div>
                 <div class="tab-pane fade" id="tabBulk">
                     <form th:action="@{/admin/courses/{id}/schedule/bulk-add(id=${selectedCourse.id})}" method="post">
-                        <div class="row g-3 align-items-end mb-3">
-                            <div class="col-auto" th:replace="~{fragments/date-picker :: picker('rangeFrom', '開始日', 'rangeFromInput')}"></div>
-                            <div class="col-auto" th:replace="~{fragments/date-picker :: picker('rangeTo', '終了日', 'rangeToInput')}"></div>
-                            <div class="col-auto" th:replace="~{fragments/time-picker :: picker('start', '開始（任意）')}"></div>
-                            <div class="col-auto" th:replace="~{fragments/time-picker :: picker('end', '終了（任意）')}"></div>
+                        <div class="d-flex flex-wrap gap-3 align-items-end mb-3">
+                            <div th:replace="~{fragments/date-picker :: picker('rangeFrom', '開始日', 'rangeFromInput')}"></div>
+                            <div th:replace="~{fragments/date-picker :: picker('rangeTo', '終了日', 'rangeToInput')}"></div>
+                            <div th:replace="~{fragments/time-picker :: picker('start', '開始（任意）')}"></div>
+                            <div th:replace="~{fragments/time-picker :: picker('end', '終了（任意）')}"></div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label small fw-semibold">曜日</label>
@@ -213,19 +239,17 @@
                                 <label class="form-check-label small"><input class="form-check-input me-1" type="checkbox" name="dayOfWeeks" value="SUNDAY">日</label>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-warning" onclick="return checkBulkForm()">一括追加</button>
+                        <button type="submit" class="btn btn-warning btn-sm" onclick="return checkBulkForm()">一括追加</button>
                     </form>
                 </div>
             </div>
-            <p class="text-muted small mt-3 mb-0">
-                ※ 開始時刻を設定すると、出席受付は<strong>開始30分前〜開始30分後</strong>に制限されます。
-            </p>
+            <p class="text-muted small mt-3 mb-0">※ 開始時刻設定時、出席受付は<strong>開始30分前〜30分後</strong>に制限されます。</p>
         </div>
     </div>
 </div>
 
 <div class="col-md-9 d-flex align-items-center justify-content-center text-muted" th:unless="${selectedCourse != null}">
-    <p class="mb-0">← 左のコースを選択してください</p>
+    <p class="mb-0">← 左のコースを選択するか、新規作成してください</p>
 </div>
 
 </div>
@@ -241,6 +265,19 @@ function filterCourses(q) {
         el.style.display = (el.dataset.name || '').toLowerCase().includes(q) ? '' : 'none';
     });
 }
+function filterSelectOptions(input, selectId) {
+    const q = input.value.toLowerCase();
+    document.querySelectorAll('#' + selectId + ' option').forEach(opt => {
+        const s = (opt.dataset.search || opt.textContent || '').toLowerCase();
+        opt.hidden = q && !s.includes(q);
+    });
+}
+function filterTableRows(input, tableId) {
+    const q = input.value.toLowerCase();
+    document.querySelectorAll('#' + tableId + ' tbody tr[data-search]').forEach(tr => {
+        tr.style.display = (tr.dataset.search || '').toLowerCase().includes(q) ? '' : 'none';
+    });
+}
 function checkBulkForm() {
     if (!document.querySelector('input[name="dayOfWeeks"]:checked')) {
         alert('曜日を1つ以上選択してください');
@@ -249,14 +286,7 @@ function checkBulkForm() {
     return true;
 }
 document.querySelectorAll('.pcfa-flatpickr').forEach(function(el) {
-    flatpickr(el, {
-        locale: 'ja',
-        dateFormat: 'Y-m-d',
-        minDate: '2025-01-01',
-        maxDate: '2028-12-31',
-        disableMobile: true,
-        allowInput: false
-    });
+    flatpickr(el, { locale: 'ja', dateFormat: 'Y-m-d', minDate: '2025-01-01', maxDate: '2028-12-31', disableMobile: true, allowInput: false });
 });
 </script>
 </body>

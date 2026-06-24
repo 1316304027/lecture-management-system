@@ -562,6 +562,8 @@ body.pcfa-body .nav-btn:hover {
 
 /* Flatpickr カレンダー（緑テーマ統一） */
 .pcfa-flatpickr {
+  width: 100%;
+  max-width: 180px;
   min-width: 168px;
   cursor: pointer;
   background-color: #fff;
@@ -577,4 +579,54 @@ body.pcfa-body .nav-btn:hover {
 .flatpickr-day.endRange {
   background: var(--pcfa-primary) !important;
   border-color: var(--pcfa-primary) !important;
+}
+
+/* コース管理・日付選択 */
+.pcfa-date-field {
+  flex: 0 0 auto;
+  width: 180px;
+  max-width: 100%;
+}
+
+.pcfa-no-resize {
+  resize: none;
+}
+
+.pcfa-course-sidebar {
+  min-height: calc(100vh - 56px);
+  background: #fff;
+}
+
+.pcfa-course-list {
+  max-height: calc(100vh - 280px);
+  overflow-y: auto;
+}
+
+.pcfa-picker-select {
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.pcfa-scroll-table {
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.pcfa-scroll-list {
+  max-height: calc(100vh - 220px);
+  overflow-y: auto;
+}
+
+.pcfa-attendance-sidebar {
+  background: #f8fafb;
+  min-height: calc(100vh - 56px);
+}
+
+.pcfa-attendance-layout {
+  min-height: calc(100vh - 56px);
+}
+
+.pcfa-modal-header {
+  background: var(--pcfa-primary);
+  color: #fff;
 }

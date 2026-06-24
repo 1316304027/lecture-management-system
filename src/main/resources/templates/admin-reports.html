@@ -2,6 +2,7 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>実績レポート</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
@@ -12,7 +13,6 @@
         .score-high { color: #198754; font-weight: 600; }
         .score-mid  { color: #fd7e14; font-weight: 600; }
         .score-low  { color: #dc3545; font-weight: 600; }
-        .sidebar { min-height: calc(100vh - 58px); background: #fff; border-right: 1px solid #e2e8f0; }
     </style>
 </head>
 <body class="pcfa-body">
@@ -25,22 +25,27 @@
 <div class="container-fluid p-0">
 <div class="row g-0">
 
-    <div class="col-md-2 sidebar p-3">
-        <p class="text-muted fw-bold small mb-2 border-bottom pb-1">コース選択</p>
-        <div class="list-group list-group-flush">
+    <div class="col-md-3 col-lg-2 pcfa-course-sidebar border-end p-3">
+        <p class="small fw-bold text-muted text-uppercase mb-2">コース選択</p>
+        <input type="text" class="form-control form-control-sm mb-2" placeholder="検索…" oninput="filterCourses(this.value)">
+        <div class="list-group list-group-flush" id="courseList">
             <a th:each="c : ${courseList}"
                th:href="@{/admin/reports(courseId=${c.id})}"
-               class="list-group-item list-group-item-action py-2 px-2 small"
+               class="list-group-item list-group-item-action py-2 small"
                th:classappend="${selectedCourse != null and selectedCourse.id == c.id} ? 'active' : ''"
-               th:text="${c.name}"></a>
-            <span th:if="${courseList.empty}" class="text-muted small">コースなし</span>
+               th:attr="data-name=${c.name}" th:text="${c.name}"></a>
         </div>
     </div>
 
     <div class="col p-4" th:if="${selectedCourse != null}">
-        <div class="pcfa-page-header mb-3">
-            <h1 class="h4 fw-bold mb-1" th:text="'実績レポート：' + ${selectedCourse.name}"></h1>
-            <p class="text-muted small mb-0">受講者ごとの出席・提出・採点状況を一覧表示します。</p>
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+            <div>
+                <h1 class="h4 fw-bold mb-1" th:text="'実績レポート：' + ${selectedCourse.name}"></h1>
+                <p class="text-muted small mb-0">出席・提出・採点の一覧とコース平均の可視化</p>
+            </div>
+            <a th:if="${!reportList.empty}"
+               th:href="@{/admin/reports/export(courseId=${selectedCourse.id})}"
+               class="btn btn-sm btn-outline-success">📥 CSVダウンロード（Excel可）</a>
         </div>
 
         <div class="pcfa-report-summary" th:unless="${reportList.empty}">
@@ -50,18 +55,55 @@
             </div>
             <div class="pcfa-report-stat">
                 <div class="val" th:text="${reportList[0].totalAssignments}">0</div>
-                <div class="lbl">課題数（受講者公開済）</div>
+                <div class="lbl">課題数（公開済）</div>
             </div>
             <div class="pcfa-report-stat">
                 <div class="val" th:text="${reportList[0].totalLessons}">0</div>
                 <div class="lbl">実施済み授業</div>
             </div>
+            <div class="pcfa-report-stat" th:if="${avgAttendanceRate != null}">
+                <div class="val" th:text="${avgAttendanceRate} + '%'">0%</div>
+                <div class="lbl">コース平均出席率</div>
+            </div>
+            <div class="pcfa-report-stat" th:if="${avgSubmissionRate != null}">
+                <div class="val" th:text="${avgSubmissionRate} + '%'">0%</div>
+                <div class="lbl">コース平均提出率</div>
+            </div>
         </div>
 
-        <div class="card pcfa-course-card">
-            <div class="card-body p-0">
+        <div class="row g-3 mb-4" th:unless="${reportList.empty}">
+            <div class="col-lg-6">
+                <div class="pcfa-admin-section mb-0 h-100">
+                    <div class="pcfa-admin-section-header py-2">出席率・提出率（受講者別）</div>
+                    <div class="pcfa-admin-section-body">
+                        <canvas id="reportChart" height="220"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="pcfa-admin-section mb-0 h-100">
+                    <div class="pcfa-admin-section-header py-2">採点状況サマリー</div>
+                    <div class="pcfa-admin-section-body small">
+                        <ul class="mb-0 ps-3">
+                            <li>採点済み合計：<span th:text="${#aggregates.sum(reportList.![evaluatedCount])}"></span> 件</li>
+                            <li>採点待ち合計：<span th:text="${#aggregates.sum(reportList.![pendingGradeCount])}"></span> 件</li>
+                            <li>未提出合計：<span th:text="${#aggregates.sum(reportList.![unsubmittedCount])}"></span> 件</li>
+                        </ul>
+                        <p class="text-muted mb-0 mt-2">平均スコアは採点済み提出のみで算出。未採点は0点にしません。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pcfa-admin-section">
+            <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center">
+                <span>受講者一覧</span>
+                <input type="text" class="form-control form-control-sm" style="width:180px" placeholder="名前検索…"
+                       oninput="filterReportRows(this.value)">
+            </div>
+            <div class="pcfa-admin-section-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0" id="reportTable">
                         <thead class="table-light">
                             <tr>
                                 <th>氏名</th>
@@ -73,15 +115,15 @@
                                 <th class="text-center">採点済</th>
                                 <th class="text-center">採点待ち</th>
                                 <th class="text-center">平均スコア</th>
+                                <th style="width:72px"></th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr th:each="r : ${reportList}">
+                            <tr th:each="r : ${reportList}" th:attr="data-search=${r.studentName + ' ' + r.studentEmail}">
                                 <td>
                                     <div class="d-flex align-items-center gap-2">
                                         <img th:if="${avatarUrlMap != null and avatarUrlMap[r.studentId] != null}"
-                                             th:src="${avatarUrlMap[r.studentId]}"
-                                             class="pcfa-avatar-sm" alt="">
+                                             th:src="${avatarUrlMap[r.studentId]}" class="pcfa-avatar-sm" alt="">
                                         <span th:unless="${avatarUrlMap != null and avatarUrlMap[r.studentId] != null}"
                                               class="pcfa-avatar-placeholder-sm"
                                               th:text="${#strings.substring(r.studentName,0,1)}"></span>
@@ -94,12 +136,9 @@
                                 </td>
                                 <td class="text-center">
                                     <span th:if="${r.totalLessons == 0}" class="text-muted">―</span>
-                                    <span th:if="${r.totalLessons > 0 and r.attendanceRate >= 80}"
-                                          class="rate-high" th:text="${r.attendanceRate} + '%'"></span>
-                                    <span th:if="${r.totalLessons > 0 and r.attendanceRate >= 70 and r.attendanceRate < 80}"
-                                          class="rate-mid" th:text="${r.attendanceRate} + '%'"></span>
-                                    <span th:if="${r.totalLessons > 0 and r.attendanceRate < 70}"
-                                          class="rate-low" th:text="${r.attendanceRate} + '%'"></span>
+                                    <span th:if="${r.totalLessons > 0 and r.attendanceRate >= 80}" class="rate-high" th:text="${r.attendanceRate} + '%'"></span>
+                                    <span th:if="${r.totalLessons > 0 and r.attendanceRate >= 70 and r.attendanceRate < 80}" class="rate-mid" th:text="${r.attendanceRate} + '%'"></span>
+                                    <span th:if="${r.totalLessons > 0 and r.attendanceRate < 70}" class="rate-low" th:text="${r.attendanceRate} + '%'"></span>
                                 </td>
                                 <td class="text-center">
                                     <span th:text="${r.submittedCount}"></span>/<span th:text="${r.totalAssignments}"></span>
@@ -116,40 +155,71 @@
                                 </td>
                                 <td class="text-center">
                                     <span th:if="${r.averageScore == null}" class="badge bg-secondary">採点待ち</span>
-                                    <span th:if="${r.averageScore != null and r.averageScore >= 80}"
-                                          class="score-high" th:text="${r.averageScore} + '点'"></span>
-                                    <span th:if="${r.averageScore != null and r.averageScore >= 60 and r.averageScore < 80}"
-                                          class="score-mid" th:text="${r.averageScore} + '点'"></span>
-                                    <span th:if="${r.averageScore != null and r.averageScore < 60}"
-                                          class="score-low" th:text="${r.averageScore} + '点'"></span>
+                                    <span th:if="${r.averageScore != null and r.averageScore >= 80}" class="score-high" th:text="${r.averageScore} + '点'"></span>
+                                    <span th:if="${r.averageScore != null and r.averageScore >= 60 and r.averageScore < 80}" class="score-mid" th:text="${r.averageScore} + '点'"></span>
+                                    <span th:if="${r.averageScore != null and r.averageScore < 60}" class="score-low" th:text="${r.averageScore} + '点'"></span>
+                                </td>
+                                <td class="text-end">
+                                    <a th:href="@{/admin/accounts/{id}/profile(id=${r.studentId}, returnTo=${'/admin/reports?courseId=' + selectedCourse.id})}"
+                                       class="btn btn-sm btn-outline-primary">詳細</a>
                                 </td>
                             </tr>
                             <tr th:if="${reportList.empty}">
-                                <td colspan="9" class="text-muted text-center py-4">受講者が登録されていません</td>
+                                <td colspan="10" class="text-muted text-center py-4">受講者が登録されていません</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
-
-        <div class="card border-0 mt-3" style="background:#f8fafb;">
-            <div class="card-body py-2 px-3 small">
-                <strong>凡例：</strong>
-                平均スコアは<strong>採点済み提出のみ</strong>の平均です。提出したが講師が未採点の場合は「採点待ち」と表示し、0点にはしません。
-                受講者の詳細プロフィールは<a href="/admin/accounts">ユーザー管理</a>から確認できます。
-            </div>
-        </div>
     </div>
 
-    <div class="col d-flex align-items-center justify-content-center text-muted"
-         th:unless="${selectedCourse != null}">
-        <div class="text-center py-5">
-            <p class="mb-0">← コースを選択してレポートを表示</p>
-        </div>
+    <div class="col d-flex align-items-center justify-content-center text-muted" th:unless="${selectedCourse != null}">
+        <p class="mb-0">← コースを選択してレポートを表示</p>
     </div>
 
 </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script th:inline="javascript">
+function filterCourses(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('#courseList a').forEach(el => {
+        el.style.display = (el.dataset.name || '').toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+function filterReportRows(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('#reportTable tbody tr[data-search]').forEach(tr => {
+        tr.style.display = (tr.dataset.search || '').toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+/*[# th:if="${reportList != null and !reportList.empty}"]*/
+(function() {
+    const labels = /*[[${reportList.![studentName]}]]*/ [];
+    const att = /*[[${reportList.![attendanceRate]}]]*/ [];
+    const sub = /*[[${reportList.![submissionRate]}]]*/ [];
+    const ctx = document.getElementById('reportChart');
+    if (!ctx) return;
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: '出席率%', data: att, backgroundColor: 'rgba(25,135,84,0.7)' },
+                { label: '提出率%', data: sub, backgroundColor: 'rgba(13,110,253,0.6)' }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true, max: 100 } },
+            plugins: { legend: { position: 'bottom' } }
+        }
+    });
+})();
+/*[/]*/
+</script>
 </body>
 </html>
