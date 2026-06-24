@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -77,33 +78,53 @@ public class AdminController {
     @PostMapping("/admin/accounts/create")
     public String createUser(
             @RequestParam String name, @RequestParam String email,
-            @RequestParam String password, @RequestParam String role,
-            HttpSession session, Model model) {
-        User loginUser = getLoginUser(session);
-        if (loginUser == null) return "redirect:/login";
-        String error = userService.createUser(name, email, password, role);
-        model.addAttribute("loginUser", loginUser);
-        model.addAttribute("userList", userService.findAll());
-        if (error != null) model.addAttribute("errorMessage", error);
-        else model.addAttribute("message", "ユーザーを作成しました");
-        return "admin-accounts";
+            @RequestParam String role,
+            HttpSession session, RedirectAttributes redirectAttributes) {
+        if (getLoginUser(session) == null) return "redirect:/login";
+        PasswordOperationResult result = userService.createUser(name, email, role);
+        if (!result.success()) {
+            redirectAttributes.addFlashAttribute("errorMessage", result.error());
+            if (result.devSetupLink() != null) {
+                redirectAttributes.addFlashAttribute("devSetupLink", result.devSetupLink());
+            }
+        } else if (result.emailSent()) {
+            redirectAttributes.addFlashAttribute("message",
+                    "ユーザーを作成しました。パスワード設定メールを AWS SES で送信しました：" + result.email());
+            redirectAttributes.addFlashAttribute("emailSentTo", result.email());
+        }
+        return "redirect:/admin/accounts";
     }
 
     @PostMapping("/admin/accounts/update/{id}")
     public String updateUser(
             @PathVariable Long id, @RequestParam String name,
             @RequestParam String email,
-            @RequestParam(required = false) String password,
             @RequestParam String role,
-            HttpSession session, Model model) {
-        User loginUser = getLoginUser(session);
-        if (loginUser == null) return "redirect:/login";
-        String error = userService.updateUser(id, name, email, password, role);
-        model.addAttribute("loginUser", loginUser);
-        model.addAttribute("userList", userService.findAll());
-        if (error != null) model.addAttribute("errorMessage", error);
-        else model.addAttribute("message", "ユーザーを更新しました");
-        return "admin-accounts";
+            HttpSession session, RedirectAttributes redirectAttributes) {
+        if (getLoginUser(session) == null) return "redirect:/login";
+        String error = userService.updateUser(id, name, email, role);
+        if (error != null) redirectAttributes.addFlashAttribute("errorMessage", error);
+        else redirectAttributes.addFlashAttribute("message", "ユーザーを更新しました");
+        return "redirect:/admin/accounts";
+    }
+
+    @PostMapping("/admin/accounts/{id}/reset-password")
+    public String resetPassword(
+            @PathVariable Long id,
+            HttpSession session, RedirectAttributes redirectAttributes) {
+        if (getLoginUser(session) == null) return "redirect:/login";
+        PasswordOperationResult result = userService.resetPasswordByAdmin(id);
+        if (!result.success()) {
+            redirectAttributes.addFlashAttribute("errorMessage", result.error());
+            if (result.devSetupLink() != null) {
+                redirectAttributes.addFlashAttribute("devSetupLink", result.devSetupLink());
+            }
+        } else if (result.emailSent()) {
+            redirectAttributes.addFlashAttribute("message",
+                    "パスワードをリセットしました。設定メールを AWS SES で送信しました：" + result.email());
+            redirectAttributes.addFlashAttribute("emailSentTo", result.email());
+        }
+        return "redirect:/admin/accounts";
     }
 
     @PostMapping("/admin/accounts/delete/{id}")
@@ -227,9 +248,7 @@ public class AdminController {
     @PostMapping("/admin/courses/{courseId}/schedule/add")
     public String addSchedule(
             @PathVariable Long courseId,
-            @RequestParam String lessonYear,
-            @RequestParam String lessonMonth,
-            @RequestParam String lessonDay,
+            @RequestParam String lessonDate,
             @RequestParam(required = false) String startHour,
             @RequestParam(required = false) String startMinute,
             @RequestParam(required = false) String endHour,
@@ -238,8 +257,7 @@ public class AdminController {
         if (getLoginUser(session) == null) return "redirect:/login";
         java.time.LocalTime st = parseOptionalTime(startHour, startMinute);
         java.time.LocalTime et = parseOptionalTime(endHour, endMinute);
-        courseScheduleService.addSchedule(courseId,
-                parseDate(lessonYear, lessonMonth, lessonDay), st, et);
+        courseScheduleService.addSchedule(courseId, LocalDate.parse(lessonDate), st, et);
         return "redirect:/admin/courses?courseId=" + courseId;
     }
 
@@ -250,12 +268,8 @@ public class AdminController {
     @PostMapping("/admin/courses/{courseId}/schedule/bulk-add")
     public String addScheduleBulk(
             @PathVariable Long courseId,
-            @RequestParam String rangeFromYear,
-            @RequestParam String rangeFromMonth,
-            @RequestParam String rangeFromDay,
-            @RequestParam String rangeToYear,
-            @RequestParam String rangeToMonth,
-            @RequestParam String rangeToDay,
+            @RequestParam String rangeFrom,
+            @RequestParam String rangeTo,
             @RequestParam(required = false) java.util.List<String> dayOfWeeks,
             @RequestParam(required = false) String startHour,
             @RequestParam(required = false) String startMinute,
@@ -275,8 +289,8 @@ public class AdminController {
 
         courseScheduleService.addScheduleBulk(
                 courseId,
-                parseDate(rangeFromYear, rangeFromMonth, rangeFromDay),
-                parseDate(rangeToYear, rangeToMonth, rangeToDay),
+                LocalDate.parse(rangeFrom),
+                LocalDate.parse(rangeTo),
                 dows, st, et);
         return "redirect:/admin/courses?courseId=" + courseId;
     }
@@ -452,13 +466,6 @@ public class AdminController {
         int h = Integer.parseInt(hour);
         int m = (minute != null && !minute.isBlank()) ? Integer.parseInt(minute) : 0;
         return java.time.LocalTime.of(h, m);
-    }
-
-    private LocalDate parseDate(String year, String month, String day) {
-        return LocalDate.of(
-                Integer.parseInt(year),
-                Integer.parseInt(month),
-                Integer.parseInt(day));
     }
 
     private User getLoginUser(HttpSession session) {

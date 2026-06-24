@@ -49,6 +49,13 @@ public class LoginController {
 
         User user = userOpt.get();
 
+        // パスワード未設定（メールリンク待ち）
+        if (Boolean.TRUE.equals(user.getPasswordNotSet())) {
+            model.addAttribute("errorMessage",
+                    "パスワードが未設定です。AWS SES で送信されたメールのリンクから、ご自身でパスワードを設定してください。");
+            return "login";
+        }
+
         // アカウント有効チェック
         if (Boolean.FALSE.equals(user.getActive())) {
             model.addAttribute("errorMessage", "このアカウントは無効です");
@@ -92,5 +99,37 @@ public class LoginController {
     public String logout(HttpSession session) {
         session.invalidate();
         return "redirect:/login";
+    }
+
+    /** 初回ログイン・リセット後のパスワード変更画面 */
+    @GetMapping("/change-password")
+    public String changePasswordPage(HttpSession session, Model model) {
+        User user = (User) session.getAttribute("loginUser");
+        if (user == null) return "redirect:/login";
+        model.addAttribute("loginUser", user);
+        return "change-password";
+    }
+
+    @PostMapping("/change-password")
+    public String changePassword(
+            @RequestParam String newPassword,
+            @RequestParam String confirmPassword,
+            HttpSession session,
+            Model model) {
+        User user = (User) session.getAttribute("loginUser");
+        if (user == null) return "redirect:/login";
+        String err = userService.changeOwnPassword(user.getId(), newPassword, confirmPassword);
+        if (err != null) {
+            model.addAttribute("errorMessage", err);
+            model.addAttribute("loginUser", user);
+            return "change-password";
+        }
+        User refreshed = userService.findById(user.getId());
+        session.setAttribute("loginUser", refreshed);
+        return switch (refreshed.getRole()) {
+            case "ADMIN"      -> "redirect:/admin/home";
+            case "INSTRUCTOR" -> "redirect:/instructor/home";
+            default           -> "redirect:/student/home";
+        };
     }
 }

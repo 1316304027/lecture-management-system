@@ -35,4 +35,30 @@ public class AnnouncementService {
         announcementRepository.save(a);
         return null;
     }
+
+    public CourseAnnouncement findById(Long id) {
+        return announcementRepository.findById(id).orElse(null);
+    }
+
+    public String update(User author, Long announcementId, Long courseId, String title, String content) {
+        CourseAnnouncement a = findById(announcementId);
+        if (a == null || !a.getCourse().getId().equals(courseId)) {
+            return "お知らせが見つかりません";
+        }
+        if (title == null || title.isBlank()) return "タイトルを入力してください";
+        if (content == null || content.isBlank()) return "内容を入力してください";
+        a.setTitle(title.trim());
+        a.setContent(content.trim());
+        announcementRepository.save(a);
+        return null;
+    }
+
+    public String delete(User author, Long announcementId, Long courseId) {
+        CourseAnnouncement a = findById(announcementId);
+        if (a == null || !a.getCourse().getId().equals(courseId)) {
+            return "お知らせが見つかりません";
+        }
+        announcementRepository.delete(a);
+        return null;
+    }
 }

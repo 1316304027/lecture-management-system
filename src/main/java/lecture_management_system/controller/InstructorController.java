@@ -133,6 +133,37 @@ public class InstructorController {
         return "redirect:/instructor/announcements?courseId=" + courseId;
     }
 
+    @PostMapping("/instructor/announcements/{id}/update")
+    public String updateAnnouncement(
+            @PathVariable Long id,
+            @RequestParam Long courseId,
+            @RequestParam String title,
+            @RequestParam String content,
+            HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+        String err = announcementService.update(loginUser, id, courseId, title, content);
+        if (err != null) {
+            model.addAttribute("errorMessage", err);
+            model.addAttribute("loginUser", loginUser);
+            model.addAttribute("course", courseService.findById(courseId));
+            model.addAttribute("announcements", announcementService.getByCourse(courseId));
+            return "instructor-announcements";
+        }
+        return "redirect:/instructor/announcements?courseId=" + courseId;
+    }
+
+    @PostMapping("/instructor/announcements/{id}/delete")
+    public String deleteAnnouncement(
+            @PathVariable Long id,
+            @RequestParam Long courseId,
+            HttpSession session) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+        announcementService.delete(loginUser, id, courseId);
+        return "redirect:/instructor/announcements?courseId=" + courseId;
+    }
+
     /**
      * 教材アップロード処理（POST /instructor/materials）
      * Material upload (POST /instructor/materials)

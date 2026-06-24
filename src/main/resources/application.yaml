@@ -51,6 +51,16 @@ aws:
   s3:
     bucket-name: lecture-system-files-wei
     region: ap-northeast-1
+  ses:
+    # SES で検証済みの送信元メール（EC2 IAM に ses:SendEmail 権限が必要）
+    from-email: ${SES_FROM_EMAIL:admin@test.com}
+    region: ap-northeast-1
 
 app:
   internal-token: ${INTERNAL_TOKEN:LectureInternal2026!}
+  # 本番 EC2 の公開 URL（メール内リンク用）
+  base-url: ${APP_BASE_URL:http://localhost:8080}
+  mail:
+    enabled: ${MAIL_ENABLED:true}
+    # ローカル開発のみ：SES 失敗時に管理者画面へ設定リンクを表示
+    dev-show-link-on-failure: ${MAIL_DEV_SHOW_LINK:false}

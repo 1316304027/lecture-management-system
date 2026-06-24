@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第四版 UX修正 — 理解报告 | PCFA</title>
+<style>
+:root {
+  --green: #157347;
+  --green-dark: #0f5132;
+  --bg: #f4f6f8;
+  --card: #fff;
+  --jp-bg: #e8f5e9;
+  --jp-border: #157347;
+}
+* { box-sizing: border-box; }
+body {
+  font-family: "Microsoft YaHei", "Hiragino Sans", "Yu Gothic", sans-serif;
+  margin: 0;
+  background: var(--bg);
+  color: #222;
+  line-height: 1.7;
+  font-size: 15px;
+}
+.topbar {
+  background: linear-gradient(90deg, var(--green-dark), var(--green));
+  color: #fff;
+  padding: 14px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.topbar h1 { margin: 0; font-size: 1.15rem; font-weight: 700; }
+.topbar p { margin: 4px 0 0; font-size: .85rem; opacity: .9; }
+.wrap {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 20px 20px 60px;
+}
+.tip {
+  background: #fff3cd;
+  border: 1px solid #ffc107;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  border-radius: 10px;
+  font-size: .95rem;
+}
+.tip strong { color: #856404; }
+nav.toc {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+}
+nav.toc h2 { margin: 0 0 10px; font-size: 1rem; color: var(--green); }
+nav.toc ol { margin: 0; padding-left: 1.4rem; }
+nav.toc a { color: var(--green-dark); text-decoration: none; }
+nav.toc a:hover { text-decoration: underline; }
+section {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 22px 26px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 12px rgba(0,0,0,.06);
+  page-break-inside: avoid;
+}
+h2 {
+  color: var(--green-dark);
+  font-size: 1.25rem;
+  margin: 0 0 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--green);
+}
+h3 { color: #1a1a2e; font-size: 1.05rem; margin: 1.2em 0 .6em; }
+p { margin: .6em 0; }
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  margin: 12px 0;
+  page-break-inside: avoid;
+}
+th, td {
+  border: 1px solid #dee2e6;
+  padding: 8px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+th { background: #e9f5ee; color: var(--green-dark); font-weight: 600; }
+code {
+  background: #f0f2f5;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: .88em;
+}
+pre {
+  background: #1e293b;
+  color: #e2e8f0;
+  padding: 14px 16px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin: 12px 0;
+  page-break-inside: avoid;
+}
+.jp {
+  background: var(--jp-bg);
+  border-left: 4px solid var(--jp-border);
+  padding: 12px 16px;
+  margin: 14px 0;
+  border-radius: 0 8px 8px 0;
+  font-size: .95rem;
+}
+.jp-label {
+  display: inline-block;
+  background: var(--green);
+  color: #fff;
+  font-size: .75rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.must {
+  background: #fff5f5;
+  border: 1px solid #f5c2c7;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin: 12px 0;
+}
+ul, ol { margin: .4em 0; padding-left: 1.5rem; }
+li { margin: .25em 0; }
+.checklist { list-style: none; padding-left: 0; }
+.checklist li::before { content: "☐ "; color: var(--green); font-weight: bold; }
+.tag {
+  display: inline-block;
+  background: #e9f5ee;
+  color: var(--green-dark);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: .8rem;
+  margin-right: 4px;
+}
+@media print {
+  body { background: #fff; font-size: 12px; }
+  .topbar { position: static; }
+  .tip, .topbar p { display: none; }
+  .wrap { padding: 0; max-width: 100%; }
+  section { box-shadow: none; border: 1px solid #ddd; margin-bottom: 12px; }
+  pre { background: #f4f4f4; color: #222; border: 1px solid #ccc; }
+  a { color: #000; text-decoration: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>第四版 UX 修正 — 详细理解报告</h1>
+  <p>魏玉臻 · PCFA 受講管理システム · 6/29 发表必背 · 中文讲解 + 日语台词</p>
+</div>
+
+<div class="wrap">
+
+<div class="tip">
+  <strong>导出 PDF：</strong>按 <kbd>Ctrl</kbd>+<kbd>P</kbd>（Mac：<kbd>⌘</kbd>+<kbd>P</kbd>）→ 目标打印机选「另存为 PDF」→ 边距选「默认」→ 保存。<br>
+  <strong>本地路径：</strong><code>lecture-management-system/demo/docs/第四版_UX修正_理解报告.html</code> — 双击用 Chrome / Edge 打开即可。
+</div>
+
+<nav class="toc">
+  <h2>目录</h2>
+  <ol>
+    <li><a href="#s1">核心原则 — 画面分工</a></li>
+    <li><a href="#s2">修改1：「公开课」误解与文案</a></li>
+    <li><a href="#s3">修改2：プロフィール只从ユーザー管理进</a></li>
+    <li><a href="#s4">修改3：お知らせ独立页面</a></li>
+    <li><a href="#s5">修改4：日期下拉框</a></li>
+    <li><a href="#s6">修改5：管理者界面统一</a></li>
+    <li><a href="#s7">修改6：採点待ち（实绩报告分数）</a></li>
+    <li><a href="#s8">Spring Boot 三层链路</a></li>
+    <li><a href="#s9">发表 Demo 推荐路线</a></li>
+    <li><a href="#s10">Q&A 卡片（日语参考答案）</a></li>
+    <li><a href="#s11">自检清单</a></li>
+    <li><a href="#s12">文件速查表</a></li>
+  </ol>
+</nav>
+
+<!-- ===== 1 ===== -->
+<section id="s1">
+<h2>一、核心原则 — 你必须先懂这个</h2>
+<p>这次修改的<strong>本质</strong>不是「换皮肤」，而是<strong>信息架构</strong>：每个画面只干一件事，不重复、不绕路。</p>
+<table>
+<tr><th>画面</th><th>干什么</th><th>比喻</th></tr>
+<tr><td><strong>実績レポート</strong></td><td>看数字：出席率、提出率、平均分</td><td>成绩单</td></tr>
+<tr><td><strong>ユーザー管理</strong></td><td>管账号：创建、编辑、看详细プロフィール</td><td>人事档案室</td></tr>
+<tr><td><strong>教材 / 課題</strong></td><td>管 PDF 和作业，设置是否对学生<strong>显示</strong></td><td>教务资料柜</td></tr>
+<tr><td><strong>お知らせ</strong></td><td>讲师发文字通知，学生在コースポータル看</td><td>班级公告栏</td></tr>
+</table>
+<div class="must">
+<strong>必须掌握（中文）：</strong>列表页只展示汇总数据和小头像；学生的<strong>完整资料</strong>只在「ユーザー管理」里打开。实绩报告<strong>不再</strong>有「プロフィール」按钮。
+</div>
+<div class="jp">
+<div class="jp-label">日语 · 发表必背（20秒）</div>
+実績レポートは成績の一覧用です。受講者の詳細プロフィールは、ユーザー管理に集約しました。一覧では識別用にアバターのみ表示します。
+</div>
+</section>
+
+<!-- ===== 2 ===== -->
+<section id="s2">
+<h2>二、修改1：「公开课」误解 — 文案改正</h2>
+<h3>发生了什么？</h3>
+<p>画面上有「公開課題数」「公開中」，容易被理解成「对外公开的课程」。<br>
+实际含义：<strong>讲师已对学生开放可见</strong>的课题/教材（数据库字段 <code>published = true</code>）。</p>
+<h3>技术本质（面试用）</h3>
+<ul>
+<li>实体：<code>Material.published</code>、<code>Assignment.published</code>（布尔值）</li>
+<li>统计：<code>ReportService</code> 调用 <code>countByCourse_IdAndPublishedTrue</code></li>
+<li>学生端：Repository 只查 <code>published = true</code> 的记录</li>
+</ul>
+<h3>文案对照</h3>
+<table>
+<tr><th>位置</th><th>旧</th><th>新</th></tr>
+<tr><td>实绩报告统计卡</td><td>公開課題数</td><td><strong>課題数（受講者公開済）</strong></td></tr>
+<tr><td>教材状态</td><td>公開中</td><td><strong>表示中</strong></td></tr>
+<tr><td>上传选项</td><td>即時公開</td><td><strong>アップロード後すぐ受講者に表示</strong></td></tr>
+<tr><td>课题列头</td><td>公開状態</td><td><strong>受講者への表示</strong></td></tr>
+</table>
+<h3>请求链路（背一条）</h3>
+<pre>讲师勾选「表示する」→ POST toggle
+  → MaterialService 修改 published
+  → PostgreSQL (RDS)
+学生打开教材页 → 只查询 published=true</pre>
+<div class="jp">
+<div class="jp-label">日语 · 15秒</div>
+「公開」は外部公開ではなく、受講者に教材や課題を表示するかどうかの設定です。非表示の資料は学生画面には出ません。
+</div>
+<div class="jp">
+<div class="jp-label">日语 · 社长追问</div>
+<strong>Q:</strong> 公開と非公開の違いは？<br>
+<strong>A:</strong> 講師が受講者に見せるかどうかのフラグです。DB の published カラムで管理しています。
+</div>
+</section>
+
+<!-- ===== 3 ===== -->
+<section id="s3">
+<h2>三、修改2：プロフィール — 只从ユーザー管理进</h2>
+<h3>以前的问题（你截图里的）</h3>
+<ul>
+<li>实绩报告 + 用户管理 <strong>两处</strong>都有「プロフィール」按钮</li>
+<li>从实绩报告点进去，返回却写死「← ユーザー管理」→ 导航混乱</li>
+</ul>
+<h3>现在的规则</h3>
+<table>
+<tr><th>页面</th><th>显示什么</th><th>能进详情吗？</th></tr>
+<tr><td>実績レポート</td><td>头像 + 姓名 + 出席/提出/分数</td><td>❌ 不能</td></tr>
+<tr><td>ユーザー管理</td><td>头像 + 列表 + 操作按钮</td><td>✅ 受讲者有「プロフィール」</td></tr>
+</table>
+<h3>技术链路 A — 实绩报告（只有头像）</h3>
+<pre>GET /admin/reports?courseId=1
+  → AdminController.reports()
+  → ReportService.getCourseReport()        // 算出席率、提出率、平均分
+  → ProfileService.buildAvatarUrlMap()     // 批量生成 S3 头像 URL
+  → admin-reports.html 渲染（无プロフィール按钮）</pre>
+<h3>技术链路 B — 用户详情</h3>
+<pre>GET /admin/accounts/{userId}/profile
+  → AdminController.userProfile()
+  → ProfileService.getAvatarUrl(user)
+  → fragments/profile-card.html
+  → returnUrl = /admin/accounts（返回用户管理）</pre>
+<h3>头像为什么全站通用？</h3>
+<ul>
+<li><code>users</code> 表字段 <code>avatar_s3_key</code> 存 S3 路径</li>
+<li><code>ProfileService.getAvatarUrl()</code> 生成临时读 URL（Presigned GET）</li>
+<li><code>buildAvatarUrlMap()</code> 给列表页批量生成，避免重复查询</li>
+</ul>
+<div class="jp">
+<div class="jp-label">日语 · 必背</div>
+プロフィール詳細はユーザー管理からのみ開けます。実績レポートでは識別用にアバターを表示しますが、詳細画面には遷移しません。
+</div>
+<div class="jp">
+<div class="jp-label">日语 · 追问：照片存在哪？</div>
+S3 に保存し、DB にはキーのみ保持します。表示時に Presigned URL を発行します。
+</div>
+</section>
+
+<!-- ===== 4 ===== -->
+<section id="s4">
+<h2>四、修改3：お知らせ — 从教材页拆出</h2>
+<h3>为什么拆？</h3>
+<p>以前公告塞在教材管理页面最底下，和 PDF 上传混在一起，职责不清。</p>
+<h3>现在的 URL 分工</h3>
+<table>
+<tr><th>URL</th><th>谁用</th><th>干什么</th></tr>
+<tr><td><code>/instructor/materials?courseId=</code></td><td>讲师</td><td>只管 PDF 教材</td></tr>
+<tr><td><code>/instructor/announcements?courseId=</code></td><td>讲师</td><td><strong>发帖 + 历史列表</strong></td></tr>
+<tr><td><code>POST /instructor/announcements</code></td><td>讲师</td><td>提交后写 DB，跳回公告页</td></tr>
+<tr><td><code>/student/course?courseId=</code></td><td>学生</td><td>コースポータル，<strong>只读</strong>公告</td></tr>
+</table>
+<h3>完整链路（Demo 讲这条）</h3>
+<pre>讲师填标题+内容 → POST /instructor/announcements
+  → InstructorController.postAnnouncement()
+  → AnnouncementService.create()   // 校验是否担当该课程
+  → INSERT course_announcements
+  → redirect /instructor/announcements?courseId=
+
+学生打开コース詳細
+  → StudentController.coursePortal()
+  → announcementService.getByCourse()
+  → student-course-portal.html</pre>
+<p>数据表：<code>course_announcements</code>（course_id, title, content, created_at, author_id）</p>
+<h3>讲师主页按钮（7个）</h3>
+<pre>教材管理 | 課題管理
+提出確認 | 出欠確認
+受講者一覧 | お知らせ
+チャット（未読バッジ）</pre>
+<div class="jp">
+<div class="jp-label">日语 · 15秒</div>
+お知らせ機能を教材管理から分離し、専用画面で投稿・管理できるようにしました。受講者はコースポータルで閲覧します。
+</div>
+</section>
+
+<!-- ===== 5 ===== -->
+<section id="s5">
+<h2>五、修改4：日期 — 年/月/日下拉框</h2>
+<h3>问题</h3>
+<p><code>&lt;input type="date"&gt;</code> 各浏览器样式不同，和全站绿色主题不统一。</p>
+<h3>实现</h3>
+<ul>
+<li>片段文件：<code>fragments/date-picker.html</code></li>
+<li>三个下拉：<code>lessonYear</code> / <code>lessonMonth</code> / <code>lessonDay</code></li>
+<li>后端：<code>AdminController.parseDate()</code> → <code>LocalDate.of(年,月,日)</code></li>
+<li>样式：<code>pcfa-date-picker</code>（与时刻选择 <code>pcfa-time-picker</code> 一致）</li>
+</ul>
+<pre>管理员选 2026年6月24日 → POST /admin/courses/{id}/schedule/add
+  → parseDate() → LocalDate
+  → CourseScheduleService.addSchedule()
+  → course_schedules 表</pre>
+<div class="jp">
+<div class="jp-label">日语</div>
+授業日の入力は、ブラウザ標準の日付ピッカーではなく、年・月・日のドロップダウンに統一しました。時刻入力と同じ UI 方針です。
+</div>
+</section>
+
+<!-- ===== 6 ===== -->
+<section id="s6">
+<h2>六、修改5：管理者界面统一</h2>
+<table>
+<tr><th>页面</th><th>文件</th><th>变化</th></tr>
+<tr><td>管理者ポータル</td><td>admin-home.html</td><td>统计卡 + 3列功能菜单</td></tr>
+<tr><td>ユーザー管理</td><td>admin-accounts.html</td><td>绿色标题分区 pcfa-admin-section</td></tr>
+<tr><td>チャット閲覧</td><td>admin-chat.html</td><td>同上</td></tr>
+<tr><td>コース管理</td><td>admin-courses.html</td><td>侧边栏 + 日期/时刻下拉</td></tr>
+<tr><td>実績レポート</td><td>admin-reports.html</td><td>统计卡 + 头像列</td></tr>
+</table>
+<p>全站样式文件：<code>static/pcfa-theme.css</code></p>
+<div class="jp">
+<div class="jp-label">日语</div>
+管理者画面を共通テーマで統一し、ポータルから各機能へ迷わず遷移できるようにしました。
+</div>
+</section>
+
+<!-- ===== 7 ===== -->
+<section id="s7">
+<h2>七、修改6：採点待ち — 分数不能显示 0</h2>
+<p>业务规则：学生已提交、讲师未批改 → <strong>不能算 0 分</strong>。</p>
+<ul>
+<li><code>ReportService.calcGradedAverage()</code> 只平均 <code>score IS NOT NULL</code> 的提交</li>
+<li>若一条都没批改 → <code>averageScore = null</code> → 画面显示「採点待ち」徽章</li>
+</ul>
+<div class="jp">
+<div class="jp-label">日语 · 必背</div>
+未採点の提出は平均点に含めません。採点が完了するまでは「採点待ち」と表示します。0点として扱いません。
+</div>
+</section>
+
+<!-- ===== 8 ===== -->
+<section id="s8">
+<h2>八、Spring Boot 三层 — 用实绩报告举例</h2>
+<pre>浏览器 GET /admin/reports?courseId=1
+    ↓
+AdminController.reports()           ← 检查 Session、往 Model 塞数据
+    ↓
+ReportService.getCourseReport()       ← 业务：出席率、提出率、平均分
+ProfileService.buildAvatarUrlMap()  ← 业务：头像 URL
+    ↓
+各 Repository → PostgreSQL (RDS)
+    ↓
+admin-reports.html（Thymeleaf 渲染 HTML）</pre>
+<table>
+<tr><th>层</th><th>干什么</th><th>日语</th></tr>
+<tr><td>Controller</td><td>收 HTTP、检查登录、选页面</td><td>リクエストを受け取り、画面に渡す</td></tr>
+<tr><td>Service</td><td>业务规则、组合多个查询</td><td>業務ロジックを担当する</td></tr>
+<tr><td>Repository</td><td>数据库 CRUD（JPA）</td><td>データベースアクセス</td></tr>
+<tr><td>templates</td><td>HTML 画面</td><td>画面表示</td></tr>
+</table>
+</section>
+
+<!-- ===== 9 ===== -->
+<section id="s9">
+<h2>九、发表 Demo 推荐路线（约4分钟）</h2>
+<ol>
+<li><span class="tag">管理者</span> 登录 admin@test.com → 新ポータル菜单</li>
+<li><span class="tag">ユーザー管理</span> → 点学生「プロフィール」→ 讲 S3 头像 + 所属コース</li>
+<li><span class="tag">実績レポート</span> → 选课程 → 指出：只有头像、无プロフィール、採点待ち</li>
+<li><span class="tag">コース管理</span> → 授業日下拉 + 时刻下拉</li>
+<li><span class="tag">講師</span> 换 teacher@test.com → お知らせ独立页发帖</li>
+<li><span class="tag">受講者</span> 换 student@test.com → コース詳細看公告</li>
+</ol>
+<p>测试密码：<code>Admin1234</code></p>
+</section>
+
+<!-- ===== 10 ===== -->
+<section id="s10">
+<h2>十、Q&A 卡片 — 社长可能问的 10 题（日语参考答案）</h2>
+
+<h3>1. このシステムの目的は？</h3>
+<div class="jp">講師・受講者・管理者の三役割で、出席・教材・課題・チャットを一元管理する受講管理システムです。</div>
+
+<h3>2. なぜプロフィールをユーザー管理に集約？</h3>
+<div class="jp">実績レポートは数値確認用、ユーザー管理はアカウント管理用と役割を分け、画面遷移の混乱を防ぐためです。</div>
+
+<h3>3. 「公開」の意味は？</h3>
+<div class="jp">受講者に教材や課題を表示するかどうかの設定であり、コースを外部公開する機能ではありません。</div>
+
+<h3>4. ファイルはどこに保存？</h3>
+<div class="jp">RDS にメタデータ、PDF や画像は S3 です。大きいファイルは Presigned URL でブラウザから直接 S3 にアップロードします。</div>
+
+<h3>5. チャット未読はどう実装？</h3>
+<div class="jp">chat_read_status テーブルで最終既読時刻を管理し、未読件数をホームにバッジ表示します。</div>
+
+<h3>6. 平均スコアが0にならない理由は？</h3>
+<div class="jp">未採点を0点として平均に入れると誤解を招くため、採点済みのみ平均し、それ以外は「採点待ち」です。</div>
+
+<h3>7. お知らせと教材の違いは？</h3>
+<div class="jp">教材は PDF 資料、お知らせは講師から受講者へのテキスト連絡です。画面も DB も分けています。</div>
+
+<h3>8. デプロイ環境は？</h3>
+<div class="jp">AWS EC2 上の Docker で Spring Boot、DB は RDS PostgreSQL、ファイルは S3 です。</div>
+
+<h3>9. AI で作ったのか？</h3>
+<div class="jp">Cursor を補助ツールとして使いましたが、要件の整理、動作確認、AWS デプロイ、不具合修正は自分で行いました。設計の意図は説明できます。</div>
+
+<h3>10. 今後の改善（7月）？</h3>
+<div class="jp">UI の継続改善、テスト自動化、必要に応じて Cognito による認証強化などを検討しています。</div>
+</section>
+
+<!-- ===== 11 ===== -->
+<section id="s11">
+<h2>十一、发表前一天自检清单</h2>
+<ul class="checklist">
+<li>能用中文说出：实绩报告 vs 用户管理 各自干什么</li>
+<li>能用日语说：プロフィールはユーザー管理に集約</li>
+<li>能解释「公開」= 对学生显示，不是公开课</li>
+<li>能走通：讲师发帖 → 学生コースポータル看到</li>
+<li>能指出：实绩报告无プロフィール按钮、有头像</li>
+<li>能说出 /admin/reports 经过 AdminController + ReportService</li>
+<li>EC2 或本地 Ctrl+Shift+R 强刷后是最新版</li>
+</ul>
+</section>
+
+<!-- ===== 12 ===== -->
+<section id="s12">
+<h2>十二、文件速查表</h2>
+<table>
+<tr><th>功能</th><th>Controller</th><th>Service</th><th>模板</th></tr>
+<tr><td>实绩报告</td><td>AdminController.reports</td><td>ReportService</td><td>admin-reports.html</td></tr>
+<tr><td>用户详情</td><td>AdminController.userProfile</td><td>ProfileService</td><td>admin-user-profile.html</td></tr>
+<tr><td>公告</td><td>InstructorController</td><td>AnnouncementService</td><td>instructor-announcements.html</td></tr>
+<tr><td>授業日</td><td>AdminController.addSchedule</td><td>CourseScheduleService</td><td>date-picker.html</td></tr>
+<tr><td>管理者首页</td><td>AdminController.home</td><td>UserService</td><td>admin-home.html</td></tr>
+</table>
+<p style="margin-top:20px;color:#666;font-size:.9rem;">
+  学完建议：合上文档，用自己的话讲一遍「修改1～3」。卡壳处对着绿色日语框念两遍。<br>
+  相关文档：<code>PRESENTATION_LEARN.md</code> · <code>发表稿_15分钟.md</code> · <code>零基础_面试手敲全指南.html</code>
+</p>
+</section>
+
+</div>
+</body>
+</html>

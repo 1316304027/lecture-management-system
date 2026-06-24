@@ -530,3 +530,51 @@ body.pcfa-body .nav-btn:hover {
   font-size: 0.75rem;
   color: #6c757d;
 }
+
+/* ユーザー管理：操作ボタン整列 */
+.pcfa-user-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+}
+
+.pcfa-user-table td {
+  vertical-align: middle;
+}
+
+.pcfa-temp-password {
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #856404;
+  background: #fff;
+  border: 2px dashed #ffc107;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  display: inline-block;
+}
+
+.pcfa-edit-panel {
+  margin-bottom: 1rem;
+}
+
+/* Flatpickr カレンダー（緑テーマ統一） */
+.pcfa-flatpickr {
+  min-width: 168px;
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.flatpickr-calendar {
+  border-radius: 10px !important;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12) !important;
+}
+
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+  background: var(--pcfa-primary) !important;
+  border-color: var(--pcfa-primary) !important;
+}

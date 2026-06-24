@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>第五版 安全与UX — 理解报告 | PCFA</title>
+<style>
+:root{--green:#157347;--green-dark:#0f5132;--bg:#f4f6f8;--card:#fff;--jp-bg:#e8f5e9}
+*{box-sizing:border-box}
+body{font-family:"Microsoft YaHei","Yu Gothic",sans-serif;margin:0;background:var(--bg);color:#222;line-height:1.7;font-size:15px}
+.topbar{background:linear-gradient(90deg,var(--green-dark),var(--green));color:#fff;padding:14px 24px;position:sticky;top:0;z-index:100}
+.topbar h1{margin:0;font-size:1.15rem}
+.topbar p{margin:4px 0 0;font-size:.85rem;opacity:.9}
+.wrap{max-width:920px;margin:0 auto;padding:20px 20px 60px}
+.tip{background:#fff3cd;border:1px solid #ffc107;padding:14px 18px;margin-bottom:20px;border-radius:10px}
+section{background:var(--card);border-radius:12px;padding:22px 26px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);page-break-inside:avoid}
+h2{color:var(--green-dark);font-size:1.25rem;margin:0 0 14px;padding-bottom:8px;border-bottom:2px solid var(--green)}
+h3{color:#1a1a2e;font-size:1.05rem;margin:1.2em 0 .6em}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+th,td{border:1px solid #dee2e6;padding:8px 10px;text-align:left}
+th{background:#e9f5ee;color:var(--green-dark)}
+pre{background:#1e293b;color:#e2e8f0;padding:14px;border-radius:8px;font-size:12.5px;overflow-x:auto}
+.jp{background:var(--jp-bg);border-left:4px solid var(--green);padding:12px 16px;margin:14px 0;border-radius:0 8px 8px 0}
+.jp-label{display:inline-block;background:var(--green);color:#fff;font-size:.75rem;padding:2px 8px;border-radius:4px;margin-bottom:6px;font-weight:600}
+.must{background:#fff5f5;border:1px solid #f5c2c7;padding:12px 16px;border-radius:8px;margin:12px 0}
+@media print{body{background:#fff;font-size:12px}.tip,.topbar p{display:none}section{box-shadow:none;border:1px solid #ddd}pre{background:#f4f4f4;color:#222}}
+</style>
+</head>
+<body>
+<div class="topbar">
+<h1>第五版 — 密码安全 · 日历选择 · 用户管理 · お知らせ</h1>
+<p>魏玉臻 · 6/29 发表必背 · 针对领导指摘的 5 点修改</p>
+</div>
+<div class="wrap">
+<div class="tip"><strong>导出 PDF：</strong>Ctrl+P → 另存为 PDF<br>
+<strong>路径：</strong><code>demo/docs/第五版_安全与UX_理解报告.html</code></div>
+
+<section>
+<h2>一、你的 5 个问题 — 设计结论（先背这个）</h2>
+<table>
+<tr><th>#</th><th>问题</th><th>结论</th></tr>
+<tr><td>1</td><td>用户管理整齐吗？</td><td>已重做：表单分行、操作按钮 flex 对齐、编辑独立面板</td></tr>
+<tr><td>2</td><td>学生详情放哪？</td><td><strong>只在ユーザー管理</strong>。实绩报告只看数据+头像</td></tr>
+<tr><td>3</td><td>2月31天？要日历！</td><td>已换 <strong>Flatpickr 日历</strong>（绿色主题），不再用年月日下拉</td></tr>
+<tr><td>4</td><td>密码安全</td><td>管理员<strong>不能设密码</strong>，只能<strong>リセット</strong>；用户首次登录强制改密</td></tr>
+<tr><td>5</td><td>お知らせ干啥？</td><td>讲师发通知→学生コース詳細看；已加<strong>编辑/删除</strong></td></tr>
+</table>
+<div class="jp"><div class="jp-label">日语总括（30秒）</div>
+ユーザー管理ではパスワードを直接設定せず、リセットのみ可能にしました。初回ログイン時に本人が変更します。実績レポートとプロフィールの役割を分離し、授業日はカレンダーUIで入力します。お知らせは受講者への連絡用で、編集・削除も可能です。</div>
+</section>
+
+<section>
+<h2>二、密码安全（领导指摘 — 最重要）</h2>
+<h3>以前的问题</h3>
+<p>管理员创建用户时直接输入密码 → 领导认为违反信息安全（管理员知道用户密码）。</p>
+<h3>现在的流程</h3>
+<pre>【创建用户】
+管理员只填：氏名 + メール + ロール
+  → UserService.createUser() 自动生成12位随机密码
+  → BCrypt 哈希存入 DB
+  → password_reset_required = true
+  → 画面<strong>仅一次</strong>显示初期パスワード（黄色警告框）
+
+【用户首次登录】
+POST /login 成功
+  → 若 password_reset_required=true
+  → redirect /change-password
+  → 用户自己设新密码（8字以上）
+  → password_reset_required=false → 进入主页
+
+【管理员重置】
+操作列「PWリセット」按钮
+  → POST /admin/accounts/{id}/reset-password
+  → 同样发新随机密码，仅显示一次</pre>
+<div class="must"><strong>你必须能说：</strong>管理员看不到、不能改用户日常密码；只能触发系统重新发临时密码，用户下次登录必须自己改。</div>
+<div class="jp"><div class="jp-label">日语 · 领导问安全</div>
+管理者はユーザーのパスワードを直接設定・変更できません。システムが初期パスワードを自動発行し、受講者は初回ログイン時に本人が新しいパスワードへ変更します。これは情報セキュリティのベストプラクティスです。</div>
+<h3>能和 AWS 邮件一起做吗？</h3>
+<p><strong>可以，但不是必须一次做完。</strong></p>
+<ul>
+<li>现在：<code>EmailService</code> 已预留，<code>app.mail.enabled=false</code> 时只打日志</li>
+<li>7月可接：<strong>AWS SES</strong> 发初期密码邮件</li>
+<li>更远期：<strong>Cognito</strong> 做邮箱验证码登录（大改动，发表时说明「今後の改善」即可）</li>
+</ul>
+<div class="jp"><div class="jp-label">日语 · 今后计划</div>
+現在は画面で一度だけ初期パスワードを表示していますが、今後 AWS SES または Cognito と連携し、メールで安全に通知する予定です。</div>
+</section>
+
+<section>
+<h2>三、学生プロフィール放哪？</h2>
+<table>
+<tr><th>页面</th><th>显示</th><th>能进详情？</th></tr>
+<tr><td>実績レポート</td><td>头像+姓名+分数</td><td>❌</td></tr>
+<tr><td>ユーザー管理</td><td>列表+操作</td><td>✅ 受講者のみ「プロフィール」</td></tr>
+</table>
+<p>主流 LMS 都是这样：<strong>报表看数据，人事看档案</strong>。</p>
+<div class="jp"><div class="jp-label">日语</div>
+プロフィール詳細はユーザー管理に集約しました。実績レポートは運用データの確認専用です。</div>
+</section>
+
+<section>
+<h2>四、授業日 — Flatpickr 日历</h2>
+<p>年月日三个下拉会导致「2月31日」这种 bug。现已改为点击输入框弹出<strong>月历</strong>（Flatpickr + 日语 + 绿色主题）。</p>
+<pre>fragments/date-picker.html → input.pcfa-flatpickr
+admin-courses.html 加载 flatpickr + l10n/ja.js
+POST 参数：lessonDate=2026-06-24（Y-m-d）
+AdminController → LocalDate.parse(lessonDate)</pre>
+<div class="jp"><div class="jp-label">日语</div>
+授業日はカレンダー形式の日付ピッカーに変更しました。不正な日付（例：2月31日）は選択できません。</div>
+</section>
+
+<section>
+<h2>五、コースお知らせ — 为什么要有？</h2>
+<h3>用途（不是多余功能）</h3>
+<ul>
+<li><strong>教材</strong> = PDF 文件</li>
+<li><strong>課題</strong> = 要提交的作业</li>
+<li><strong>お知らせ</strong> = 纯文字通知（停课、换教室、预习提醒）</li>
+</ul>
+<p>学生看的位置：<code>/student/course?courseId=</code> コースポータル</p>
+<p>现已支持：<strong>投稿 · 編集 · 削除</strong></p>
+<div class="jp"><div class="jp-label">日语 Demo</div>
+お知らせは教材や課題とは別の連絡機能です。講師が授業変更などを投稿すると、受講者のコース詳細画面に表示されます。</div>
+</section>
+
+<section>
+<h2>六、发表 Demo 路线（含密码安全）</h2>
+<ol>
+<li>ユーザー管理 → 创建讲师（无密码框）→ 显示一次性初期パスワード</li>
+<li>代理ログイン或新账号登录 → 跳转パスワード変更画面</li>
+<li>実績レポート → 无プロフィール、有头像</li>
+<li>コース管理 → 点击授業日 → 弹出日历</li>
+<li>讲师 → お知らせ → 编辑/删除</li>
+<li>学生 → コース詳細 → 看到公告</li>
+</ol>
+</section>
+
+<section>
+<h2>七、Q&A（社长 + 领导）</h2>
+<h3>密码为什么不能让管理员设？</h3>
+<div class="jp">管理者がユーザーのパスワードを知ると情報漏洩リスクがあります。自動発行と本人変更により、パスワードは本人のみが管理します。</div>
+<h3>是不是大改动？</h3>
+<p>不大。加了 <code>password_reset_required</code> 字段、<code>/change-password</code> 页面、改了几个 Controller 方法。核心仍是 Session + BCrypt。</p>
+<h3>お知らせ和教材有什么区别？</h3>
+<div class="jp">教材はPDFファイル、お知らせはテキスト連絡です。用途が違うため画面とDBを分けています。</div>
+</section>
+
+<section>
+<h2>八、自检清单</h2>
+<ul>
+<li>☐ 创建用户表单没有密码输入框</li>
+<li>☐ 创建后黄色框显示一次性密码</li>
+<li>☐ 新用户登录后跳到改密码页</li>
+<li>☐ 授業日点击弹出日历（不是三个下拉）</li>
+<li>☐ お知らせ可以删除 test 帖子</li>
+<li>☐ 能用日语解释密码安全设计</li>
+</ul>
+</section>
+
+</div>
+</body>
+</html>

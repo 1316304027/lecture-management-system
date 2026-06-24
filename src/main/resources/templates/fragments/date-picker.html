@@ -1,26 +1,16 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<div th:fragment="picker(prefix, label)" class="pcfa-date-field">
+<!-- カレンダー形式日付選択（Flatpickr） inputName=POSTパラメータ名 inputId=一意ID -->
+<div th:fragment="picker(inputName, label, inputId)" class="pcfa-date-field">
     <label class="form-label small mb-1 fw-semibold" th:text="${label}">日付</label>
-    <div class="pcfa-date-picker">
-        <select th:name="${prefix + 'Year'}" class="form-select form-select-sm pcfa-date-select" required>
-            <option value="">年</option>
-            <option value="2025">2025</option>
-            <option value="2026" selected>2026</option>
-            <option value="2027">2027</option>
-        </select>
-        <select th:name="${prefix + 'Month'}" class="form-select form-select-sm pcfa-date-select" required>
-            <option value="">月</option>
-            <option th:each="m : ${#numbers.sequence(1, 12)}"
-                    th:value="${m}" th:text="${m} + '月'"></option>
-        </select>
-        <select th:name="${prefix + 'Day'}" class="form-select form-select-sm pcfa-date-select" required>
-            <option value="">日</option>
-            <option th:each="d : ${#numbers.sequence(1, 31)}"
-                    th:value="${d}" th:text="${d} + '日'"></option>
-        </select>
-    </div>
+    <input type="text"
+           th:name="${inputName}"
+           th:id="${inputId}"
+           class="form-control form-control-sm pcfa-flatpickr"
+           placeholder="クリックして日付を選択"
+           autocomplete="off"
+           required>
 </div>
 </body>
 </html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AWS SES 密码设定 — 完整理解报告</title>
+<style>
+:root{--green:#157347;--green-dark:#0f5132;--bg:#f4f6f8;--card:#fff;--jp-bg:#e8f5e9}
+body{font-family:"Microsoft YaHei",sans-serif;margin:0;background:var(--bg);line-height:1.75;font-size:15px;color:#222}
+.topbar{background:linear-gradient(90deg,var(--green-dark),var(--green));color:#fff;padding:16px 24px;position:sticky;top:0;z-index:10}
+.wrap{max-width:940px;margin:0 auto;padding:20px 60px 60px 20px}
+.tip{background:#fff3cd;border:1px solid #ffc107;padding:14px;border-radius:10px;margin-bottom:20px}
+section{background:var(--card);border-radius:12px;padding:24px;margin-bottom:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);page-break-inside:avoid}
+h2{color:var(--green-dark);border-bottom:2px solid var(--green);padding-bottom:8px;margin-top:0}
+h3{color:#1a1a2e;font-size:1.05rem}
+table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+th,td{border:1px solid #dee2e6;padding:8px 10px}
+th{background:#e9f5ee}
+pre{background:#1e293b;color:#e2e8f0;padding:14px;border-radius:8px;font-size:12px;overflow-x:auto}
+.jp{background:var(--jp-bg);border-left:4px solid var(--green);padding:12px 16px;margin:14px 0;border-radius:0 8px 8px 0}
+.jp-label{background:var(--green);color:#fff;font-size:.75rem;padding:2px 8px;border-radius:4px;display:inline-block;margin-bottom:6px}
+.must{background:#fff5f5;border:1px solid #f5c2c7;padding:12px;border-radius:8px;margin:12px 0}
+.aws{background:#232f3e;color:#ff9900;padding:12px 16px;border-radius:8px;margin:12px 0}
+.aws strong{color:#fff}
+@media print{.tip{display:none}body{font-size:12px}pre{background:#eee;color:#000}}
+</style>
+</head>
+<body>
+<div class="topbar">
+<h1 style="margin:0;font-size:1.2rem">AWS SES 密码设定 — 完整理解报告（发表核心）</h1>
+<p style="margin:4px 0 0;opacity:.9">魏玉臻 · 管理者不能设密码 · 用户邮件自助设密 · 体现 AWS 成果</p>
+</div>
+<div class="wrap">
+<div class="tip"><strong>导出 PDF：</strong>Ctrl+P → 另存为 PDF<br>
+<strong>路径：</strong><code>demo/docs/AWS_SES密码设定_理解报告.html</code><br>
+<strong>部署：</strong>同目录 <code>AWS_SES密码设定_部署说明.md</code></div>
+
+<section>
+<h2>一、你要的逻辑（完整版，不是缩短版）</h2>
+<table>
+<tr><th>角色</th><th>能做什么</th><th>不能做什么</th></tr>
+<tr><td><strong>管理者</strong></td><td>创建账号、编辑姓名邮箱角色、<strong>PWリセット</strong>（触发邮件）</td><td>❌ 不能输入/看到用户密码</td></tr>
+<tr><td><strong>讲师/学生</strong></td><td>收 AWS SES 邮件 → 点链接 → <strong>自己设密码</strong> → 登录</td><td>❌ 未设密码不能登录</td></tr>
+<tr><td><strong>管理者账号</strong></td><td>系统初始化固定密码（admin@test.com）</td><td>不走 SES</td></tr>
+</table>
+<div class="must"><strong>和领导说的核心：</strong>密码只有用户本人知道。管理员只能「重置」= 发邮件让用户重新设，就像账号解锁后强制改密。</div>
+<div class="jp"><div class="jp-label">日语 · 30秒（必背）</div>
+管理者は講師・受講者のパスワードを設定・変更できません。アカウント作成時とリセット時に、AWS SES でパスワード設定用リンクをメール送信します。ユーザー本人のみがリンクからパスワードを設定し、その後ログインできます。これは情報セキュリティと AWS 活用の両方を満たす設計です。</div>
+</section>
+
+<section>
+<h2>二、完整技术链路（发表 Demo 指着讲）</h2>
+<pre>【创建用户】
+管理员 POST /admin/accounts/create（只有姓名+邮箱+角色）
+  → UserService.createUser()
+  → DB: password_not_set=true, 密码=随机不可猜哈希
+  → PasswordResetService.createToken() → password_reset_tokens 表
+  → EmailService.sendPasswordSetupEmail()  ★ AWS SES SDK
+  → 用户邮箱收到链接: {APP_BASE_URL}/setup-password?token=uuid
+
+【用户设密码】
+用户点邮件链接 GET /setup-password?token=xxx
+  → PasswordSetupController 验证 token（24小时有效）
+  → 用户输入新密码 POST /setup-password
+  → UserService.setupPasswordViaToken() → BCrypt 存库
+  → password_not_set=false → 可登录
+
+【管理员 PWリセット】
+POST /admin/accounts/{id}/reset-password
+  → 旧密码作废 + 新 token + SES 再发邮件
+  → 用户必须重新点链接设密码（和锁死后重设一样）
+
+【登录拦截】
+POST /login
+  → 若 password_not_set=true → 拒绝，提示去收邮件</pre>
+<div class="aws"><strong>AWS 用了什么：</strong> SES（Simple Email Service）发信 · EC2 IAM 角色认证（无密钥硬编码）· 与已有 S3 同属 AWS SDK v2</div>
+</section>
+
+<section>
+<h2>三、数据库新增（面试能说）</h2>
+<table>
+<tr><th>表/字段</th><th>作用</th></tr>
+<tr><td><code>users.password_not_set</code></td><td>true=还没通过邮件设密码，禁止登录</td></tr>
+<tr><td><code>users.password_reset_required</code></td><td>预留：强制改密标记</td></tr>
+<tr><td><code>password_reset_tokens</code></td><td>token、user_id、expires_at、used</td></tr>
+</table>
+</section>
+
+<section>
+<h2>四、AWS 部署必做（否则邮件发不出）</h2>
+<ol>
+<li><strong>SES 验证发件邮箱</strong>：控制台 Verified identities → 验证 <code>SES_FROM_EMAIL</code></li>
+<li><strong>IAM 权限</strong>：EC2 角色加 <code>ses:SendEmail</code></li>
+<li><strong>环境变量</strong>：
+<pre>APP_BASE_URL=http://你的EC2公网IP
+SES_FROM_EMAIL=验证过的邮箱
+MAIL_ENABLED=true</pre></li>
+<li><strong>SES 沙盒</strong>：测试时收件人邮箱也要在 SES 验证，或申请 Production access</li>
+</ol>
+<div class="jp"><div class="jp-label">日语 · AWS 说明</div>
+パスワード設定メールは AWS SES で送信しています。EC2 の IAM ロールで認証し、ハードコードされたキーは使いません。S3 と同様に AWS SDK v2 を使用しています。</div>
+</section>
+
+<section>
+<h2>五、和 Cognito 的关系（社长可能问）</h2>
+<p><strong>现在：</strong>自研 Session 登录 + SES 发设置链接（已实现，发表可 Demo）</p>
+<p><strong>将来：</strong>可升级为 Amazon Cognito 统一身份认证（邮箱验证码登录），SES 可继续用于通知邮件</p>
+<div class="jp">現段階では Spring Boot + SES で実装しました。将来的には Cognito への移行も可能で、設計上の拡張性を確保しています。</div>
+</section>
+
+<section>
+<h2>六、发表 Demo 步骤（3分钟）</h2>
+<ol>
+<li>管理者 → ユーザー管理 → 创建用户（<strong>无密码框</strong>）</li>
+<li>画面显示「AWS SES 送信済」+ 列表「パスワード：未設定」</li>
+<li>打开邮箱 → 点绿色按钮「パスワードを設定する」</li>
+<li>设密码 → 登录成功</li>
+<li>管理者点 <strong>PWリセット</strong> → 再收邮件 → 旧密码失效</li>
+<li>架构图指出：<strong>EC2 → SES</strong> 与 <strong>EC2 → S3</strong> 并列</li>
+</ol>
+</section>
+
+<section>
+<h2>七、你之前 5 点问题的最终答案</h2>
+<table>
+<tr><th>#</th><th>问题</th><th>现状</th></tr>
+<tr><td>1</td><td>用户管理整齐吗</td><td>表格对齐 + パスワード列（未設定/設定済）+ 操作按钮 flex</td></tr>
+<tr><td>2</td><td>学生详情放哪</td><td>仅ユーザー管理；实绩报告只有头像</td></tr>
+<tr><td>3</td><td>日历</td><td>Flatpickr 月历（非2月31天下拉）</td></tr>
+<tr><td>4</td><td>密码安全 + AWS</td><td><strong>本报告全文</strong> — SES 邮件设密</td></tr>
+<tr><td>5</td><td>お知らせ</td><td>讲师通知学生；已支持编辑删除</td></tr>
+</table>
+</section>
+
+<section>
+<h2>八、Q&A 日语参考答案</h2>
+<h3>为什么管理员不能设密码？</h3>
+<div class="jp">管理者がパスワードを知ると漏洩リスクがあります。業界標準では本人のみがパスワードを管理します。</div>
+<h3>邮件发不出去怎么办？</h3>
+<div class="jp">SES の送信元検証、IAM 権限、サンドボックスの受信者検証を確認します。本番では Production access を申請します。</div>
+<h3>这是大改动吗？</h3>
+<p>中等规模：新增 token 表、SES Service、setup-password 页面。核心登录仍是 Session + BCrypt。</p>
+</section>
+
+<section>
+<h2>九、自检清单</h2>
+<ul>
+<li>☐ 创建用户表单没有密码字段</li>
+<li>☐ 创建后显示「AWS SES 送信済」而非密码明文</li>
+<li>☐ 未设密码时登录被拒绝</li>
+<li>☐ 邮件链接能打开 setup-password 页面</li>
+<li>☐ 设密后能登录</li>
+<li>☐ PWリセット后旧密码不能登录</li>
+<li>☐ 能用日语讲 SES 流程</li>
+</ul>
+</section>
+
+</div>
+</body>
+</html>
