@@ -64,20 +64,20 @@ public class StudentReportDto {
 
     /**
      * 未提出件数 / Unsubmitted count
-     * totalAssignments - submittedCount
      */
     public long getUnsubmittedCount() {
         return totalAssignments - submittedCount;
     }
 
+    /** 採点済み提出数 */
+    private long evaluatedCount;
+
+    /** 提出済み・未採点数（講師の採点待ち） */
+    private long pendingGradeCount;
+
     /**
-     * 【変更点③】評価済み提出の平均スコア（0〜100）
-     * [Change ③] Average score of evaluated submissions (0-100)
-     *
-     * 評価済み（スコアが入力されている）提出が1件もない場合は null。
-     * null when no submissions have been evaluated (no score set).
-     * ReportService で計算してセットする。
-     * Calculated and set by ReportService.
+     * 採点済み提出の平均スコア（0〜100）。
+     * 1件も採点済みがない場合は null → 画面「採点待ち」。
      */
     private Double averageScore;
 }

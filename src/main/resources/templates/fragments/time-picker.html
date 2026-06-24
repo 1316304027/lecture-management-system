@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="picker(prefix, label)" class="pcfa-time-field">
+    <label class="form-label small mb-1 fw-semibold" th:text="${label}">時刻</label>
+    <div class="pcfa-time-picker">
+        <select th:name="${prefix + 'Hour'}" class="form-select form-select-sm pcfa-time-select" aria-label="時">
+            <option value="">--</option>
+            <option value="8">08</option><option value="9">09</option><option value="10">10</option>
+            <option value="11">11</option><option value="12">12</option><option value="13">13</option>
+            <option value="14">14</option><option value="15">15</option><option value="16">16</option>
+            <option value="17">17</option><option value="18">18</option><option value="19">19</option>
+            <option value="20">20</option><option value="21">21</option>
+        </select>
+        <span class="pcfa-time-colon">:</span>
+        <select th:name="${prefix + 'Minute'}" class="form-select form-select-sm pcfa-time-select" aria-label="分">
+            <option value="00">00</option>
+            <option value="15">15</option>
+            <option value="30">30</option>
+            <option value="45">45</option>
+        </select>
+    </div>
+</div>
+</body>
+</html>

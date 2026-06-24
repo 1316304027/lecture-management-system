@@ -1,35 +1,12 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<title>PCFA 零基础面试手敲全指南</title>
-<style>
-body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; max-width: 900px; margin: 0 auto; padding: 24px; line-height: 1.65; color: #222; }
-h1 { color: #0f5132; border-bottom: 3px solid #157347; padding-bottom: 8px; font-size: 1.8em; }
-h2 { color: #157347; margin-top: 1.6em; font-size: 1.35em; page-break-after: avoid; }
-h3 { color: #1a1a2e; margin-top: 1.2em; page-break-after: avoid; }
-code, pre { background: #f4f6f8; font-family: Consolas, monospace; font-size: 0.9em; }
-pre { padding: 12px; overflow-x: auto; border-left: 4px solid #157347; page-break-inside: avoid; }
-blockquote { background: #eef9f3; border-left: 4px solid #20c997; margin: 12px 0; padding: 8px 16px; }
-table { page-break-inside: avoid; }
-hr { border: none; border-top: 1px solid #ddd; margin: 24px 0; }
-li { margin: 4px 0; }
-.print-tip { background: #fff3cd; border: 1px solid #ffc107; padding: 12px; margin-bottom: 24px; border-radius: 8px; }
-@media print { .print-tip { display: none; } body { padding: 0; } h2 { page-break-before: auto; } }
-</style>
-</head>
-<body>
-<div class="print-tip"><strong>导出 PDF：</strong>按 Ctrl+P → 目标选「另存为 PDF」→ 保存。文件名建议：零基础_面试手敲全指南.pdf</div>
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><title>PCFA零基础面试手敲全指南</title>
+<style>body{font-family:"Microsoft YaHei",sans-serif;max-width:900px;margin:0 auto;padding:24px;line-height:1.65;color:#222}h1{color:#0f5132;border-bottom:3px solid #157347}h2{color:#157347;margin-top:1.5em}h3{color:#1a1a2e}code,pre{background:#f4f6f8;font-family:Consolas,monospace;font-size:.9em}pre{padding:12px;border-left:4px solid #157347;overflow-x:auto}table{page-break-inside:avoid;font-size:12px}.tip{background:#fff3cd;border:1px solid #ffc107;padding:12px;margin-bottom:20px;border-radius:8px}@media print{.tip{display:none}}</style>
+</head><body><div class="tip"><strong>导出PDF：</strong>Ctrl+P → 另存为 PDF</div>
 <h1>PCFA 受講管理システム — 零基础面试手敲全指南</h1>
-
 <p>&gt; <strong>作者目的</strong>：魏玉臻用 — 不只为了 6/29 发表，更要<strong>面试时能讲清楚、能手敲一版</strong>  </p>
 <p>&gt; <strong>语言</strong>：中文为主，必须懂的日文术语保留原文  </p>
 <p>&gt; <strong>项目路径</strong>：<code>lecture-management-system/demo</code></p>
-
 <hr/>
-
 <h2>目录</h2>
-
 <li>[这个项目到底是什么？](#1-这个项目到底是什么)</li>
 <li>[技术栈一张表（面试必背）](#2-技术栈一张表面试必背)</li>
 <li>[AWS 架构（发表 + 面试必画）](#3-aws-架构发表--面试必画)</li>
@@ -46,59 +23,36 @@ li { margin: 4px 0; }
 <li>[部署流程（EC2 + Docker）](#14-部署流程ec2--docker)</li>
 <li>[面试模拟问答 20 题](#15-面试模拟问答-20-题)</li>
 <li>[手敲复现路线图（4 周计划）](#16-手敲复现路线图4-周计划)</li>
-
 <hr/>
-
 <h2>1. 这个项目到底是什么？</h2>
-
 <p><strong>日文名</strong>：PCFA 受講管理システム（PCFA 听课管理系统）  </p>
 <p><strong>一句话</strong>：培训学校用的 Web 系统，管理员、讲师、学生三种人登录，管理课程、出席、教材、课题、聊天。</p>
-
 <p><strong>三种角色（ロール）</strong>：</p>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>日文</th><th>英文</th><th>中文</th><th>测试账号</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>日文</td><td>英文</td><td>中文</td><td>测试账号</td></tr>
 <tr><td>管理者</td><td>ADMIN</td><td>管理员</td><td>admin@test.com</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>講師</td><td>INSTRUCTOR</td><td>讲师</td><td>teacher@test.com</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>受講者</td><td>STUDENT</td><td>学生</td><td>student@test.com</td></tr>
 </table>
-
 <p>密码（测试环境）：<code>Admin1234</code></p>
-
 <hr/>
-
 <h2>2. 技术栈一张表（面试必背）</h2>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>层次</th><th>技术</th><th>干什么用</th><th>面试怎么说</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>层次</td><td>技术</td><td>干什么用</td><td>面试怎么说</td></tr>
 <tr><td>后端框架</td><td><strong>Spring Boot 4</strong> + Java 21</td><td>写服务器逻辑</td><td>「Spring MVC + JPA で REST ではなく SSR 構成です」</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>画面模板</td><td><strong>Thymeleaf</strong>（タイムリーフ）</td><td>HTML 里嵌 Java 数据</td><td>「Controller から Model にデータを渡し、Thymeleaf で描画」</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>数据库</td><td><strong>PostgreSQL</strong> on <strong>RDS</strong></td><td>存用户、课程、出席等</td><td>「RDS PostgreSQL、JPA で ORM」</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>文件存储</td><td><strong>AWS S3</strong></td><td>PDF 教材、作业、头像</td><td>「Presigned URL でブラウザ直传」</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>服务器</td><td><strong>EC2</strong> + <strong>Docker</strong> + <strong>Nginx</strong></td><td>跑 Java 程序</td><td>「EC2 上 Docker、Nginx がリバースプロキシ」</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>安全</td><td><strong>BCrypt</strong> + <strong>Session</strong></td><td>密码加密、登录状态</td><td>「セッションに loginUser を保存、ロールで画面分岐」</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>前端样式</td><td><strong>Bootstrap 5</strong> + 自定义 CSS</td><td>界面好看</td><td>「Bootstrap + 共通 CSS で統一」</td></tr>
 </table>
-
 <p><strong>没有用的东西（面试别乱说）</strong>：</p>
 <li>❌ 没有 Cognito（没有邮箱验证）</li>
 <li>❌ 没有 Lambda 实时聊天（聊天直接存 RDS）</li>
 <li>❌ 没有前后端分离（不是 React/Vue，是传统 SSR）</li>
-
 <hr/>
-
 <h2>3. AWS 架构（发表 + 面试必画）</h2>
-
 <p>``<code></p>
 <p>[浏览器 Browser]</p>
 <p>      │ HTTP :80</p>
@@ -113,9 +67,7 @@ li { margin: 4px 0; }
 <p>            - 80: 0.0.0.0/0  （谁都能看网站）</p>
 <p>            - 22: 特定 IP     （只有允许的 IP 能 SSH）</p>
 <p></code>`<code></p>
-
 <p><strong>Presigned URL 流程（必考）</strong>：</p>
-
 <p></code>`<code></p>
 <li>浏览器问服务器：「我要上传文件」</li>
 <li>服务器用 IAM 角色签名，生成临时 URL（10分钟有效）</li>
@@ -123,16 +75,12 @@ li { margin: 4px 0; }
 <li>服务器只在数据库记 s3Key（文件路径）</li>
 <li>下载/显示时，再生成 Presigned GET URL</li>
 <p></code>`<code></p>
-
 <p><strong>为什么用 Presigned URL？</strong></p>
 <li>大文件不压 EC2</li>
 <li>安全（临时 URL 会过期）</li>
 <li>面试标准答案</li>
-
 <hr/>
-
 <h2>4. 项目文件夹结构（每一块干什么）</h2>
-
 <p></code>`<code></p>
 <p>demo/</p>
 <p>├── pom.xml                          # Maven 依赖清单（像 shopping list）</p>
@@ -176,18 +124,12 @@ li { margin: 4px 0; }
 <p>│           └── ...</p>
 <p>└── docs/                            # 学习文档</p>
 <p></code>`<code></p>
-
 <p><strong>记忆口诀</strong>：</p>
 <p>&gt; Controller 接请求 → Service 算逻辑 → Repository 查数据库 → Entity 是表 → templates 是画面</p>
-
 <hr/>
-
 <h2>5. 程序四层架构（手敲的核心逻辑）</h2>
-
 <h3>5.1 一次点击的完整旅程</h3>
-
 <p>以「学生点プロフィール編集」为例：</p>
-
 <p></code>`<code></p>
 <p>① 浏览器 GET /student/profile</p>
 <p>② Spring 找到 StudentController.profilePage()</p>
@@ -198,169 +140,100 @@ li { margin: 4px 0; }
 <p>⑦ 返回字符串 "student-profile" → Thymeleaf 渲染 student-profile.html</p>
 <p>⑧ HTML 送回浏览器</p>
 <p></code>`<code></p>
-
 <h3>5.2 各层职责（面试背这个）</h3>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>层</th><th>日文/英文</th><th>职责</th><th>不能干什么</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>层</td><td>日文/英文</td><td>职责</td><td>不能干什么</td></tr>
 <tr><td>Controller</td><td>コントローラ</td><td>接 HTTP、检查登录、调 Service、选模板</td><td>不写 SQL</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>Service</td><td>サービス</td><td>业务规则、组合多个 Repository</td><td>不直接碰 HTTP</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>Repository</td><td>リポジトリ</td><td>数据库增删改查</td><td>不写业务判断</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>Entity</td><td>エンティティ</td><td>表字段定义</td><td>不写逻辑</td></tr>
 </table>
-
 <h3>5.3 Session 登录（本项目没用 JWT）</h3>
-
 <p></code>`<code>java</p>
 <p>// 登录成功时（LoginController）</p>
 <p>session.setAttribute("loginUser", user);</p>
-
 <p>// 每个页面开头（所有 Controller）</p>
 <p>User loginUser = (User) session.getAttribute("loginUser");</p>
 <p>if (loginUser == null) return "redirect:/login";</p>
 <p></code>`<code></p>
-
 <p><strong>面试问</strong>：为什么用 Session 不用 JWT？  </p>
 <p><strong>答</strong>：社内研修システム、SSR 構成なのでセッションで十分。JWT は SPA 向け。</p>
-
 <hr/>
-
 <h2>6. 数据库表说明（Entity = 表）</h2>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>表名</th><th>Entity 类</th><th>存什么</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>表名</td><td>Entity 类</td><td>存什么</td></tr>
 <tr><td>users</td><td>User.java</td><td>用户（姓名、邮箱、密码、角色、头像路径、电话、自我介绍）</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>courses</td><td>Course.java</td><td>课程名、说明</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>course_users</td><td>CourseUser.java</td><td><strong>谁属于哪个班</strong>（学生/讲师和课程的多对多）</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>course_schedules</td><td>CourseSchedule.java</td><td>上课日期</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>attendances</td><td>Attendance.java</td><td>出席记录</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>materials</td><td>Material.java</td><td>教材 PDF（s3Key）</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>assignments</td><td>Assignment.java</td><td>课题（作业题目）</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>submissions</td><td>Submission.java</td><td>学生提交的作业 + 分数</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>chat_messages</td><td>ChatMessage.java</td><td>聊天消息</td></tr>
 </table>
-
 <h3>users 表新增字段（プロフィール功能）</h3>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>列名</th><th>Java 字段</th><th>说明</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>列名</td><td>Java 字段</td><td>说明</td></tr>
 <tr><td>avatar_s3_key</td><td>avatarS3Key</td><td>S3 上头像路径</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>phone</td><td>phone</td><td>电话</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>profile_bio</td><td>profileBio</td><td>自我介绍</td></tr>
 </table>
-
 <p><strong>所属コース怎么查？</strong> 不存在 users 表里！通过 </code>course_users<code> 关联查：</p>
-
 <p></code>`<code>java</p>
 <p>courseService.getStudentCourses(userId)  // 返回 List&lt;Course&gt;</p>
 <p></code>`<code></p>
-
 <hr/>
-
 <h2>7. 三种角色与全部画面 URL</h2>
-
 <h3>7.1 共通</h3>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>URL</th><th>画面</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>URL</td><td>画面</td></tr>
 <tr><td>GET /login</td><td>ログイン画面</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>POST /login</td><td>登录处理</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>GET /logout</td><td>ログアウト</td></tr>
 </table>
-
 <h3>7.2 受講者（学生）STUDENT</h3>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>URL</th><th>画面</th><th>Controller</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>URL</td><td>画面</td><td>Controller</td></tr>
 <tr><td>/student/home</td><td>ホーム</td><td>StudentController</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/student/attendance?courseId=</td><td>出席登録</td><td>StudentController</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/student/materials?courseId=</td><td>教材一覧</td><td>StudentController</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/student/assignments?courseId=</td><td>課題提出</td><td>StudentController</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/student/profile</td><td>プロフィール編集</td><td>StudentController</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/student/profile/view</td><td>プロフィール预览</td><td>StudentController</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/chat?courseId=</td><td>チャット</td><td>ChatController</td></tr>
 </table>
-
 <h3>7.3 講師（讲师）INSTRUCTOR</h3>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>URL</th><th>画面</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>URL</td><td>画面</td></tr>
 <tr><td>/instructor/home</td><td>講師ホーム</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/instructor/materials?courseId=</td><td>教材管理</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/instructor/assignments?courseId=</td><td>課題管理</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/instructor/submissions?courseId=</td><td>提出確認・採点</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/instructor/attendance?courseId=</td><td>出欠確認</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/instructor/students?courseId=</td><td><strong>【新】受講者一覧</strong></td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/instructor/students/{id}/profile?courseId=</td><td>学生プロフィール</td></tr>
 </table>
-
 <h3>7.4 管理者 ADMIN</h3>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>URL</th><th>画面</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>URL</td><td>画面</td></tr>
 <tr><td>/admin/home</td><td>管理者ポータル</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/admin/accounts</td><td>ユーザー管理</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/admin/accounts/{id}/profile</td><td>ユーザープロフィール</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/admin/courses</td><td>コース管理</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/admin/attendance</td><td>出欠修正</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/admin/reports</td><td>実績レポート</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>/admin/chat</td><td>全チャット閲覧</td></tr>
 </table>
-
 <hr/>
-
 <h2>8. 登录流程（从零手敲第一步）</h2>
-
 <h3>8.1 手敲顺序</h3>
-
 <li></code>User.java<code>（entity）</li>
 <li></code>UserRepository.java<code>（interface extends JpaRepository）</li>
 <li></code>UserService.java<code>（findByEmail, checkPassword）</li>
 <li></code>LoginController.java<code></li>
 <li></code>login.html<code></li>
-
 <h3>8.2 LoginController 核心代码逻辑</h3>
-
 <p></code>`<code></p>
 <p>POST /login 收到 email + password</p>
 <p>  → userRepository.findByEmail(email)</p>
@@ -371,28 +244,18 @@ li { margin: 4px 0; }
 <p>  → 成功 → session.setAttribute("loginUser", user)</p>
 <p>  → 按 role 跳转 /admin/home 或 /instructor/home 或 /student/home</p>
 <p></code>`<code></p>
-
 <h3>8.3 假邮箱问题</h3>
-
 <p><strong>问</strong>：admin@test.com 能用吗？  </p>
 <p><strong>答</strong>：能。系统只检查数据库有没有这个邮箱 + 密码对不对，<strong>不发验证邮件</strong>。</p>
-
 <hr/>
-
 <h2>9. S3 文件上传（课题 + 头像，面试高频）</h2>
-
 <h3>9.1 两种上传方式</h3>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>方式</th><th>用于</th><th>流程</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>方式</td><td>用于</td><td>流程</td></tr>
 <tr><td>服务器中转</td><td>讲师上传教材 PDF</td><td>浏览器 → Spring MultipartFile → S3Service.uploadFile()</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>Presigned URL 直传</td><td>学生交作业、上传头像</td><td>浏览器 → 拿 URL → 直接 PUT S3</td></tr>
 </table>
-
 <h3>9.2 课题提出（学生）流程</h3>
-
 <p></code>`<code></p>
 <li>GET /student/assignments/presign?fileName=xxx.pdf</li>
 <li>返回 { uploadUrl, s3Key }</li>
@@ -400,59 +263,34 @@ li { margin: 4px 0; }
 <li>POST /student/assignments/submit { assignmentId, s3Key, fileName }</li>
 <li>Submission 表插入一条记录</li>
 <p></code>`<code></p>
-
 <h3>9.3 S3Service 关键方法</h3>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>方法</th><th>作用</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>方法</td><td>作用</td></tr>
 <tr><td>uploadFile()</td><td>服务器直接上传</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>generatePresignedUrl()</td><td>生成下载/显示 URL（GET，10分钟）</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>generatePresignedImageUploadUrl()</td><td>生成上传 URL（PUT，头像用）</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>deleteFile()</td><td>删旧头像</td></tr>
 </table>
-
 <p><strong>EC2 不需要写 Access Key</strong>：IAM Role 自动认证。</p>
-
 <hr/>
-
 <h2>10. プロフィール功能（你新加的重点）</h2>
-
 <h3>10.1 新增/修改的文件清单</h3>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>文件</th><th>作用</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>文件</td><td>作用</td></tr>
 <tr><td>User.java</td><td>+avatarS3Key, phone, profileBio</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>ProfileService.java</td><td>头像 presign、保存、取 URL</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>AvatarPresignResult.java</td><td>小 DTO</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>S3Service.java</td><td>+generatePresignedImageUploadUrl</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>StudentController.java</td><td>/student/profile 系列</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>InstructorController.java</td><td>讲师看 profile + 受講者一覧</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>AdminController.java</td><td>管理员看 profile + courseList</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>student-profile.html</td><td>编辑页（含 JS 上传）</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>student-profile-view.html</td><td>预览</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>fragments/profile-card.html</td><td>共用详情卡片（含所属コース）</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>instructor-students.html</td><td>【新】讲师学生列表</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>pcfa-theme.css</td><td>头像圆圈样式</td></tr>
 </table>
-
 <h3>10.2 头像上传 JS 逻辑（student-profile.html）</h3>
-
 <p></code>`<code>javascript</p>
 <p>// 简化版理解</p>
 <p>选文件 → GET /student/profile/presign-avatar?fileName=xx.jpg</p>
@@ -460,329 +298,251 @@ li { margin: 4px 0; }
 <p>      → PUT uploadUrl（文件直接到 S3）</p>
 <p>      → 用户点保存 → POST /student/profile（s3Key 写入数据库）</p>
 <p></code>`<code></p>
-
 <h3>10.3 谁能看谁</h3>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>角色</th><th>入口</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>角色</td><td>入口</td></tr>
 <tr><td>学生</td><td>自己编辑 /student/profile</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>讲师</td><td>ホーム→受講者一覧→プロフィール</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>管理者</td><td>ユーザー管理→プロフィール</td></tr>
 </table>
-
 <h3>10.4 所属コース显示原理</h3>
-
 <p></code>`<code>java</p>
 <p>// AdminController.userProfile() 里</p>
 <p>model.addAttribute("courseList", courseService.getStudentCourses(user.getId()));</p>
-
 <p>// profile-card.html 里</p>
 <p>&lt;span th:each="c : ${courseList}" th:text="${c.name}"&gt;&lt;/span&gt;</p>
 <p></code>`<code></p>
-
 <hr/>
-
 <h2>11. 聊天功能（现状 + Lambda 说明）</h2>
-
 <h3>11.1 现在怎么实现的</h3>
-
 <p></code>`<code></p>
 <p>学生/讲师 POST /chat/send → ChatService.sendMessage()</p>
 <p>  → chat_messages 表 INSERT</p>
 <p>  → 页面 redirect 刷新显示</p>
-
 <p>管理者 GET /admin/chat → 看全部消息</p>
 <p>管理者 POST /admin/chat/delete/{id} → 删除</p>
 <p></code>`<code></p>
-
 <p><strong>没有实时推送</strong>：发完要刷新页面才看到新消息。</p>
-
 <h3>11.2 Lambda 为什么「感觉没用」</h3>
-
 <p>你可能之前计划：消息 → Lambda → 通知  </p>
 <p><strong>但现在代码没用 Lambda</strong>，消息直接存 RDS。Lambda 要另外接 API Gateway + SNS 才有「新消息通知」效果。</p>
-
 <h3>11.3 发表后改进方案（面试可说）</h3>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>阶段</th><th>方案</th><th>难度</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>阶段</td><td>方案</td><td>难度</td></tr>
 <tr><td>简单</td><td>chat_messages 加 is_read，ホーム显示未读数</td><td>★★</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>中等</td><td>前端每 30 秒 AJAX 轮询</td><td>★★★</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>复杂</td><td>WebSocket 或 Lambda + SNS 推送</td><td>★★★★★</td></tr>
 </table>
-
 <p><strong>发表时说法</strong>：</p>
 <p>&gt; チャットは RDS 保存の基本機能を実装済み。未読通知は今後の改善として既読フラグを追加予定です。</p>
-
 <hr/>
-
 <h2>12. 各功能模块代码地图</h2>
-
 <h3>出席（Attendance）</h3>
-
 <li>StudentController.registerAttendance()</li>
 <li>AttendanceService — 检查今天是不是上课日、有没有重复签到</li>
 <li>student-attendance.html</li>
-
 <h3>教材（Material）</h3>
-
 <li>InstructorController — 讲师上传 PDF</li>
 <li>MaterialService + S3Service</li>
 <li>StudentController — 学生看列表、Presigned 下载</li>
-
 <h3>课题（Assignment）&amp; 提出（Submission）</h3>
-
 <li>InstructorController — 创建课题</li>
 <li>StudentController — Presigned 上传 + 提交</li>
 <li>InstructorController — 採点（分数 0-100 + 评论）</li>
 <li>instructor-submissions.html</li>
-
 <h3>実績レポート（Report）</h3>
-
 <li>AdminController + ReportService</li>
 <li>按课程显示：出席率、提出率、平均分数</li>
 <li>admin-reports.html</li>
-
 <h3>コース管理</h3>
-
 <li>AdminController — 创建课程、加讲师学生、设上课日</li>
 <li>course_users 表维护班级成员</li>
-
 <hr/>
-
 <h2>13. UI 主题 pcfa-theme.css</h2>
-
 <p><strong>作用</strong>：全站统一绿色风格，不用每个 HTML 各写一遍。</p>
-
 <p><strong>用法</strong>（每个 HTML 加两行）：</p>
-
 <p></code>`<code>html</p>
 <p>&lt;link rel="stylesheet" th:href="@{/pcfa-theme.css}"&gt;</p>
 <p>&lt;body class="pcfa-body"&gt;</p>
 <p></code>`<code></p>
-
 <p><strong>主要 CSS 类</strong>：</p>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>类名</th><th>用途</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>类名</td><td>用途</td></tr>
 <tr><td>pcfa-navbar</td><td>绿色顶栏</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>pcfa-course-card</td><td>课程卡片</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>pcfa-course-action</td><td>均等按钮</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>pcfa-avatar-sm / lg</td><td>头像圆圈</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>pcfa-profile-card</td><td>プロフィール详情卡片</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>pcfa-course-badge</td><td>所属コース绿色标签</td></tr>
 </table>
-
 <p>背景色变量：</code>--pcfa-bg: #eef2f6<code>（浅灰，不是纯白）</p>
-
 <hr/>
-
 <h2>14. 部署流程（EC2 + Docker）</h2>
-
 <h3>14.1 本地 → GitHub</h3>
-
 <p></code>`<code>bash</p>
 <p>cd demo</p>
 <p>git add .</p>
 <p>git commit -m "说明写了什么"</p>
 <p>git push</p>
 <p></code>`<code></p>
-
 <h3>14.2 EC2 更新</h3>
-
 <p></code>`<code>bash</p>
 <p>cd ~/lecture-management-system</p>
 <p>git pull</p>
 <p>./mvnw clean package -DskipTests</p>
 <p>sudo docker restart app-app-1</p>
 <p></code>`<code></p>
-
 <h3>14.3 常见问题</h3>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>问题</th><th>原因</th><th>解决</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>问题</td><td>原因</td><td>解决</td></tr>
 <tr><td>git pull 没变化</td><td>没 push</td><td>本地先 push</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>网页没变化</td><td>浏览器缓存</td><td>Ctrl+Shift+R</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>SSH 连不上</td><td>安全组 22 只允许旧 IP</td><td>加「マイ IP」规则</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>本地 compile 失败</td><td>Java 17，项目要 21</td><td>在 EC2 上编译</td></tr>
 </table>
-
 <hr/>
-
 <h2>15. 面试模拟问答 20 题</h2>
-
 <p><strong>Q1. 这个项目你负责了什么？</strong>  </p>
 <p>A：受講管理システムの学生向け UI 改善、S3 プロフィール機能、講師の受講者一覧、AWS デプロイ。</p>
-
 <p><strong>Q2. 为什么用 Spring Boot？</strong>  </p>
 <p>A：Java 企业标准，自动配置，整合 JPA/Security/Thymeleaf 快。</p>
-
 <p><strong>Q3. Thymeleaf 是什么？</strong>  </p>
 <p>A：服务器端模板。Controller 传 Model，HTML 里 </code>th:text<code> 显示数据。</p>
-
 <p><strong>Q4. JPA 是什么？</strong>  </p>
 <p>A：用 Java 类操作数据库，不用手写 SQL。Entity 对应表，Repository 对应 CRUD。</p>
-
 <p><strong>Q5. Presigned URL 是什么？</strong>  </p>
 <p>A：AWS 签发的临时 URL，让浏览器直连 S3 上传下载，减轻服务器压力。</p>
-
 <p><strong>Q6. 密码怎么存？</strong>  </p>
 <p>A：BCrypt 哈希，不可逆。登录时 </code>BCrypt.matches()<code> 比对。</p>
-
 <p><strong>Q7. 三种角色怎么区分？</strong>  </p>
 <p>A：users.role 字段，登录后跳不同 home，Controller 里检查 role。</p>
-
 <p><strong>Q8. 学生和课程什么关系？</strong>  </p>
 <p>A：course_users 中间表，多对多。</p>
-
 <p><strong>Q9. 头像存在哪？</strong>  </p>
 <p>A：图片在 S3，路径在 users.avatar_s3_key。</p>
-
 <p><strong>Q10. 为什么 Session 不用 JWT？</strong>  </p>
 <p>A：传统 SSR，服务器渲染，Session 更简单。</p>
-
 <p><strong>Q11. ddl-auto: update 什么意思？</strong>  </p>
 <p>A：启动时自动根据 Entity 更新表结构（开发用，生产要小心）。</p>
-
 <p><strong>Q12. Docker 干什么？</strong>  </p>
 <p>A：打包运行环境，EC2 上 </code>docker restart<code> 重启应用。</p>
-
 <p><strong>Q13. Nginx 干什么？</strong>  </p>
 <p>A：反向代理，80 端口转发到 Spring Boot 8080。</p>
-
 <p><strong>Q14. 聊天怎么存的？</strong>  </p>
 <p>A：chat_messages 表，没用 Lambda。</p>
-
 <p><strong>Q15. 怎么防止重复签到？</strong>  </p>
 <p>A：AttendanceService 查今天是否已有记录。</p>
-
 <p><strong>Q16. 课题截止怎么判断？</strong>  </p>
 <p>A：assignments.deadline 和学生提交时间比较。</p>
-
 <p><strong>Q17. 実績レポート算什么？</strong>  </p>
 <p>A：ReportService 聚合出席率、提出率、平均分。</p>
-
 <p><strong>Q18. 如果文件超过 1MB 上传失败？</strong>  </p>
 <p>A：application.yaml 配 multipart max-file-size: 10MB。</p>
-
 <p><strong>Q19. 你遇到的最大困难？</strong>  </p>
 <p>A：（诚实说）AWS 部署、安全组 SSH、Java 版本、Git push 流程。</p>
-
 <p><strong>Q20. 下一步改进？</strong>  </p>
 <p>A：チャット未読通知、UI 继续打磨、Cognito 认证。</p>
-
 <hr/>
-
 <h2>16. 手敲复现路线图（4 周计划）</h2>
-
 <h3>第 1 周：骨架</h3>
-
-<p>☐ Spring Initializr 创建项目（Web, JPA, PostgreSQL, Thymeleaf）</p>
-<p>☐ User + Login + Session</p>
-<p>☐ login.html + 三种 home 空页面</p>
-
+<li>[ ] Spring Initializr 创建项目（Web, JPA, PostgreSQL, Thymeleaf）</li>
+<li>[ ] User + Login + Session</li>
+<li>[ ] login.html + 三种 home 空页面</li>
 <h3>第 2 周：核心业务</h3>
-
-<p>☐ Course + CourseUser</p>
-<p>☐ 出席、教材（先不用 S3，本地文件）</p>
-<p>☐ 课题 + 提交</p>
-
+<li>[ ] Course + CourseUser</li>
+<li>[ ] 出席、教材（先不用 S3，本地文件）</li>
+<li>[ ] 课题 + 提交</li>
 <h3>第 3 周：AWS</h3>
-
-<p>☐ S3 Presigned URL</p>
-<p>☐ RDS 连接</p>
-<p>☐ EC2 Docker 部署</p>
-
+<li>[ ] S3 Presigned URL</li>
+<li>[ ] RDS 连接</li>
+<li>[ ] EC2 Docker 部署</li>
 <h3>第 4 周：进阶</h3>
-
-<p>☐ プロフィール + 头像</p>
-<p>☐ チャット</p>
-<p>☐ 実績レポート</p>
-<p>☐ UI 主题 CSS</p>
-
+<li>[ ] プロフィール + 头像</li>
+<li>[ ] チャット</li>
+<li>[ ] 実績レポート</li>
+<li>[ ] UI 主题 CSS</li>
 <p><strong>每天手敲 1 小时比背 10 小时更有效。</strong></p>
-
 <hr/>
-
 <h2>附录 A：Thymeleaf 常见写法</h2>
-
 <p></code>`<code>html</p>
 <p>&lt;!-- 显示变量 --&gt;</p>
 <p>&lt;span th:text="${user.name}"&gt;&lt;/span&gt;</p>
-
 <p>&lt;!-- 条件 --&gt;</p>
 <p>&lt;div th:if="${avatarUrl}"&gt;有头像&lt;/div&gt;</p>
 <p>&lt;div th:unless="${avatarUrl}"&gt;没头像&lt;/div&gt;</p>
-
 <p>&lt;!-- 循环 --&gt;</p>
 <p>&lt;tr th:each="course : ${courseList}"&gt;</p>
 <p>  &lt;td th:text="${course.name}"&gt;&lt;/td&gt;</p>
 <p>&lt;/tr&gt;</p>
-
 <p>&lt;!-- 链接 --&gt;</p>
 <p>&lt;a th:href="@{/student/home}"&gt;ホーム&lt;/a&gt;</p>
 <p>&lt;a th:href="@{/chat(courseId=${course.id})}"&gt;チャット&lt;/a&gt;</p>
-
 <p>&lt;!-- 引入片段 --&gt;</p>
 <p>&lt;div th:replace="~{fragments/profile-card :: card(${user}, ${avatarUrl}, ${courseList})}"&gt;&lt;/div&gt;</p>
 <p></code>`<code></p>
-
 <hr/>
-
 <h2>附录 B：关键注解（看到要认识）</h2>
-
 <table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
-<tr><th>注解</th><th>意思</th></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>注解</td><td>意思</td></tr>
 <tr><td>@Controller</td><td>这是接收网页请求的控制器</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>@GetMapping("/path")</td><td>处理 GET 请求</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>@PostMapping("/path")</td><td>处理 POST 请求</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>@Autowired</td><td>Spring 自动注入依赖</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>@Entity</td><td>这是数据库表</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>@Service</td><td>这是业务服务类</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>@RequestParam</td><td>取 URL 参数 ?courseId=1</td></tr>
-<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
 <tr><td>@PathVariable</td><td>取路径 /users/{id} 里的 id</td></tr>
 </table>
-
 <hr/>
-
 <h2>附录 C：你新增的 commit 摘要</h2>
-
-<p><strong>commit</strong>: </code>feat: student profile S3 avatar + full UI theme`（及后续讲师一覧）</p>
-
+<p><strong>commit</strong>: </code>feat: student profile S3 avatar + full UI theme<code>（及后续讲师一覧）</p>
 <p><strong>主要内容</strong>：</p>
 <li>全站 pcfa-theme.css 绿色 UI</li>
 <li>S3 头像 Presigned 上传</li>
 <li>プロフィール编辑/预览/管理者讲师查看</li>
 <li>profile-card 显示所属コース</li>
 <li>讲师ホーム→受講者一覧→プロフィール</li>
-
 <hr/>
-
-<p>*文档版本：2026-06-23 | 配合项目 commit a366b78 及之后改动*</p>
-
-</body>
-</html>
+<h2>附录 D：2026-06-24 功能改进（実績レポート・聊天未読・コース管理）</h2>
+<h3>D.1 実績レポート（成绩逻辑修正）</h3>
+<p><strong>以前的问题</strong>：学生提交了作业但讲师还没打分，平均スコア显示 <strong>0.0点</strong>（红色）——不合理。</p>
+<p><strong>现在的逻辑</strong>：</p>
+<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>字段</td><td>含义</td></tr>
+<tr><td>採点済</td><td>讲师已打分的提交数</td></tr>
+<tr><td>採点待ち</td><td>已提交但 score 还是 null 的数量</td></tr>
+<tr><td>平均スコア</td><td><strong>只算已打分的平均</strong>；若一件都没打分 → 显示「採点待ち」徽章，不是 0 点</td></tr>
+</table>
+<p><strong>代码位置</strong>：</code>ReportService.calcGradedAverage()<code> — 只 filter </code>score != null<code></p>
+<p><strong>面试怎么说</strong>：</p>
+<p>&gt; 未採点の提出は平均に含めず、採点待ちとして別表示しました。</p>
+<h3>D.2 チャット未読红点（不用 Lambda）</h3>
+<p><strong>表</strong>：</code>chat_read_status<code>（user_id + course_id + last_read_at）</p>
+<p><strong>流程</strong>：</p>
+<p></code>`<code></p>
+<p>别人发消息 → chat_messages 表 INSERT</p>
+<p>你打开聊天页 → ChatService.markCourseAsRead() 更新 last_read_at</p>
+<p>ホーム加载 → ChatService.buildUnreadMap() 统计 sentAt &gt; lastReadAt 且 sender ≠ 自己</p>
+<p>チャット按钮上显示红色数字</p>
+<p></code>`<code></p>
+<p><strong>代码文件</strong>：</p>
+<li></code>ChatReadStatus.java<code> / </code>ChatReadStatusRepository.java<code></li>
+<li></code>ChatService.countUnread()<code> / </code>buildUnreadMap()<code></li>
+<li></code>ChatController<code> 打开页面时 markAsRead</li>
+<li></code>student-home.html<code> / </code>instructor-home.html<code> 红色 </code>.pcfa-chat-badge<code></li>
+<p><strong>为什么不用 Lambda</strong>：研修期内用 DB 既読フラグ更简单可靠，Lambda 是发表后的扩展。</p>
+<h3>D.3 コース管理 UI 大改</h3>
+<p><strong>问题</strong>：画面乱、浏览器自带 </code>input type="time"<code> 时和分对不齐。</p>
+<p><strong>解决</strong>：</p>
+<li>用 </code>fragments/time-picker.html<code>：<strong>小时下拉 + 分钟下拉</strong>（08〜21 时，00/15/30/45 分）</li>
+<li></code>AdminController.parseOptionalTime(startHour, startMinute)<code> 合并成 LocalTime</li>
+<li>页面分区：</code>pcfa-admin-section`（基本情報 / 講師 / 学生 / 授業日）</li>
+<li>去掉杂乱的多色 card-header，统一绿色顶栏区块</li>
+<h3>D.4 讲师画面职责分离（复习）</h3>
+<table border="1" cellpadding="6" cellspacing="0" style="border-collapse:collapse;width:100%;margin:8px 0;font-size:12px;">
+<tr><td>页面</td><td>只看什么</td></tr>
+<tr><td>受講者一覧</td><td>プロフィール</td></tr>
+<tr><td>出欠確認</td><td>出席率・出席履歴</td></tr>
+</table>
+<hr/>
+<p>*文档版本：2026-06-24 | 含実績レポート・未読チャット・コース管理改进*</p></body></html>

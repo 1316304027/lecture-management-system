@@ -226,14 +226,14 @@ public class AdminController {
     public String addSchedule(
             @PathVariable Long courseId,
             @RequestParam String lessonDate,
-            @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime,
+            @RequestParam(required = false) String startHour,
+            @RequestParam(required = false) String startMinute,
+            @RequestParam(required = false) String endHour,
+            @RequestParam(required = false) String endMinute,
             HttpSession session) {
         if (getLoginUser(session) == null) return "redirect:/login";
-        java.time.LocalTime st = (startTime != null && !startTime.isBlank())
-                ? java.time.LocalTime.parse(startTime) : null;
-        java.time.LocalTime et = (endTime != null && !endTime.isBlank())
-                ? java.time.LocalTime.parse(endTime) : null;
+        java.time.LocalTime st = parseOptionalTime(startHour, startMinute);
+        java.time.LocalTime et = parseOptionalTime(endHour, endMinute);
         courseScheduleService.addSchedule(courseId, LocalDate.parse(lessonDate), st, et);
         return "redirect:/admin/courses?courseId=" + courseId;
     }
@@ -248,17 +248,17 @@ public class AdminController {
             @RequestParam String rangeFrom,
             @RequestParam String rangeTo,
             @RequestParam(required = false) java.util.List<String> dayOfWeeks,
-            @RequestParam(required = false) String startTime,
-            @RequestParam(required = false) String endTime,
+            @RequestParam(required = false) String startHour,
+            @RequestParam(required = false) String startMinute,
+            @RequestParam(required = false) String endHour,
+            @RequestParam(required = false) String endMinute,
             HttpSession session) {
         if (getLoginUser(session) == null) return "redirect:/login";
         if (dayOfWeeks == null || dayOfWeeks.isEmpty())
             return "redirect:/admin/courses?courseId=" + courseId;
 
-        java.time.LocalTime st = (startTime != null && !startTime.isBlank())
-                ? java.time.LocalTime.parse(startTime) : null;
-        java.time.LocalTime et = (endTime != null && !endTime.isBlank())
-                ? java.time.LocalTime.parse(endTime) : null;
+        java.time.LocalTime st = parseOptionalTime(startHour, startMinute);
+        java.time.LocalTime et = parseOptionalTime(endHour, endMinute);
 
         java.util.List<java.time.DayOfWeek> dows = dayOfWeeks.stream()
                 .map(java.time.DayOfWeek::valueOf)
@@ -429,6 +429,13 @@ public class AdminController {
             model.addAttribute("reportList", reportService.getCourseReport(courseId));
         }
         return "admin-reports";
+    }
+
+    private java.time.LocalTime parseOptionalTime(String hour, String minute) {
+        if (hour == null || hour.isBlank()) return null;
+        int h = Integer.parseInt(hour);
+        int m = (minute != null && !minute.isBlank()) ? Integer.parseInt(minute) : 0;
+        return java.time.LocalTime.of(h, m);
     }
 
     private User getLoginUser(HttpSession session) {

@@ -2,6 +2,7 @@ package lecture_management_system.repository;
 
 import lecture_management_system.entity.ChatMessage;
 import org.springframework.data.jpa.repository.JpaRepository;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -31,4 +32,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
      * 全メッセージを新しい順で取得（管理者用）
      */
     List<ChatMessage> findAllByOrderBySentAtDesc();
+
+    long countByCourse_IdAndSender_IdNot(Long courseId, Long senderId);
+
+    long countByCourse_IdAndSentAtAfterAndSender_IdNot(
+            Long courseId, LocalDateTime sentAt, Long senderId);
 }

@@ -65,7 +65,12 @@
                         </div>
                         <div class="col-6">
                             <a th:href="@{/chat(courseId=${course.id})}"
-                               class="btn btn-outline-info pcfa-course-action w-100">チャット</a>
+                               class="btn btn-outline-info pcfa-course-action w-100 position-relative">
+                                チャット
+                                <span th:if="${chatUnreadMap != null and chatUnreadMap[course.id] != null}"
+                                      class="pcfa-chat-badge"
+                                      th:text="${chatUnreadMap[course.id]}"></span>
+                            </a>
                         </div>
                     </div>
                 </div>

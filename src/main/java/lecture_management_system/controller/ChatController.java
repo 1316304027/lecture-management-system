@@ -41,6 +41,7 @@ public class ChatController {
         model.addAttribute("course", courseService.findById(courseId));
         model.addAttribute("messages", chatService.getMessages(courseId));
         model.addAttribute("courseId", courseId);
+        chatService.markCourseAsRead(loginUser, courseId);
         return "chat";
     }
 

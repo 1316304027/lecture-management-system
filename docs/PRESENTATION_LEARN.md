@@ -1,45 +1,37 @@
-# 发表学习笔记 — 第一版（login + student-home）
+# 发表学习笔记 — 全版本（边改边学 · 6/29 用）
 
-魏玉臻 · 边改边学 · 6/29 総まとめ報告会用
+魏玉臻 · PCFA 受講管理システム
 
 ---
 
-## 第一版改了什么？
+## 版本一览
+
+| 版本 | 内容 | 状态 |
+|------|------|------|
+| **第一版** | login + student-home + pcfa-theme.css | ✅ |
+| **第二版** | 出席/课题/聊天 + admin-courses + 実績レポート + プロフィール | ✅ |
+| **第三版** | Dashboard 统计 + コースポータル + お知らせ | ✅ |
+
+---
+
+# 第一版：登录 + 学生主页
+
+## 改了什么？
 
 | 文件 | 作用 |
 |------|------|
-| `static/pcfa-theme.css` | 全站统一颜色、卡片、登录页、导航栏样式 |
-| `templates/login.html` | 登录页视觉升级（渐变背景 + 专业卡片） |
-| `templates/student-home.html` | 学生主页 Dashboard 风（统计条 + 课程卡片） |
-
-**没有改 Java 代码** → 原有登录、权限、课程列表逻辑不变，系统不会因为这个版本崩掉。
-
----
+| `static/pcfa-theme.css` | 全站统一颜色、卡片、导航栏 |
+| `templates/login.html` | 渐变背景 + 专业登录卡 |
+| `templates/student-home.html` | Dashboard 风课程卡片 |
 
 ## 本地怎么看？
 
-**重要：** 默认 `application.yaml` 连的是 **AWS RDS**，家里网络通常连不上（会 timeout）。
-本地看 UI 请用 **local 配置 + 本机数据库**：
-
 ```bash
-cd /mnt/c/Users/yuzhe/lecture-management-system/demo
-
-# 1. 启动本机 PostgreSQL（只需第一次，或数据库停了时再跑）
 docker compose -f docker-compose.local.yml up -d
-
-# 2. 用 local 配置启动（连 localhost，不连 AWS）
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
 
-Windows PowerShell 第 2 步：
-
-```powershell
-.\mvnw.cmd spring-boot:run "-Dspring-boot.run.profiles=local"
-```
-
 浏览器：`http://localhost:8080/login`
-
-测试账号（启动时自动创建）：
 
 | 角色 | 邮箱 | 密码 |
 |------|------|------|
@@ -47,91 +39,122 @@ Windows PowerShell 第 2 步：
 | 讲师 | teacher@test.com | Admin1234 |
 | 管理员 | admin@test.com | Admin1234 |
 
-**发表 Demo 用线上版：** 改完代码 push 到 GitHub → EC2 上 pull 重部署 → 浏览器打开 EC2 的 IP。
+## 发表一句话（登录）
+
+> こちらがログイン画面です。メールとパスワードで認証し、役割に応じて画面が切り替わります。
+
+**Q: ログインの仕組み？** → `LoginController` + `HttpSession` + BCrypt
+
+## 发表一句话（学生主页）
+
+> 受講者ダッシュボードで、コースごとに出席・教材・課題・チャットへ遷移できます。
+
+**链路：** `GET /student/home` → `StudentController` → `CourseService` → `student-home.html`
 
 ---
 
-## 发表用：登录页（30秒日语）
+# 第二版：核心业务 Demo 页
 
-> こちらが PCFA 受講管理システムのログイン画面です。  
-> メールとパスワードで認証し、役割（管理者・講師・学生）に応じて画面が切り替わります。
+## 出席登録 `/student/attendance?courseId=`
 
-### 可能被问
+> 授業日に合わせて出席登録ができ、出席率が自動計算されます。
 
-**Q: ログインはどう実装していますか？**
+**链路：** `StudentController.attendancePage()` → `AttendanceService` → RDS `attendances`
 
-> `LoginController` が POST `/login` を受け取り、メールとパスワードでユーザーを検証します。  
-> 成功すると `HttpSession` にユーザー情報を保存し、ロールに応じてリダイレクトします。
+## 課題提出 `/student/assignments?courseId=`
 
-**代码位置：** `controller/LoginController.java`
+> 課題PDFは Presigned URL で S3 に直接アップロードします。
+
+**链路：** presign → 浏览器 PUT S3 → POST submit → `submissions` 表
+
+## チャット `/chat?courseId=`
+
+> コース単位のチャットです。未読件数は DB の既読管理でホームに表示します。
+
+**链路：** `ChatController` → `ChatService` → `chat_messages` + `chat_read_status`
+
+## 管理者 コース管理 `/admin/courses`
+
+> コース・講師・学生・授業日を一元管理します。時刻はドロップダウンで入力します。
+
+## 実績レポート `/admin/reports`
+
+> 出席率・提出率・採点状況をコース別に一覧します。未採点は0点扱いせず「採点待ち」表示です。
+
+## プロフィール（S3 头像）
+
+> 受講者の顔写真は S3 に保存し、講師と管理者がプロフィールから確認できます。
 
 ---
 
-## 发表用：学生主页（45秒日语）
+# 第三版：Dashboard + コースポータル + お知らせ
 
-> 学生がログインすると、このダッシュボードが表示されます。  
-> 受講中のコースごとに、出席登録・教材・課題提出・チャットへ遷移できます。
+## Dashboard 统计（学生ホーム顶部）
 
-### 请求怎么走？（你要能画这条线）
+| 统计 | 数据来源 |
+|------|----------|
+| 平均出席率 | `AttendanceService.calculateRate()` |
+| 未提出課題 | 公开课题数 − 已提交数 |
+| 未読チャット | `ChatService.buildUnreadMap()` |
+
+**代码：** `StudentDashboardService.java`
+
+## コースポータル `/student/course?courseId=`
+
+> コースごとのポータル画面で、お知らせ・統計・機能へのショートカットを一覧できます。
+
+**链路：** `StudentController.coursePortal()` → 公告 + 教材 + 课题列表
+
+## お知らせ（课程公告）
+
+> 講師が教材管理画面からお知らせを投稿し、学生がコースポータルで閲覧します。
+
+**表：** `course_announcements`  
+**讲师发帖：** `POST /instructor/announcements`  
+**学生查看：** コースポータル
+
+### 发表一句话
+
+> コース内お知らせ機能を追加し、講師から受講者への連絡をシステム内で完結できるようにしました。
+
+---
+
+# 每层你要记住什么（面试用）
 
 ```
-浏览器 GET /student/home
-    → StudentController.home()
-    → courseService.getStudentCourses(学生ID)
-    → Thymeleaf 渲染 student-home.html
-    → 画面显示课程卡片
-```
-
-**三层对应：**
-
-- **Controller** = `StudentController`（收请求、取 Session 用户）
-- **Service** = `CourseService`（查这个学生选了哪些课）
-- **画面** = `student-home.html`（Thymeleaf 模板，不是 React）
-
-### 可能被问
-
-**Q: なぜ画面を改善しましたか？**
-
-> ご指摘を受け、受講者が最初に見る画面をダッシュボード形式にし、  
-> コース単位で機能へ迷わず遷移できるようにしました。
-
----
-
-## 第一版之后（第二版预告）
-
-- 出席 / 课题 / 聊天 / 教材 已接 `pcfa-theme.css`（学生侧）
-- 讲师 / 管理员 14 页待统一（见 `边做边学_总路线图.md`）
-- 功能增强：课程公告、统计卡片（待做）
-
----
-
-## 学一点 CSS（发表用）
-
-**问：画面优化用了什么？**  
-> 共通 CSS ファイル `pcfa-theme.css` で、色・カード・ナビバーを統一しました。HTML は Thymeleaf テンプレートです。
-
-**三个文件分工：**
-
-| 文件 | 你记住 |
-|------|--------|
-| `login.html` | 登录页 **结构** |
-| `pcfa-theme.css` | 全站 **外观** |
-| `StudentController.java` | 学生主页 **数据从哪来** |
-
-打开 CSS 找这一行就是主题绿色：
-
-```css
---pcfa-primary: #157347;
+Controller = 接待员（收 HTTP、检查 Session）
+Service    = 业务员（算逻辑、调多个 Repository）
+Repository = 仓库管理员（数据库 CRUD）
+Entity     = 表结构
+templates  = 画面（Thymeleaf）
 ```
 
 ---
 
-## 第一版之后（旧预告已合并到总路线图）
+# AWS 发表 3 分钟台词
+
+> 本システムは EC2 上の Docker で Spring Boot を稼働させ、  
+> データは RDS PostgreSQL、ファイルは S3 に保存しています。  
+> 大容量ファイルは Presigned URL でブラウザから S3 へ直接アップロードし、  
+> サーバー負荷を抑えています。
+
+架构图见：`docs/AWS架构图.md`  
+完整稿见：`docs/发表稿_15分钟.md`
 
 ---
 
-## 自检（改完后你做这 3 件事）
+# 自检清单
 
-- [ ] 本地能打开 login，能登录
-- [ ] 学生账号能看到新主页，四个按钮都能点进去
-- [ ] 用自己的话说出：`/student/home` 经过哪个 Controller
+- [ ] 本地或 EC2 能登录三种角色
+- [ ] 学生ホーム有 4 个统计数字
+- [ ] コース詳細 → お知らせ能看到
+- [ ] 讲师发帖 → 学生刷新能看到
+- [ ] チャット未読红点 → 打开后消失
+- [ ] 実績レポート未採分显示「採点待ち」
+- [ ] 能说出 `/student/home` 经过哪个 Controller
+
+---
+
+# 被问「AI 写的吗？」
+
+> Cursor を補助ツールとして使いましたが、要件整理、動作確認、AWS デプロイ、不具合修正は自分で行いました。設計の意図は説明できます。

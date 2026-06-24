@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>コースポータル | PCFA受講管理システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+</head>
+<body class="pcfa-body">
+
+<nav class="navbar navbar-dark pcfa-navbar">
+    <a class="navbar-brand" href="/student/home">← ホームへ戻る</a>
+    <span class="text-white small fw-bold" th:text="${course.name}"></span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+</nav>
+
+<div class="container py-4" style="max-width: 960px;">
+
+    <div class="pcfa-page-header mb-4">
+        <h1 class="h4 fw-bold mb-1" th:text="${course.name}"></h1>
+        <p class="text-muted small mb-0" th:text="${course.description} ?: '（説明なし）'"></p>
+    </div>
+
+    <div class="row g-3 mb-4" th:if="${courseStats != null}">
+        <div class="col-4">
+            <div class="pcfa-report-stat">
+                <div class="val" th:text="${courseStats.attendanceRate} + '%'">0%</div>
+                <div class="lbl">出席率</div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="pcfa-report-stat">
+                <div class="val" th:text="${courseStats.pendingAssignments}">0</div>
+                <div class="lbl">未提出課題</div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="pcfa-report-stat">
+                <div class="val" th:text="${chatUnread}">0</div>
+                <div class="lbl">未読チャット</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-2 mb-4 pcfa-action-grid">
+        <div class="col-6 col-md-3">
+            <a th:href="@{/student/attendance(courseId=${course.id})}"
+               class="btn btn-outline-primary pcfa-course-action w-100">出席登録</a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a th:href="@{/student/materials(courseId=${course.id})}"
+               class="btn btn-outline-secondary pcfa-course-action w-100">教材</a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a th:href="@{/student/assignments(courseId=${course.id})}"
+               class="btn btn-outline-warning pcfa-course-action w-100">課題</a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a th:href="@{/chat(courseId=${course.id})}"
+               class="btn btn-outline-info pcfa-course-action w-100 position-relative">
+                チャット
+                <span th:if="${chatUnread > 0}" class="pcfa-chat-badge" th:text="${chatUnread}"></span>
+            </a>
+        </div>
+    </div>
+
+    <div class="card pcfa-course-card mb-4">
+        <div class="card-header">お知らせ</div>
+        <div class="card-body">
+            <div th:if="${announcements.empty}" class="text-muted small">お知らせはありません。</div>
+            <div th:each="a : ${announcements}" class="border-bottom pb-3 mb-3">
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                    <h6 class="fw-bold mb-1" th:text="${a.title}"></h6>
+                    <span class="text-muted small text-nowrap"
+                          th:text="${#temporals.format(a.createdAt, 'MM/dd HH:mm')}"></span>
+                </div>
+                <p class="text-muted small mb-1" th:text="${a.author.name} + ' 先生'"></p>
+                <p class="mb-0 small" style="white-space:pre-wrap" th:text="${a.content}"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="card pcfa-course-card h-100">
+                <div class="card-header">公開教材</div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item small" th:each="m : ${materialList}" th:text="${m.title}"></li>
+                    <li class="list-group-item text-muted small" th:if="${materialList.empty}">教材なし</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card pcfa-course-card h-100">
+                <div class="card-header">公開課題</div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item small" th:each="asg : ${assignmentList}">
+                        <span th:text="${asg.title}"></span>
+                        <span class="text-muted"> — 締切 </span>
+                        <span th:text="${#temporals.format(asg.deadline, 'MM/dd HH:mm')}"></span>
+                    </li>
+                    <li class="list-group-item text-muted small" th:if="${assignmentList.empty}">課題なし</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -52,4 +52,10 @@ public interface SubmissionRepository extends JpaRepository<Submission, Long> {
      */
     List<Submission> findByStudent_IdAndAssignment_Course_IdAndAssignment_PublishedTrue(
             Long studentId, Long courseId);
+
+    long countByStudent_IdAndAssignment_Course_IdAndAssignment_PublishedTrueAndScoreIsNotNull(
+            Long studentId, Long courseId);
+
+    long countByStudent_IdAndAssignment_Course_IdAndAssignment_PublishedTrueAndScoreIsNull(
+            Long studentId, Long courseId);
 }

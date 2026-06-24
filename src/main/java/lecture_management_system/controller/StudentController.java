@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lecture_management_system.dto.AvatarPresignResult;
+import lecture_management_system.dto.CourseStatsDto;
 import lecture_management_system.dto.PresignUploadResponse;
 import lecture_management_system.dto.UploadPrepareResult;
 
@@ -47,6 +48,9 @@ public class StudentController {
     @Autowired private SubmissionService submissionService;
     @Autowired private CourseScheduleService courseScheduleService;
     @Autowired private ProfileService profileService;
+    @Autowired private ChatService chatService;
+    @Autowired private StudentDashboardService studentDashboardService;
+    @Autowired private AnnouncementService announcementService;
 
     // ===================== ホーム（SCR-002）=====================
 
@@ -56,11 +60,42 @@ public class StudentController {
         if (loginUser == null) return "redirect:/login";
         loginUser = profileService.refreshUser(loginUser);
         session.setAttribute("loginUser", loginUser);
+        List<Course> courses = courseService.getStudentCourses(loginUser.getId());
+        Map<Long, CourseStatsDto> courseStatsMap = studentDashboardService.buildCourseStatsMap(loginUser, courses);
+
         model.addAttribute("loginUser", loginUser);
         model.addAttribute("avatarUrl", profileService.getAvatarUrl(loginUser));
-        model.addAttribute("courseList", courseService.getStudentCourses(loginUser.getId()));
+        model.addAttribute("courseList", courses);
+        model.addAttribute("courseStatsMap", courseStatsMap);
+        model.addAttribute("chatUnreadMap", chatService.buildUnreadMap(loginUser, courses));
+        model.addAttribute("totalPendingAssignments", studentDashboardService.totalPendingAssignments(courseStatsMap));
+        model.addAttribute("totalUnreadChat", studentDashboardService.totalUnreadChat(courseStatsMap));
+        model.addAttribute("avgAttendanceRate", studentDashboardService.averageAttendanceRate(courseStatsMap));
         model.addAttribute("isProxy", session.getAttribute("adminUser") != null);
         return "student-home";
+    }
+
+    /** コースポータル（お知らせ + クイックリンク） */
+    @GetMapping("/student/course")
+    public String coursePortal(@RequestParam Long courseId, HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+
+        Course course = courseService.findById(courseId);
+        if (course == null) return "redirect:/student/home";
+
+        Map<Long, CourseStatsDto> stats = studentDashboardService.buildCourseStatsMap(
+                loginUser, List.of(course));
+        CourseStatsDto courseStats = stats.get(courseId);
+
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("course", course);
+        model.addAttribute("courseStats", courseStats);
+        model.addAttribute("announcements", announcementService.getByCourse(courseId));
+        model.addAttribute("materialList", materialService.findPublishedByCourseId(courseId));
+        model.addAttribute("assignmentList", assignmentService.findPublishedByCourseId(courseId));
+        model.addAttribute("chatUnread", chatService.countUnread(loginUser, courseId));
+        return "student-course-portal";
     }
 
     // ===================== プロフィール（S3アバター）=====================

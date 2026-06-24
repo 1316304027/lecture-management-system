@@ -32,10 +32,36 @@
         <p th:text="'ようこそ、' + ${loginUser.name} + ' さん。'"></p>
     </div>
 
-    <!-- 受講コース数のみ表示（飾りのボタンは置かない） -->
+    <!-- Dashboard 統計 -->
+    <div class="row g-3 mb-4" th:unless="${courseList.empty}">
+        <div class="col-6 col-md-3">
+            <div class="pcfa-report-stat">
+                <div class="val" th:text="${courseList.size()}">0</div>
+                <div class="lbl">受講コース</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="pcfa-report-stat">
+                <div class="val" th:text="${avgAttendanceRate} + '%'">0%</div>
+                <div class="lbl">平均出席率</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="pcfa-report-stat">
+                <div class="val" th:text="${totalPendingAssignments}">0</div>
+                <div class="lbl">未提出課題</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="pcfa-report-stat">
+                <div class="val" th:text="${totalUnreadChat}">0</div>
+                <div class="lbl">未読チャット</div>
+            </div>
+        </div>
+    </div>
+
     <div class="pcfa-info-bar mb-4" th:unless="${courseList.empty}">
-        <span class="pcfa-info-bar-label">受講コース数</span>
-        <span class="pcfa-info-bar-value" th:text="${courseList.size()} + ' 件'">0 件</span>
+        <span class="pcfa-info-bar-label">クイックリンク</span>
         <a th:href="@{/student/profile}" class="btn btn-sm btn-outline-success ms-auto">プロフィール編集</a>
     </div>
 
@@ -48,14 +74,25 @@
     <div class="row g-4" th:unless="${courseList.empty}">
         <div class="col-12 col-md-6" th:each="course : ${courseList}">
             <div class="card pcfa-course-card h-100">
-                <div class="card-header">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0" th:text="${course.name}">コース名</h5>
+                    <a th:href="@{/student/course(courseId=${course.id})}"
+                       class="btn btn-sm btn-light">コース詳細</a>
                 </div>
                 <div class="card-body">
-                    <p class="text-muted small mb-0" th:text="${course.description} ?: '（説明なし）'"></p>
+                    <p class="text-muted small mb-2" th:text="${course.description} ?: '（説明なし）'"></p>
+                    <div class="d-flex flex-wrap gap-2 small" th:if="${courseStatsMap[course.id] != null}">
+                        <span class="badge bg-light text-dark border"
+                              th:text="'出席率 ' + ${courseStatsMap[course.id].attendanceRate} + '%'"></span>
+                        <span class="badge bg-warning text-dark"
+                              th:if="${courseStatsMap[course.id].pendingAssignments > 0}"
+                              th:text="'未提出 ' + ${courseStatsMap[course.id].pendingAssignments}"></span>
+                        <span class="badge bg-info text-dark"
+                              th:if="${courseStatsMap[course.id].announcementCount > 0}"
+                              th:text="'お知らせ ' + ${courseStatsMap[course.id].announcementCount}"></span>
+                    </div>
                 </div>
-                <div class="card-footer bg-white border-0 pt-0 pb-3 px-3">
-                    <!-- 2×2 均等グリッド：幅・高さそろえ -->
+                <div class="card-footer border-0 pt-0 pb-3 px-3">
                     <div class="row g-2 pcfa-action-grid">
                         <div class="col-6">
                             <a th:href="@{/student/attendance(courseId=${course.id})}"
@@ -71,7 +108,12 @@
                         </div>
                         <div class="col-6">
                             <a th:href="@{/chat(courseId=${course.id})}"
-                               class="btn btn-outline-info pcfa-course-action w-100">チャット</a>
+                               class="btn btn-outline-info pcfa-course-action w-100 position-relative">
+                                チャット
+                                <span th:if="${chatUnreadMap != null and chatUnreadMap[course.id] != null}"
+                                      class="pcfa-chat-badge"
+                                      th:text="${chatUnreadMap[course.id]}"></span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -79,7 +121,5 @@
         </div>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

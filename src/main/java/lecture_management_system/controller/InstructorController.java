@@ -45,23 +45,20 @@ public class InstructorController {
     @Autowired private CourseScheduleService courseScheduleService;
     @Autowired private SubmissionRepository submissionRepository;
     @Autowired private ProfileService profileService;
+    @Autowired private ChatService chatService;
+    @Autowired private AnnouncementService announcementService;
 
     // ===================== ダッシュボード（SCR-101）/ Dashboard =====================
 
-    /**
-     * 講師ホーム（GET /instructor/home）
-     * 担当コース一覧を表示する。
-     * Displays list of courses the instructor is assigned to.
-     */
     @GetMapping("/instructor/home")
     public String home(HttpSession session, Model model) {
         User loginUser = getLoginUser(session);
         if (loginUser == null) return "redirect:/login";
 
-        // 担当コース一覧（course_users WHERE role=INSTRUCTOR）
         List<Course> courses = courseService.getInstructorCourses(loginUser.getId());
         model.addAttribute("loginUser", loginUser);
         model.addAttribute("courseList", courses);
+        model.addAttribute("chatUnreadMap", chatService.buildUnreadMap(loginUser, courses));
         model.addAttribute("isProxy", session.getAttribute("adminUser") != null);
         return "instructor-home";
     }
@@ -102,7 +99,28 @@ public class InstructorController {
         model.addAttribute("loginUser", loginUser);
         model.addAttribute("course", courseService.findById(courseId));
         model.addAttribute("materialList", materialService.findByCourseId(courseId));
+        model.addAttribute("announcements", announcementService.getByCourse(courseId));
         return "instructor-materials";
+    }
+
+    @PostMapping("/instructor/announcements")
+    public String postAnnouncement(
+            @RequestParam Long courseId,
+            @RequestParam String title,
+            @RequestParam String content,
+            HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+        String err = announcementService.create(loginUser, courseId, title, content);
+        if (err != null) {
+            model.addAttribute("errorMessage", err);
+            model.addAttribute("loginUser", loginUser);
+            model.addAttribute("course", courseService.findById(courseId));
+            model.addAttribute("materialList", materialService.findByCourseId(courseId));
+            model.addAttribute("announcements", announcementService.getByCourse(courseId));
+            return "instructor-materials";
+        }
+        return "redirect:/instructor/materials?courseId=" + courseId;
     }
 
     /**

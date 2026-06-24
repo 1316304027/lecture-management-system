@@ -5,41 +5,21 @@ import lecture_management_system.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * チャット業務Service
- *
- * 【機能説明】
- * ・メッセージ送信 → RDSに保存 + CloudWatchログ出力（Lambda連携）
- * ・メッセージ取得 → コース別・全件
- * ・メッセージ削除 → 管理者のみ使用可能
- *
- * 【Lambda連携の仕組み】
- * sendMessage()でlogger.info()を呼ぶと
- * CloudWatchにログが送られる。
- * このログをLambdaのトリガーにすることで
- * 「メッセージが送信された」イベントを検知できる。
- */
 @Service
 public class ChatService {
 
     private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
 
-    @Autowired
-    private ChatMessageRepository chatMessageRepository;
+    @Autowired private ChatMessageRepository chatMessageRepository;
+    @Autowired private ChatReadStatusRepository chatReadStatusRepository;
+    @Autowired private CourseRepository courseRepository;
 
-    @Autowired
-    private CourseRepository courseRepository;
-
-    /**
-     * メッセージを送信する
-     * 1. バリデーション（空・500文字超）
-     * 2. RDSに保存
-     * 3. CloudWatchログ出力（Lambda連携用）
-     */
     public void sendMessage(User sender, Long courseId, String content) {
         if (content == null || content.trim().isEmpty()) return;
         if (content.length() > 500) content = content.substring(0, 500);
@@ -54,30 +34,60 @@ public class ChatService {
         message.setSentAt(LocalDateTime.now());
         chatMessageRepository.save(message);
 
-        // CloudWatchログ出力（Lambda連携用）
         logger.info("[CHAT_EVENT] courseId={} sender={} role={} content={}",
                 courseId, sender.getName(), sender.getRole(), content.trim());
     }
 
-    /**
-     * コースのメッセージ一覧取得（古い順）
-     */
     public List<ChatMessage> getMessages(Long courseId) {
         return chatMessageRepository.findByCourse_IdOrderBySentAtAsc(courseId);
     }
 
-    /**
-     * 全メッセージ取得（管理者用・新しい順）
-     */
     public List<ChatMessage> getAllMessages() {
         return chatMessageRepository.findAllByOrderBySentAtDesc();
     }
 
-    /**
-     * メッセージ削除（管理者のみ）
-     * IDで1件削除する
-     */
     public void deleteMessage(Long messageId) {
         chatMessageRepository.deleteById(messageId);
+    }
+
+    /** チャット画面を開いたら既読にする */
+    public void markCourseAsRead(User user, Long courseId) {
+        if (user == null || courseId == null) return;
+        Course course = courseRepository.findById(courseId).orElse(null);
+        if (course == null) return;
+        ChatReadStatus status = chatReadStatusRepository
+                .findByUser_IdAndCourse_Id(user.getId(), courseId)
+                .orElse(new ChatReadStatus());
+        if (status.getId() == null) {
+            status.setUser(user);
+            status.setCourse(course);
+        }
+        status.setLastReadAt(LocalDateTime.now());
+        chatReadStatusRepository.save(status);
+    }
+
+    /** コースごとの未読件数（自分以外が送ったメッセージ） */
+    public long countUnread(User user, Long courseId) {
+        if (user == null) return 0;
+        return chatReadStatusRepository.findByUser_IdAndCourse_Id(user.getId(), courseId)
+                .map(s -> chatMessageRepository.countByCourse_IdAndSentAtAfterAndSender_IdNot(
+                        courseId, s.getLastReadAt(), user.getId()))
+                .orElseGet(() -> chatMessageRepository.countByCourse_IdAndSender_IdNot(
+                        courseId, user.getId()));
+    }
+
+    /** ホーム画面用：複数コースの未読マップ */
+    public Map<Long, Long> buildUnreadMap(User user, List<Course> courses) {
+        Map<Long, Long> map = new HashMap<>();
+        if (user == null || courses == null) return map;
+        for (Course c : courses) {
+            long n = countUnread(user, c.getId());
+            if (n > 0) map.put(c.getId(), n);
+        }
+        return map;
+    }
+
+    public long countUnreadTotal(User user, List<Course> courses) {
+        return buildUnreadMap(user, courses).values().stream().mapToLong(Long::longValue).sum();
     }
 }
