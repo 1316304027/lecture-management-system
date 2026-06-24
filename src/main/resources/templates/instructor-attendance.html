@@ -8,74 +8,86 @@
 </head>
 <body class="pcfa-body">
 <nav class="navbar navbar-dark pcfa-navbar px-3">
-    <a class="navbar-brand" href="/instructor/home">← ホームへ戻る</a>
-    <span class="text-white small" th:text="'出欠確認 - ' + ${course.name}"></span>
+    <a class="navbar-brand" href="/instructor/home">← 講師ホーム</a>
+    <span class="text-white small fw-bold" th:text="'出欠確認 - ' + ${course.name}"></span>
     <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
 </nav>
-<div class="container py-4">
-    <h4 class="fw-bold mb-3">受講者一覧（授業数：<span th:text="${totalLessons}"></span>回）</h4>
-    <div class="table-responsive">
-    <table class="table table-bordered table-hover bg-white align-middle">
-        <thead class="table-dark">
-            <tr><th style="width:56px"></th><th>受講者名</th><th>出席回数</th><th>出席率</th><th>操作</th></tr>
-        </thead>
-        <tbody>
-            <tr th:each="u : ${studentList}">
-                <td class="text-center">
-                    <img th:if="${avatarUrlMap[u.id]}" th:src="${avatarUrlMap[u.id]}" class="pcfa-avatar-sm" alt="">
-                    <span th:unless="${avatarUrlMap[u.id]}" class="pcfa-avatar-placeholder-sm"
-                          th:text="${#strings.substring(u.name,0,1)}"></span>
-                </td>
-                <td class="fw-semibold" th:text="${u.name}"></td>
-                <td th:text="${countMap[u.id]}"></td>
-                <td>
-                    <div class="d-flex align-items-center gap-2">
-                        <div class="progress flex-grow-1" style="height:12px">
-                            <div class="progress-bar"
-                                 th:classappend="${rateMap[u.id] < 70} ? 'bg-danger' : 'bg-success'"
-                                 th:style="'width:' + ${rateMap[u.id]} + '%'"></div>
-                        </div>
-                        <span class="small" th:text="${rateMap[u.id]} + '%'"></span>
-                    </div>
-                </td>
-                <td class="text-nowrap">
-                    <a th:href="@{/instructor/attendance(courseId=${course.id}, studentId=${u.id})}"
-                       class="btn btn-sm btn-outline-secondary">出欠</a>
-                    <a th:href="@{/instructor/students/{studentId}/profile(studentId=${u.id}, courseId=${course.id})}"
-                       class="btn btn-sm btn-outline-primary">プロフィール</a>
-                </td>
-            </tr>
-            <tr th:if="${studentList.empty}">
-                <td colspan="5" class="text-muted text-center">受講者未登録</td>
-            </tr>
-        </tbody>
-    </table>
+
+<div class="container py-4" style="max-width: 960px;">
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
+        <div class="pcfa-page-header mb-0">
+            <h1 class="h4 fw-bold mb-1">出欠状況</h1>
+            <p class="text-muted small mb-0">授業数：<span th:text="${totalLessons}"></span> 回</p>
+        </div>
+        <a th:href="@{/instructor/students(courseId=${course.id})}"
+           class="btn btn-sm btn-outline-primary">受講者・プロフィール一覧へ</a>
+    </div>
+
+    <div class="card pcfa-course-card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th style="width:56px"></th>
+                        <th>受講者名</th>
+                        <th style="width:100px">出席回数</th>
+                        <th style="width:180px">出席率</th>
+                        <th style="width:100px">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="u : ${studentList}">
+                        <td class="text-center">
+                            <img th:if="${avatarUrlMap[u.id]}" th:src="${avatarUrlMap[u.id]}" class="pcfa-avatar-sm" alt="">
+                            <span th:unless="${avatarUrlMap[u.id]}" class="pcfa-avatar-placeholder-sm"
+                                  th:text="${#strings.substring(u.name,0,1)}"></span>
+                        </td>
+                        <td class="fw-semibold" th:text="${u.name}"></td>
+                        <td th:text="${countMap[u.id]}"></td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1 pcfa-progress-thin">
+                                    <div class="progress-bar"
+                                         th:classappend="${rateMap[u.id] < 70} ? 'bg-danger' : 'bg-success'"
+                                         th:style="'width:' + ${rateMap[u.id]} + '%'"></div>
+                                </div>
+                                <span class="small text-nowrap" th:text="${rateMap[u.id]} + '%'"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <a th:href="@{/instructor/attendance(courseId=${course.id}, studentId=${u.id})}"
+                               class="btn btn-sm btn-outline-secondary">出席詳細</a>
+                        </td>
+                    </tr>
+                    <tr th:if="${studentList.empty}">
+                        <td colspan="5" class="text-muted text-center py-4">受講者未登録</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <div th:if="${selectedStudent != null}" class="card pcfa-course-card mt-4">
-        <div class="card-header">プロフィール・出席履歴</div>
-        <div class="card-body">
-            <div class="d-flex gap-3 mb-3 align-items-center">
-                <img th:if="${selectedAvatarUrl}" th:src="${selectedAvatarUrl}" class="pcfa-avatar-lg" alt="">
-                <div th:unless="${selectedAvatarUrl}" class="pcfa-avatar-placeholder-lg">
-                    <span th:text="${#strings.substring(selectedStudent.name,0,1)}"></span>
-                </div>
-                <div>
-                    <h5 class="mb-1" th:text="${selectedStudent.name}"></h5>
-                    <p class="text-muted small mb-1" th:text="${selectedStudent.email}"></p>
-                    <p class="small mb-0" th:text="${selectedStudent.profileBio} ?: '（自己紹介未登録）'"></p>
-                </div>
-            </div>
-            <table class="table table-sm table-bordered mb-0">
-                <thead class="table-light"><tr><th>日付</th><th>登録時刻</th></tr></thead>
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span th:text="${selectedStudent.name} + ' の出席履歴'"></span>
+            <a th:href="@{/instructor/students/{studentId}/profile(studentId=${selectedStudent.id}, courseId=${course.id})}"
+               class="btn btn-sm btn-light">プロフィールを見る</a>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-sm mb-0">
+                <thead class="table-light">
+                <tr><th>日付</th><th>登録時刻</th></tr>
+                </thead>
                 <tbody>
-                    <tr th:each="a : ${detailHistory}">
-                        <td th:text="${a.date}"></td>
-                        <td th:text="${#temporals.format(a.attendedAt, 'HH:mm')}"></td>
-                    </tr>
-                    <tr th:if="${detailHistory.empty}">
-                        <td colspan="2" class="text-muted text-center">出席記録なし</td>
-                    </tr>
+                <tr th:each="a : ${detailHistory}">
+                    <td th:text="${a.date}"></td>
+                    <td th:text="${#temporals.format(a.attendedAt, 'HH:mm')}"></td>
+                </tr>
+                <tr th:if="${detailHistory.empty}">
+                    <td colspan="2" class="text-muted text-center py-3">出席記録なし</td>
+                </tr>
                 </tbody>
             </table>
         </div>

@@ -40,7 +40,8 @@
                 <div class="card-body">
                     <p class="text-muted small mb-0" th:text="${course.description} ?: '（説明なし）'"></p>
                 </div>
-                <div class="card-footer bg-white border-0 pt-0 pb-3 px-3">
+                <div class="card-footer border-0 pt-0 pb-3 px-3">
+                    <!-- 3×2 均等グリッド（チャットも同サイズ） -->
                     <div class="row g-2 pcfa-action-grid">
                         <div class="col-6">
                             <a th:href="@{/instructor/materials(courseId=${course.id})}"
@@ -62,7 +63,7 @@
                             <a th:href="@{/instructor/students(courseId=${course.id})}"
                                class="btn btn-outline-dark pcfa-course-action w-100">受講者一覧</a>
                         </div>
-                        <div class="col-12">
+                        <div class="col-6">
                             <a th:href="@{/chat(courseId=${course.id})}"
                                class="btn btn-outline-info pcfa-course-action w-100">チャット</a>
                         </div>

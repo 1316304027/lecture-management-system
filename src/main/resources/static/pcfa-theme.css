@@ -10,8 +10,9 @@
 }
 
 body.pcfa-body {
-  background: var(--pcfa-bg);
+  background: linear-gradient(160deg, #e8eef4 0%, #eef2f6 40%, #f4f7fa 100%);
   font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", Meiryo, sans-serif;
+  min-height: 100vh;
 }
 
 .pcfa-login-page {
@@ -168,10 +169,18 @@ body.pcfa-body {
   align-items: center;
   justify-content: center;
   min-height: 44px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.875rem;
+  max-height: 44px;
+  padding: 0.5rem 0.5rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   white-space: nowrap;
+  border-radius: 8px;
+}
+
+.pcfa-progress-thin {
+  height: 8px;
+  border-radius: 4px;
+  background: #e9ecef;
 }
 
 .pcfa-info-bar {
