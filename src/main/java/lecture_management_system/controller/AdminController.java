@@ -63,7 +63,7 @@ public class AdminController {
         User loginUser = getLoginUser(session);
         if (loginUser == null) return "redirect:/login";
         model.addAttribute("loginUser", loginUser);
-        List<User> users = userService.findAll();
+        List<User> users = userService.findAllForAdminList();
         model.addAttribute("userList", users);
         model.addAttribute("avatarUrlMap", profileService.buildAvatarUrlMap(users));
         return "admin-accounts";
@@ -232,14 +232,25 @@ public class AdminController {
         User loginUser = getLoginUser(session);
         if (loginUser == null) return "redirect:/login";
         model.addAttribute("loginUser", loginUser);
-        model.addAttribute("courseList", courseService.findAll());
-        model.addAttribute("instructorCandidates", userService.findByRole("INSTRUCTOR"));
-        model.addAttribute("studentCandidates", userService.findByRole("STUDENT"));
+        model.addAttribute("courseList", courseService.findAll().stream()
+                .sorted(Comparator.comparing(Course::getId))
+                .toList());
         if (courseId != null) {
             model.addAttribute("selectedCourse", courseService.findById(courseId));
             model.addAttribute("courseInstructors", courseService.getInstructors(courseId));
             model.addAttribute("courseStudents", courseService.getStudents(courseId));
             model.addAttribute("schedules", courseScheduleService.getSchedules(courseId));
+            Set<Long> assignedInstructorIds = courseService.getInstructors(courseId).stream()
+                    .map(User::getId).collect(Collectors.toSet());
+            Set<Long> assignedStudentIds = courseService.getStudents(courseId).stream()
+                    .map(User::getId).collect(Collectors.toSet());
+            model.addAttribute("instructorCandidates", userService.findByRole("INSTRUCTOR").stream()
+                    .filter(u -> !assignedInstructorIds.contains(u.getId())).toList());
+            model.addAttribute("studentCandidates", userService.findByRole("STUDENT").stream()
+                    .filter(u -> !assignedStudentIds.contains(u.getId())).toList());
+        } else {
+            model.addAttribute("instructorCandidates", userService.findByRole("INSTRUCTOR"));
+            model.addAttribute("studentCandidates", userService.findByRole("STUDENT"));
         }
         return "admin-courses";
     }

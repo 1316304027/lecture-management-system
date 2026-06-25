@@ -124,7 +124,21 @@
                     </div>
                     <p class="small fw-semibold mb-1">講師を追加</p>
                     <form th:action="@{/admin/courses/{id}/assign-instructor(id=${selectedCourse.id})}" method="post">
-                        <div th:replace="~{fragments/user-assign-picker :: addPicker(pickerId='instructorPicker', users=${instructorCandidates}, submitLabel='講師を追加', submitBtnClass='btn-primary', emptyMessage='追加可能な講師はいません')}"></div>
+                        <input type="hidden" name="userId" id="instructorPickerUserId" required>
+                        <input type="text" class="form-control form-control-sm mb-2" placeholder="氏名またはメールで検索…"
+                               oninput="pcfaFilterUserPicker('instructorPicker', this.value)">
+                        <div class="pcfa-user-scroll-list" id="instructorPickerList">
+                            <button type="button" class="pcfa-user-list-item w-100 text-start"
+                                    th:each="u : ${instructorCandidates}"
+                                    th:attr="data-id=${u.id},data-search=${u.name + ' ' + u.email}"
+                                    onclick="pcfaSelectUserPicker('instructorPicker', this)">
+                                <span class="pcfa-user-list-name" th:text="${u.name}"></span>
+                                <span class="pcfa-user-list-email" th:text="${u.email}"></span>
+                            </button>
+                            <p th:if="${#lists.isEmpty(instructorCandidates)}" class="text-muted small text-center py-3 mb-0">追加可能な講師はいません</p>
+                        </div>
+                        <p class="small text-muted mb-2 mt-1">※ 一覧から1名クリックで選択（緑枠）</p>
+                        <button type="submit" class="btn btn-sm btn-primary">講師を追加</button>
                     </form>
                 </div>
             </div>
@@ -157,7 +171,21 @@
                     </div>
                     <p class="small fw-semibold mb-1">学生を追加（検索→一覧クリック→追加）</p>
                     <form th:action="@{/admin/courses/{id}/assign-student(id=${selectedCourse.id})}" method="post">
-                        <div th:replace="~{fragments/user-assign-picker :: addPicker(pickerId='studentPicker', users=${studentCandidates}, submitLabel='学生を追加', submitBtnClass='btn-success', emptyMessage='追加可能な学生はいません')}"></div>
+                        <input type="hidden" name="userId" id="studentPickerUserId" required>
+                        <input type="text" class="form-control form-control-sm mb-2" placeholder="氏名またはメールで検索…"
+                               oninput="pcfaFilterUserPicker('studentPicker', this.value)">
+                        <div class="pcfa-user-scroll-list" id="studentPickerList">
+                            <button type="button" class="pcfa-user-list-item w-100 text-start"
+                                    th:each="u : ${studentCandidates}"
+                                    th:attr="data-id=${u.id},data-search=${u.name + ' ' + u.email}"
+                                    onclick="pcfaSelectUserPicker('studentPicker', this)">
+                                <span class="pcfa-user-list-name" th:text="${u.name}"></span>
+                                <span class="pcfa-user-list-email" th:text="${u.email}"></span>
+                            </button>
+                            <p th:if="${#lists.isEmpty(studentCandidates)}" class="text-muted small text-center py-3 mb-0">追加可能な学生はいません</p>
+                        </div>
+                        <p class="small text-muted mb-2 mt-1">※ 一覧から1名クリックで選択（緑枠）</p>
+                        <button type="submit" class="btn btn-sm btn-success">学生を追加</button>
                     </form>
                 </div>
             </div>

@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
+import java.util.Comparator;
 
 @Service
 public class UserService {
@@ -40,6 +41,21 @@ public class UserService {
 
     public List<User> findAll() {
         return userRepository.findAll();
+    }
+
+    /** ユーザー管理画面用：管理者→講師→受講者、同一ロール内は ID 昇順 */
+    public List<User> findAllForAdminList() {
+        return userRepository.findAll().stream()
+                .sorted(Comparator
+                        .comparingInt((User u) -> roleSortKey(u.getRole()))
+                        .thenComparing(User::getId))
+                .toList();
+    }
+
+    private static int roleSortKey(String role) {
+        if ("ADMIN".equals(role)) return 0;
+        if ("INSTRUCTOR".equals(role)) return 1;
+        return 2;
     }
 
     public List<User> findByRole(String role) {
