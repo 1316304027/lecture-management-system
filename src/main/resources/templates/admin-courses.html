@@ -124,7 +124,7 @@
                     </div>
                     <p class="small fw-semibold mb-1">講師を追加</p>
                     <form th:action="@{/admin/courses/{id}/assign-instructor(id=${selectedCourse.id})}" method="post">
-                        <div th:replace="~{fragments/user-assign-picker :: addPicker('instructorPicker', ${instructorCandidates}, '講師を追加', 'btn-primary', '追加可能な講師はいません')}"></div>
+                        <div th:replace="~{fragments/user-assign-picker :: addPicker(pickerId='instructorPicker', users=${instructorCandidates}, submitLabel='講師を追加', submitBtnClass='btn-primary', emptyMessage='追加可能な講師はいません')}"></div>
                     </form>
                 </div>
             </div>
@@ -157,7 +157,7 @@
                     </div>
                     <p class="small fw-semibold mb-1">学生を追加（検索→一覧クリック→追加）</p>
                     <form th:action="@{/admin/courses/{id}/assign-student(id=${selectedCourse.id})}" method="post">
-                        <div th:replace="~{fragments/user-assign-picker :: addPicker('studentPicker', ${studentCandidates}, '学生を追加', 'btn-success', '追加可能な学生はいません')}"></div>
+                        <div th:replace="~{fragments/user-assign-picker :: addPicker(pickerId='studentPicker', users=${studentCandidates}, submitLabel='学生を追加', submitBtnClass='btn-success', emptyMessage='追加可能な学生はいません')}"></div>
                     </form>
                 </div>
             </div>

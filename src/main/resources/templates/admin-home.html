@@ -74,6 +74,13 @@
             </a>
         </div>
     </div>
+
+    <div th:if="${studentCount != null and studentCount < 93}" class="mt-4 p-3 border rounded bg-light small">
+        <strong>発表準備（1回だけ）：</strong>
+        受講者は現在 <span th:text="${studentCount}"></span> 名です。
+        <a href="/admin/setup/seed-students">ここから 93 名まで一括投入</a>
+        （押すのは1回だけ・再起動では動きません）
+    </div>
 </div>
 </body>
 </html>

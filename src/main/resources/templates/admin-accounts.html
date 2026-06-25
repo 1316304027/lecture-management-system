@@ -70,20 +70,6 @@
         </div>
     </div>
 
-    <div class="pcfa-admin-section mb-4">
-        <div class="pcfa-admin-section-header">デモデータ（発表用）</div>
-        <div class="pcfa-admin-section-body">
-            <p class="small text-muted mb-2">受講者93名を一括作成（メール: student001@demo.pcfa.jp 〜）。既存はスキップ。初期パスワード <code>Demo1234</code></p>
-            <form th:action="@{/admin/accounts/seed-demo-students}" method="post" class="d-flex flex-wrap gap-2 align-items-center"
-                  onsubmit="return confirm('デモ用受講者93名を作成します。よろしいですか？')">
-                <input type="number" name="courseId" class="form-control form-control-sm" style="width:120px"
-                       placeholder="コースID" title="省略可：未割当で作成のみ">
-                <button type="submit" class="btn btn-sm btn-outline-primary">93名一括作成</button>
-                <span class="small text-muted">コースIDを入れるとそのコースに自動割当</span>
-            </form>
-        </div>
-    </div>
-
     <div class="pcfa-admin-section">
         <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <span>ユーザー一覧</span>
@@ -188,9 +174,9 @@
                         </select>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <button type="submit" class="btn btn-primary pcfa-btn-primary">保存</button>
+                <div class="modal-footer d-flex justify-content-end gap-2 border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-primary px-4 pcfa-btn-primary">保存</button>
                 </div>
             </form>
         </div>
@@ -206,9 +192,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body"><p id="confirmModalBody" class="mb-0"></p></div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">キャンセル</button>
-                    <button type="submit" class="btn" id="confirmModalSubmit">実行</button>
+                <div class="modal-footer d-flex justify-content-end gap-2 border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn px-4" id="confirmModalSubmit">実行</button>
                 </div>
             </form>
         </div>

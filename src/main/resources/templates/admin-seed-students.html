@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>受講者データ投入（1回のみ）</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+</head>
+<body class="pcfa-body">
+<nav class="navbar navbar-dark pcfa-navbar px-4">
+    <a class="navbar-brand" href="/admin/home">← 管理者ホーム</a>
+    <span class="text-white fw-bold">データ投入（1回のみ）</span>
+</nav>
+
+<div class="container py-4" style="max-width:720px;">
+
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+    <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
+
+    <div class="pcfa-admin-section">
+        <div class="pcfa-admin-section-header">受講者 93 名への一括投入</div>
+        <div class="pcfa-admin-section-body">
+
+            <div th:if="${alreadyDone}" class="alert alert-info mb-0">
+                受講者は既に <strong th:text="${studentCount}"></strong> 名います（目標 93 名）。
+                <strong>追加の必要はありません。</strong>
+                <div class="mt-2"><a href="/admin/accounts">ユーザー一覧へ</a></div>
+            </div>
+
+            <div th:unless="${alreadyDone}">
+                <p>現在の受講者数：<strong th:text="${studentCount}"></strong> 名</p>
+                <p>このボタンを押すと、あと <strong th:text="${needCount}"></strong> 名を
+                    <strong>AWS RDS の users テーブル</strong>に追加します。</p>
+
+                <hr>
+                <p class="small fw-bold mb-2">何が起きるか（技術的な流れ）</p>
+                <ol class="small text-muted">
+                    <li><code>UserService.seedAdditionalDemoStudents()</code> が実行される</li>
+                    <li>ループで 1 人ずつ <code>userRepository.save()</code> → SQL <code>INSERT INTO users</code></li>
+                    <li>保存先：<strong>RDS PostgreSQL / lecturedb / users 表</strong></li>
+                    <li>氏名：姓20種×名20種から <code>Random</code> でランダム結合（例：佐藤美咲）</li>
+                    <li>メール：<code>student001@demo.pcfa.jp</code> 〜 空き番号</li>
+                    <li>パスワード：<code>Admin1234</code>（暗号化して保存）</li>
+                    <li>コースがあれば <code>course_users</code> 表にも割当</li>
+                </ol>
+                <p class="small text-danger mb-3">※ 再起動では自動実行されません。この画面で<strong>今回1回だけ</strong>押してください。</p>
+
+                <form th:action="@{/admin/setup/seed-students}" method="post"
+                      onsubmit="return confirm('今回だけRDSに受講者を追加します。よろしいですか？')">
+                    <button type="submit" class="btn btn-primary pcfa-btn-primary">
+                        今回だけ <span th:text="${needCount}"></span> 名を追加する
+                    </button>
+                    <a href="/admin/home" class="btn btn-outline-secondary ms-2">キャンセル</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

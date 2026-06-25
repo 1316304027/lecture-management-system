@@ -52,6 +52,7 @@ public class AdminController {
         model.addAttribute("realAdminUser", adminUser != null ? adminUser : loginUser);
         model.addAttribute("userCount", userService.findAll().size());
         model.addAttribute("courseCount", courseService.findAll().size());
+        model.addAttribute("studentCount", userService.countStudents());
         return "admin-home";
     }
 
@@ -167,18 +168,6 @@ public class AdminController {
         return "redirect:/admin/accounts";
     }
 
-    /** デモ発表用：受講者93名を一括作成（既存はスキップ） */
-    @PostMapping("/admin/accounts/seed-demo-students")
-    public String seedDemoStudents(
-            @RequestParam(required = false) Long courseId,
-            HttpSession session, RedirectAttributes redirectAttributes) {
-        if (getLoginUser(session) == null) return "redirect:/login";
-        int n = userService.seedDemoStudents(93, courseId);
-        redirectAttributes.addFlashAttribute("message",
-                "デモ用受講者を " + n + " 名作成しました（既存メールはスキップ）。初期パスワード: Demo1234");
-        return "redirect:/admin/accounts";
-    }
-
     @PostMapping("/admin/proxy-login/{userId}")
     public String proxyLogin(@PathVariable Long userId, HttpSession session) {
         User adminUser = getLoginUser(session);
@@ -201,6 +190,37 @@ public class AdminController {
             session.removeAttribute("adminUser");
         }
         return "redirect:/admin/home";
+    }
+
+    /**
+     * 【1回だけ】デモ用受講者を RDS に投入（再起動では実行されない）
+     */
+    @GetMapping("/admin/setup/seed-students")
+    public String seedStudentsPage(HttpSession session, Model model) {
+        if (getLoginUser(session) == null) return "redirect:/login";
+        long n = userService.countStudents();
+        model.addAttribute("studentCount", n);
+        model.addAttribute("needCount", Math.max(0, 93 - n));
+        model.addAttribute("alreadyDone", n >= 93);
+        return "admin-seed-students";
+    }
+
+    @PostMapping("/admin/setup/seed-students")
+    public String seedStudentsExecute(HttpSession session, RedirectAttributes redirectAttributes) {
+        if (getLoginUser(session) == null) return "redirect:/login";
+        long before = userService.countStudents();
+        if (before >= 93) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "受講者は既に " + before + " 名います。追加は行いません。");
+            return "redirect:/admin/setup/seed-students";
+        }
+        Long courseId = courseService.findAll().stream()
+                .map(Course::getId).min(Long::compareTo).orElse(null);
+        int added = userService.seedStudentsToTargetOnce(93, courseId);
+        redirectAttributes.addFlashAttribute("message",
+                "今回 " + added + " 名をデータベース（RDS）に追加しました。受講者合計 "
+                        + (before + added) + " 名です。");
+        return "redirect:/admin/accounts";
     }
 
     // ===================== コース管理（SCR-203）=====================

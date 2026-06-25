@@ -10,12 +10,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
 public class UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
 
     @Autowired private UserRepository userRepository;
     @Autowired private CourseUserRepository courseUserRepository;
@@ -172,24 +177,46 @@ public class UserService {
         createOrUpdateUser("渡辺勇大", "student@test.com",  "Admin1234", "STUDENT");
     }
 
+    /** 現在の受講者数（ロール=STUDENT） */
+    public long countStudents() {
+        return userRepository.findByRole("STUDENT").size();
+    }
+
     /**
-     * デモ用受講者を一括作成（既存メールはスキップ）。
+     * 【1回だけ手動実行用】不足分のデモ受講者を追加する。
+     * 目標人数に達している場合は 0 を返し、何もしない。
+     */
+    @Transactional
+    public int seedStudentsToTargetOnce(int targetTotal, Long assignToCourseId) {
+        long current = countStudents();
+        if (current >= targetTotal) return 0;
+        int need = (int) (targetTotal - current);
+        int created = seedAdditionalDemoStudents(need, assignToCourseId);
+        log.info("[1回限定投入] 受講者 {} 名追加 → RDS users 表（合計 {} 名）", created, current + created);
+        return created;
+    }
+
+    /**
+     * デモ用受講者を need 名だけ作成（student001@demo.pcfa.jp 〜 の空き番号を使用）。
      * @return 新規作成件数
      */
     @Transactional
-    public int seedDemoStudents(int count, Long assignToCourseId) {
+    public int seedAdditionalDemoStudents(int need, Long assignToCourseId) {
+        if (need <= 0) return 0;
         String[] family = {"佐藤","鈴木","高橋","田中","伊藤","渡辺","山本","中村","小林","加藤",
                 "吉田","山田","佐々木","山口","松本","井上","木村","林","斎藤","清水"};
         String[] given = {"太郎","花子","健太","美咲","翔","結衣","大輔","愛","誠","さくら",
                 "悠斗","陽菜","蓮","結菜","颯太","莉子","湊","葵","陸","心春"};
+        Random rnd = new Random();
         int created = 0;
-        for (int i = 1; i <= count; i++) {
-            String email = String.format("student%03d@demo.pcfa.jp", i);
+        int seq = 1;
+        while (created < need && seq < 10000) {
+            String email = String.format("student%03d@demo.pcfa.jp", seq++);
             if (userRepository.existsByEmail(email)) continue;
             User user = new User();
-            user.setName(family[i % family.length] + given[i % given.length] + String.format("%02d", i));
+            user.setName(family[rnd.nextInt(family.length)] + given[rnd.nextInt(given.length)]);
             user.setEmail(email);
-            user.setPassword(passwordEncoder.encode("Demo1234"));
+            user.setPassword(passwordEncoder.encode("Admin1234"));
             user.setRole("STUDENT");
             user.setActive(true);
             user.setLocked(false);
@@ -211,6 +238,12 @@ public class UserService {
             created++;
         }
         return created;
+    }
+
+    /** @deprecated 互換用。seedAdditionalDemoStudents を使用 */
+    @Transactional
+    public int seedDemoStudents(int count, Long assignToCourseId) {
+        return seedAdditionalDemoStudents(count, assignToCourseId);
     }
 
     private void createOrUpdateUser(String name, String email, String password, String role) {
