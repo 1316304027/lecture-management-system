@@ -3,6 +3,7 @@ package lecture_management_system.controller;
 import jakarta.servlet.http.HttpSession;
 import lecture_management_system.dto.PasswordOperationResult;
 import lecture_management_system.entity.Assignment;
+import lecture_management_system.entity.Attendance;
 import lecture_management_system.entity.Submission;
 import lecture_management_system.entity.CourseSchedule;
 import lecture_management_system.entity.User;
