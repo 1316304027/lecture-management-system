@@ -61,4 +61,18 @@ public class AnnouncementService {
         announcementRepository.delete(a);
         return null;
     }
+
+    /** 管理者によるコース変更通知（学生・講師のコースポータルにお知らせ表示） */
+    public void postAdminCourseNotice(User admin, Long courseId, String title, String content) {
+        if (admin == null || courseId == null || title == null || title.isBlank()) return;
+        Course course = courseRepository.findById(courseId).orElse(null);
+        if (course == null) return;
+        CourseAnnouncement a = new CourseAnnouncement();
+        a.setCourse(course);
+        a.setAuthor(admin);
+        a.setTitle(title.trim());
+        a.setContent(content != null ? content.trim() : "");
+        a.setCreatedAt(LocalDateTime.now());
+        announcementRepository.save(a);
+    }
 }

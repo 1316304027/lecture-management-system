@@ -100,6 +100,10 @@ public class CourseScheduleService {
     }
 
     /** 授業日削除 */
+    public CourseSchedule findById(Long scheduleId) {
+        return courseScheduleRepository.findById(scheduleId).orElse(null);
+    }
+
     public void deleteSchedule(Long scheduleId) {
         courseScheduleRepository.deleteById(scheduleId);
     }

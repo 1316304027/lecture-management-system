@@ -100,15 +100,16 @@
             <div class="pcfa-admin-section h-100 mb-0">
                 <div class="pcfa-admin-section-header">担当講師の割当</div>
                 <div class="pcfa-admin-section-body">
-                    <input type="text" class="form-control form-control-sm mb-2" placeholder="登録済み講師を検索…"
-                           oninput="filterTableRows(this, 'instructorTable')">
-                    <div class="table-responsive pcfa-scroll-table mb-3">
+                    <p class="small text-muted mb-2">割当済み講師</p>
+                    <input type="text" class="form-control form-control-sm mb-2" placeholder="氏名・メールで絞り込み…"
+                           oninput="pcfaFilterAssignedTable(this, 'instructorTable')">
+                    <div class="pcfa-scroll-table mb-3">
                         <table class="table table-sm table-hover mb-0" id="instructorTable">
-                            <thead class="table-light"><tr><th>氏名</th><th>メール</th><th></th></tr></thead>
+                            <thead class="table-light sticky-top bg-white"><tr><th>氏名</th><th>メール</th><th></th></tr></thead>
                             <tbody>
                             <tr th:each="u : ${courseInstructors}" th:attr="data-search=${u.name + ' ' + u.email}">
-                                <td th:text="${u.name}"></td>
-                                <td class="small text-muted" th:text="${u.email}"></td>
+                                <td class="fw-semibold" th:text="${u.name}"></td>
+                                <td class="small text-muted pcfa-col-email" th:text="${u.email}"></td>
                                 <td class="text-end">
                                     <form th:action="@{/admin/courses/{cid}/remove-user(cid=${selectedCourse.id})}" method="post" class="d-inline"
                                           onsubmit="return confirm('講師の割当を解除しますか？')">
@@ -123,14 +124,7 @@
                     </div>
                     <p class="small fw-semibold mb-1">講師を追加</p>
                     <form th:action="@{/admin/courses/{id}/assign-instructor(id=${selectedCourse.id})}" method="post">
-                        <input type="text" class="form-control form-control-sm mb-1" placeholder="名前・メールで検索…"
-                               oninput="filterSelectOptions(this, 'instructorSelect')">
-                        <select name="userId" id="instructorSelect" class="form-select form-select-sm pcfa-picker-select" size="6" required>
-                            <option th:each="u : ${instructorCandidates}" th:value="${u.id}"
-                                    th:attr="data-search=${u.name + ' ' + u.email}"
-                                    th:text="${u.name} + ' — ' + ${u.email}"></option>
-                        </select>
-                        <button type="submit" class="btn btn-sm btn-primary mt-2">講師を追加</button>
+                        <div th:replace="~{fragments/user-assign-picker :: addPicker('instructorPicker', ${instructorCandidates}, '講師を追加', 'btn-primary', '追加可能な講師はいません')}"></div>
                     </form>
                 </div>
             </div>
@@ -139,15 +133,16 @@
             <div class="pcfa-admin-section h-100 mb-0">
                 <div class="pcfa-admin-section-header">受講学生の割当</div>
                 <div class="pcfa-admin-section-body">
-                    <input type="text" class="form-control form-control-sm mb-2" placeholder="登録済み学生を検索…"
-                           oninput="filterTableRows(this, 'studentTable')">
-                    <div class="table-responsive pcfa-scroll-table mb-3">
+                    <p class="small text-muted mb-2">割当済み学生</p>
+                    <input type="text" class="form-control form-control-sm mb-2" placeholder="氏名・メールで絞り込み…"
+                           oninput="pcfaFilterAssignedTable(this, 'studentTable')">
+                    <div class="pcfa-scroll-table mb-3">
                         <table class="table table-sm table-hover mb-0" id="studentTable">
-                            <thead class="table-light"><tr><th>氏名</th><th>メール</th><th></th></tr></thead>
+                            <thead class="table-light sticky-top bg-white"><tr><th>氏名</th><th>メール</th><th></th></tr></thead>
                             <tbody>
                             <tr th:each="u : ${courseStudents}" th:attr="data-search=${u.name + ' ' + u.email}">
-                                <td th:text="${u.name}"></td>
-                                <td class="small text-muted" th:text="${u.email}"></td>
+                                <td class="fw-semibold" th:text="${u.name}"></td>
+                                <td class="small text-muted pcfa-col-email" th:text="${u.email}"></td>
                                 <td class="text-end">
                                     <form th:action="@{/admin/courses/{cid}/remove-user(cid=${selectedCourse.id})}" method="post" class="d-inline"
                                           onsubmit="return confirm('学生の割当を解除しますか？')">
@@ -160,16 +155,9 @@
                             </tbody>
                         </table>
                     </div>
-                    <p class="small fw-semibold mb-1">学生を追加（100名規模でも検索で選択）</p>
+                    <p class="small fw-semibold mb-1">学生を追加（検索→一覧クリック→追加）</p>
                     <form th:action="@{/admin/courses/{id}/assign-student(id=${selectedCourse.id})}" method="post">
-                        <input type="text" class="form-control form-control-sm mb-1" placeholder="名前・メールで検索…"
-                               oninput="filterSelectOptions(this, 'studentSelect')">
-                        <select name="userId" id="studentSelect" class="form-select form-select-sm pcfa-picker-select" size="6" required>
-                            <option th:each="u : ${studentCandidates}" th:value="${u.id}"
-                                    th:attr="data-search=${u.name + ' ' + u.email}"
-                                    th:text="${u.name} + ' — ' + ${u.email}"></option>
-                        </select>
-                        <button type="submit" class="btn btn-sm btn-success mt-2">学生を追加</button>
+                        <div th:replace="~{fragments/user-assign-picker :: addPicker('studentPicker', ${studentCandidates}, '学生を追加', 'btn-success', '追加可能な学生はいません')}"></div>
                     </form>
                 </div>
             </div>
@@ -243,7 +231,10 @@
                     </form>
                 </div>
             </div>
-            <p class="text-muted small mt-3 mb-0">※ 開始時刻設定時、出席受付は<strong>開始30分前〜30分後</strong>に制限されます。</p>
+            <p class="text-muted small mt-3 mb-0">
+                ※ 開始時刻設定時、出席受付は<strong>開始30分前〜30分後</strong>に制限されます。<br>
+                ※ コース情報・授業日の変更は、学生・講師の<strong>コースお知らせ</strong>に自動通知されます。
+            </p>
         </div>
     </div>
 </div>
@@ -258,24 +249,12 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+<script th:src="@{/pcfa-admin.js}"></script>
 <script>
 function filterCourses(q) {
     q = q.toLowerCase();
     document.querySelectorAll('#courseList a').forEach(el => {
         el.style.display = (el.dataset.name || '').toLowerCase().includes(q) ? '' : 'none';
-    });
-}
-function filterSelectOptions(input, selectId) {
-    const q = input.value.toLowerCase();
-    document.querySelectorAll('#' + selectId + ' option').forEach(opt => {
-        const s = (opt.dataset.search || opt.textContent || '').toLowerCase();
-        opt.hidden = q && !s.includes(q);
-    });
-}
-function filterTableRows(input, tableId) {
-    const q = input.value.toLowerCase();
-    document.querySelectorAll('#' + tableId + ' tbody tr[data-search]').forEach(tr => {
-        tr.style.display = (tr.dataset.search || '').toLowerCase().includes(q) ? '' : 'none';
     });
 }
 function checkBulkForm() {
@@ -286,7 +265,14 @@ function checkBulkForm() {
     return true;
 }
 document.querySelectorAll('.pcfa-flatpickr').forEach(function(el) {
-    flatpickr(el, { locale: 'ja', dateFormat: 'Y-m-d', minDate: '2025-01-01', maxDate: '2028-12-31', disableMobile: true, allowInput: false });
+    flatpickr(el, {
+        locale: 'ja',
+        dateFormat: 'Y-m-d',
+        minDate: '2025-01-01',
+        maxDate: '2028-12-31',
+        disableMobile: true,
+        allowInput: false
+    });
 });
 </script>
 </body>

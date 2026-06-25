@@ -2,7 +2,11 @@ package lecture_management_system.controller;
 
 import jakarta.servlet.http.HttpSession;
 import lecture_management_system.dto.PasswordOperationResult;
-import lecture_management_system.entity.*;
+import lecture_management_system.entity.Assignment;
+import lecture_management_system.entity.Submission;
+import lecture_management_system.entity.CourseSchedule;
+import lecture_management_system.entity.User;
+import lecture_management_system.entity.Course;
 import lecture_management_system.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -13,6 +17,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import lecture_management_system.dto.StudentReportDto;
+import lecture_management_system.repository.AssignmentRepository;
+import lecture_management_system.repository.SubmissionRepository;
+import lecture_management_system.repository.AttendanceRepository;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -28,6 +35,10 @@ public class AdminController {
     @Autowired private AttendanceService attendanceService;
     @Autowired private ReportService reportService;
     @Autowired private ProfileService profileService;
+    @Autowired private AnnouncementService announcementService;
+    @Autowired private AssignmentRepository assignmentRepository;
+    @Autowired private SubmissionRepository submissionRepository;
+    @Autowired private AttendanceRepository attendanceRepository;
 
     // ===================== 管理者ホーム（SCR-201）=====================
 
@@ -155,6 +166,18 @@ public class AdminController {
         return "redirect:/admin/accounts";
     }
 
+    /** デモ発表用：受講者93名を一括作成（既存はスキップ） */
+    @PostMapping("/admin/accounts/seed-demo-students")
+    public String seedDemoStudents(
+            @RequestParam(required = false) Long courseId,
+            HttpSession session, RedirectAttributes redirectAttributes) {
+        if (getLoginUser(session) == null) return "redirect:/login";
+        int n = userService.seedDemoStudents(93, courseId);
+        redirectAttributes.addFlashAttribute("message",
+                "デモ用受講者を " + n + " 名作成しました（既存メールはスキップ）。初期パスワード: Demo1234");
+        return "redirect:/admin/accounts";
+    }
+
     @PostMapping("/admin/proxy-login/{userId}")
     public String proxyLogin(@PathVariable Long userId, HttpSession session) {
         User adminUser = getLoginUser(session);
@@ -215,8 +238,17 @@ public class AdminController {
             @PathVariable Long id, @RequestParam String name,
             @RequestParam(required = false) String description,
             HttpSession session) {
-        if (getLoginUser(session) == null) return "redirect:/login";
-        courseService.updateCourse(id, name, description != null ? description : "");
+        User admin = getLoginUser(session);
+        if (admin == null) return "redirect:/login";
+        Course before = courseService.findById(id);
+        String desc = description != null ? description : "";
+        courseService.updateCourse(id, name, desc);
+        if (before != null && (!name.equals(before.getName())
+                || !desc.equals(before.getDescription() != null ? before.getDescription() : ""))) {
+            announcementService.postAdminCourseNotice(admin, id,
+                    "【管理者】コース情報が更新されました",
+                    "コース「" + name + "」の名称または説明が変更されました。学生・講師はコースポータルのお知らせをご確認ください。");
+        }
         return "redirect:/admin/courses?courseId=" + id;
     }
 
@@ -268,10 +300,14 @@ public class AdminController {
             @RequestParam(required = false) String endHour,
             @RequestParam(required = false) String endMinute,
             HttpSession session) {
-        if (getLoginUser(session) == null) return "redirect:/login";
+        User admin = getLoginUser(session);
+        if (admin == null) return "redirect:/login";
         java.time.LocalTime st = parseOptionalTime(startHour, startMinute);
         java.time.LocalTime et = parseOptionalTime(endHour, endMinute);
         courseScheduleService.addSchedule(courseId, LocalDate.parse(lessonDate), st, et);
+        announcementService.postAdminCourseNotice(admin, courseId,
+                "【管理者】授業日が追加されました",
+                "授業日 " + lessonDate + " が追加されました。出席登録・スケジュールをご確認ください。");
         return "redirect:/admin/courses?courseId=" + courseId;
     }
 
@@ -290,7 +326,8 @@ public class AdminController {
             @RequestParam(required = false) String endHour,
             @RequestParam(required = false) String endMinute,
             HttpSession session) {
-        if (getLoginUser(session) == null) return "redirect:/login";
+        User admin = getLoginUser(session);
+        if (admin == null) return "redirect:/login";
         if (dayOfWeeks == null || dayOfWeeks.isEmpty())
             return "redirect:/admin/courses?courseId=" + courseId;
 
@@ -301,11 +338,16 @@ public class AdminController {
                 .map(java.time.DayOfWeek::valueOf)
                 .toList();
 
-        courseScheduleService.addScheduleBulk(
+        int added = courseScheduleService.addScheduleBulk(
                 courseId,
                 LocalDate.parse(rangeFrom),
                 LocalDate.parse(rangeTo),
                 dows, st, et);
+        if (added > 0) {
+            announcementService.postAdminCourseNotice(admin, courseId,
+                    "【管理者】授業日が一括追加されました",
+                    rangeFrom + " 〜 " + rangeTo + " の範囲で " + added + " 件の授業日が追加されました。");
+        }
         return "redirect:/admin/courses?courseId=" + courseId;
     }
 
@@ -313,8 +355,15 @@ public class AdminController {
     public String deleteSchedule(
             @PathVariable Long courseId, @PathVariable Long scheduleId,
             HttpSession session) {
-        if (getLoginUser(session) == null) return "redirect:/login";
+        User admin = getLoginUser(session);
+        if (admin == null) return "redirect:/login";
+        CourseSchedule schedule = courseScheduleService.findById(scheduleId);
         courseScheduleService.deleteSchedule(scheduleId);
+        if (schedule != null) {
+            announcementService.postAdminCourseNotice(admin, courseId,
+                    "【管理者】授業日が削除されました",
+                    "授業日 " + schedule.getLessonDate() + " が削除されました。");
+        }
         return "redirect:/admin/courses?courseId=" + courseId;
     }
 
@@ -483,6 +532,8 @@ public class AdminController {
                 model.addAttribute("avgAttendanceRate", Math.round(avgAtt * 10) / 10.0);
                 model.addAttribute("avgSubmissionRate", Math.round(avgSub * 10) / 10.0);
             }
+            model.addAttribute("lessonStats", reportService.getLessonAttendanceStats(courseId));
+            model.addAttribute("assignmentStats", reportService.getAssignmentAvgScores(courseId));
         }
         return "admin-reports";
     }
@@ -490,6 +541,8 @@ public class AdminController {
     @GetMapping("/admin/reports/export")
     public void exportReportsCsv(
             @RequestParam Long courseId,
+            @RequestParam(defaultValue = "summary") String type,
+            @RequestParam(required = false) Long studentId,
             HttpSession session,
             HttpServletResponse response) throws IOException {
         if (getLoginUser(session) == null) {
@@ -497,24 +550,84 @@ public class AdminController {
             return;
         }
         Course course = courseService.findById(courseId);
+        String courseName = course != null ? course.getName() : "course";
+        switch (type) {
+            case "attendance" -> exportAttendanceCsv(courseId, courseName, studentId, response);
+            case "assignments" -> exportAssignmentsCsv(courseId, courseName, studentId, response);
+            default -> exportSummaryCsv(courseId, course, response);
+        }
+    }
+
+    private void exportSummaryCsv(Long courseId, Course course, HttpServletResponse response) throws IOException {
         List<StudentReportDto> list = reportService.getCourseReport(courseId);
-        String filename = "report_" + courseId + ".csv";
-        response.setContentType("text/csv; charset=UTF-8");
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        response.getOutputStream().write(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
+        prepareCsv(response, "report_summary_" + courseId + ".csv");
         PrintWriter w = response.getWriter();
-        w.println("コース," + (course != null ? course.getName() : ""));
+        w.println("コース," + csv(course != null ? course.getName() : ""));
         w.println("氏名,メール,出席,出席率%,提出,提出率%,未提出,採点済,採点待ち,平均スコア");
         for (StudentReportDto r : list) {
             String score = r.getAverageScore() != null ? r.getAverageScore().toString() : "採点待ち";
             w.printf("%s,%s,%d/%d,%s,%d/%d,%s,%d,%d,%d,%s%n",
                     csv(r.getStudentName()), csv(r.getStudentEmail()),
                     r.getAttendedCount(), r.getTotalLessons(),
-                    r.getTotalLessons() == 0 ? "-" : r.getAttendanceRate(),
+                    r.getTotalLessons() == 0 ? "-" : String.valueOf(r.getAttendanceRate()),
                     r.getSubmittedCount(), r.getTotalAssignments(), r.getSubmissionRate(),
                     r.getUnsubmittedCount(), r.getEvaluatedCount(), r.getPendingGradeCount(), score);
         }
         w.flush();
+    }
+
+    private void exportAttendanceCsv(Long courseId, String courseName, Long studentId,
+                                     HttpServletResponse response) throws IOException {
+        List<User> students = courseService.getStudents(courseId);
+        if (studentId != null) {
+            students = students.stream().filter(u -> u.getId().equals(studentId)).toList();
+        }
+        List<CourseSchedule> schedules = courseScheduleService.getSchedules(courseId);
+        prepareCsv(response, "attendance_" + courseId + (studentId != null ? "_s" + studentId : "") + ".csv");
+        PrintWriter w = response.getWriter();
+        w.println("コース," + csv(courseName));
+        w.println("氏名,メール,授業日,出席状態");
+        for (User s : students) {
+            for (CourseSchedule sch : schedules) {
+                boolean present = attendanceRepository.findByStudent_IdAndCourse_IdAndDate(
+                        s.getId(), courseId, sch.getLessonDate()).isPresent();
+                w.printf("%s,%s,%s,%s%n",
+                        csv(s.getName()), csv(s.getEmail()), sch.getLessonDate(),
+                        present ? "出席" : (sch.getLessonDate().isAfter(LocalDate.now()) ? "未実施" : "欠席"));
+            }
+        }
+        w.flush();
+    }
+
+    private void exportAssignmentsCsv(Long courseId, String courseName, Long studentId,
+                                      HttpServletResponse response) throws IOException {
+        List<User> students = courseService.getStudents(courseId);
+        if (studentId != null) {
+            students = students.stream().filter(u -> u.getId().equals(studentId)).toList();
+        }
+        List<Assignment> assignments = assignmentRepository.findByCourse_IdAndPublishedTrue(courseId);
+        prepareCsv(response, "assignments_" + courseId + (studentId != null ? "_s" + studentId : "") + ".csv");
+        PrintWriter w = response.getWriter();
+        w.println("コース," + csv(courseName));
+        w.println("氏名,メール,課題名,提出状態,スコア,提出日時");
+        for (User s : students) {
+            for (Assignment a : assignments) {
+                Submission sub = submissionRepository
+                        .findByStudent_IdAndAssignment_Id(s.getId(), a.getId()).orElse(null);
+                String status = sub != null ? "提出済" : "未提出";
+                String score = (sub != null && sub.getScore() != null) ? sub.getScore() + "点" : "—";
+                String at = sub != null && sub.getSubmittedAt() != null ? sub.getSubmittedAt().toString() : "";
+                w.printf("%s,%s,%s,%s,%s,%s%n",
+                        csv(s.getName()), csv(s.getEmail()), csv(a.getTitle()), status, score, at);
+            }
+        }
+        w.flush();
+    }
+
+    private void prepareCsv(HttpServletResponse response, String filename) throws IOException {
+        response.setContentType("text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        response.getOutputStream().write(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
     }
 
     private String csv(String v) {

@@ -26,27 +26,31 @@
     </div>
     <div th:if="${emailSentTo}" class="alert alert-info border-info shadow-sm" role="alert">
         <div class="fw-bold mb-1">📧 AWS SES — パスワード設定メール送信済み</div>
-        <div class="small">
-            宛先：<strong th:text="${emailSentTo}"></strong><br>
-            ユーザーはメール内リンクから<strong>ご自身で</strong>パスワードを設定します。
-        </div>
+        <div class="small">宛先：<strong th:text="${emailSentTo}"></strong></div>
     </div>
     <div th:if="${devSetupLink}" class="alert alert-warning border-warning" role="alert">
-        <div class="fw-bold small">⚠️ SES 送信失敗 — 開発用リンク</div>
+        <div class="fw-bold small">⚠️ SES 未設定時の開発用リンク</div>
         <a th:href="${devSetupLink}" th:text="${devSetupLink}" class="small break-all"></a>
+    </div>
+
+    <div class="alert alert-light border mb-4 small">
+        <strong>ログインの仕組み（発表用に覚える）</strong>
+        <ol class="mb-0 ps-3 mt-2">
+            <li>管理者がここで<strong>氏名・メール・ロール</strong>を登録（パスワードは入力しない）</li>
+            <li>システムが <strong>AWS SES</strong> で「パスワード設定リンク」をメール送信</li>
+            <li>ユーザーがリンクを開き、<strong>自分でパスワードを設定</strong></li>
+            <li>設定後、通常のログイン画面からメール＋パスワードでログイン</li>
+        </ol>
+        <span class="text-muted">※ 自己登録は不要。研修向けLMSの標準的な安全設計です。</span>
     </div>
 
     <div class="pcfa-admin-section mb-4">
         <div class="pcfa-admin-section-header">新規ユーザー作成</div>
         <div class="pcfa-admin-section-body">
-            <p class="small text-muted mb-3">
-                パスワードは管理者が設定しません。作成後、<strong>AWS SES</strong> で登録メールアドレスへ
-                「パスワード設定リンク」を自動送信します。（自己登録は不要・管理者がアカウント作成）
-            </p>
             <form th:action="@{/admin/accounts/create}" method="post" class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label small fw-semibold mb-1">氏名</label>
-                    <input type="text" name="name" class="form-control" required placeholder="例：山田 太郎">
+                    <input type="text" name="name" class="form-control" required placeholder="例：奈良鹿丸">
                 </div>
                 <div class="col-md-4">
                     <label class="form-label small fw-semibold mb-1">メールアドレス</label>
@@ -63,7 +67,20 @@
                     <button type="submit" class="btn btn-primary w-100 pcfa-btn-primary">作成</button>
                 </div>
             </form>
-            <p class="small text-muted mb-0 mt-2">※ 管理者アカウントはシステム初期データのみ</p>
+        </div>
+    </div>
+
+    <div class="pcfa-admin-section mb-4">
+        <div class="pcfa-admin-section-header">デモデータ（発表用）</div>
+        <div class="pcfa-admin-section-body">
+            <p class="small text-muted mb-2">受講者93名を一括作成（メール: student001@demo.pcfa.jp 〜）。既存はスキップ。初期パスワード <code>Demo1234</code></p>
+            <form th:action="@{/admin/accounts/seed-demo-students}" method="post" class="d-flex flex-wrap gap-2 align-items-center"
+                  onsubmit="return confirm('デモ用受講者93名を作成します。よろしいですか？')">
+                <input type="number" name="courseId" class="form-control form-control-sm" style="width:120px"
+                       placeholder="コースID" title="省略可：未割当で作成のみ">
+                <button type="submit" class="btn btn-sm btn-outline-primary">93名一括作成</button>
+                <span class="small text-muted">コースIDを入れるとそのコースに自動割当</span>
+            </form>
         </div>
     </div>
 
@@ -71,103 +88,80 @@
         <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <span>ユーザー一覧</span>
             <div class="d-flex align-items-center gap-2">
-                <input type="text" id="userSearch" class="form-control form-control-sm" style="width:200px"
-                       placeholder="名前・メールで検索…" oninput="filterUsers(this.value)">
+                <input type="text" class="form-control form-control-sm" style="width:200px"
+                       placeholder="氏名・メールで検索…" oninput="filterUsers(this.value)">
                 <span class="badge bg-light text-dark" th:text="${userList.size()} + ' 名'"></span>
             </div>
         </div>
-        <div class="pcfa-admin-section-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0 pcfa-user-table" id="userTable">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width:48px">ID</th>
-                            <th style="width:52px"></th>
-                            <th>氏名</th>
-                            <th>メール</th>
-                            <th style="width:90px">ロール</th>
-                            <th style="width:72px">状態</th>
-                            <th style="width:88px">パスワード</th>
-                            <th style="width:120px">操作</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr th:each="user : ${userList}"
-                            th:attr="data-search=${user.name + ' ' + user.email + ' ' + user.role}">
-                            <td class="text-muted small" th:text="${user.id}"></td>
-                            <td class="text-center">
-                                <img th:if="${avatarUrlMap[user.id]}" th:src="${avatarUrlMap[user.id]}" class="pcfa-avatar-sm" alt="">
-                                <span th:unless="${avatarUrlMap[user.id]}" class="pcfa-avatar-placeholder-sm"
-                                      th:text="${#strings.substring(user.name,0,1)}"></span>
-                            </td>
-                            <td class="fw-semibold" th:text="${user.name}"></td>
-                            <td class="small text-muted" th:text="${user.email}"></td>
-                            <td>
-                                <span th:switch="${user.role}">
-                                    <span th:case="'ADMIN'" class="badge bg-danger">管理者</span>
-                                    <span th:case="'INSTRUCTOR'" class="badge bg-primary">講師</span>
-                                    <span th:case="'STUDENT'" class="badge bg-success">受講者</span>
-                                </span>
-                            </td>
-                            <td>
-                                <span th:if="${user.locked}" class="badge bg-warning text-dark">ロック</span>
-                                <span th:unless="${user.locked}" class="badge bg-light text-dark border">正常</span>
-                            </td>
-                            <td>
-                                <span th:if="${user.role == 'ADMIN'}" class="badge bg-secondary">—</span>
-                                <span th:if="${user.role != 'ADMIN' and user.passwordNotSet}" class="badge bg-warning text-dark">未設定</span>
-                                <span th:if="${user.role != 'ADMIN' and !user.passwordNotSet}" class="badge bg-success">設定済</span>
-                            </td>
-                            <td>
-                                <div class="dropdown" th:if="${user.role != 'ADMIN'}">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
-                                            data-bs-toggle="dropdown">操作</button>
-                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
-                                        <li>
-                                            <button type="button" class="dropdown-item"
-                                                    th:attr="data-id=${user.id},data-name=${user.name},data-email=${user.email},data-role=${user.role}"
-                                                    onclick="openEditModal(this)">編集</button>
-                                        </li>
-                                        <li th:if="${user.locked}">
-                                            <form th:action="@{/admin/accounts/unlock/{id}(id=${user.id})}" method="post" class="d-inline">
-                                                <button type="submit" class="dropdown-item text-warning">ロック解除</button>
-                                            </form>
-                                        </li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <button type="button" class="dropdown-item"
-                                                    th:attr="data-action=@{/admin/accounts/{id}/reset-password(id=${user.id})},data-name=${user.name}"
-                                                    onclick="openConfirmModal(this, 'reset')">PWリセット（SES再送）</button>
-                                        </li>
-                                        <li>
-                                            <button type="button" class="dropdown-item"
-                                                    th:attr="data-action=@{/admin/proxy-login/{id}(id=${user.id})},data-name=${user.name}"
-                                                    onclick="openConfirmModal(this, 'proxy')">代理ログイン</button>
-                                        </li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li>
-                                            <button type="button" class="dropdown-item text-danger"
-                                                    th:attr="data-action=@{/admin/accounts/delete/{id}(id=${user.id})},data-name=${user.name}"
-                                                    onclick="openConfirmModal(this, 'delete')">削除</button>
-                                        </li>
-                                    </ul>
-                                </div>
-                                <span th:if="${user.role == 'ADMIN'}" class="text-muted small">—</span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+        <div class="pcfa-admin-section-body p-0 pcfa-table-overflow-visible">
+            <table class="table table-hover align-middle mb-0 pcfa-user-table" id="userTable">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:48px">ID</th>
+                        <th style="width:52px"></th>
+                        <th>氏名</th>
+                        <th>メール</th>
+                        <th style="width:90px">ロール</th>
+                        <th style="width:72px">状態</th>
+                        <th style="width:88px">パスワード</th>
+                        <th style="min-width:280px">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="user : ${userList}"
+                        th:attr="data-search=${user.name + ' ' + user.email + ' ' + user.role}">
+                        <td class="text-muted small" th:text="${user.id}"></td>
+                        <td class="text-center">
+                            <img th:if="${avatarUrlMap[user.id]}" th:src="${avatarUrlMap[user.id]}" class="pcfa-avatar-sm" alt="">
+                            <span th:unless="${avatarUrlMap[user.id]}" class="pcfa-avatar-placeholder-sm"
+                                  th:text="${#strings.substring(user.name,0,1)}"></span>
+                        </td>
+                        <td class="fw-semibold" th:text="${user.name}"></td>
+                        <td class="small text-muted" th:text="${user.email}"></td>
+                        <td>
+                            <span th:switch="${user.role}">
+                                <span th:case="'ADMIN'" class="badge bg-danger">管理者</span>
+                                <span th:case="'INSTRUCTOR'" class="badge bg-primary">講師</span>
+                                <span th:case="'STUDENT'" class="badge bg-success">受講者</span>
+                            </span>
+                        </td>
+                        <td>
+                            <span th:if="${user.locked}" class="badge bg-warning text-dark">ロック</span>
+                            <span th:unless="${user.locked}" class="badge bg-light text-dark border">正常</span>
+                        </td>
+                        <td>
+                            <span th:if="${user.role == 'ADMIN'}" class="badge bg-secondary">—</span>
+                            <span th:if="${user.role != 'ADMIN' and user.passwordNotSet}" class="badge bg-warning text-dark">未設定</span>
+                            <span th:if="${user.role != 'ADMIN' and !user.passwordNotSet}" class="badge bg-success">設定済</span>
+                        </td>
+                        <td>
+                            <div class="pcfa-user-actions" th:if="${user.role != 'ADMIN'}">
+                                <button type="button" class="btn btn-sm btn-outline-secondary"
+                                        th:attr="data-id=${user.id},data-name=${user.name},data-email=${user.email},data-role=${user.role}"
+                                        onclick="openEditModal(this)">編集</button>
+                                <button type="button" class="btn btn-sm btn-info text-white"
+                                        th:attr="data-action=@{/admin/proxy-login/{id}(id=${user.id})},data-name=${user.name}"
+                                        onclick="openConfirmModal(this, 'proxy')">代理ログイン</button>
+                                <button type="button" class="btn btn-sm btn-outline-warning"
+                                        th:attr="data-action=@{/admin/accounts/{id}/reset-password(id=${user.id})},data-name=${user.name}"
+                                        onclick="openConfirmModal(this, 'reset')">PWリセット</button>
+                                <form th:if="${user.locked}" th:action="@{/admin/accounts/unlock/{id}(id=${user.id})}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-warning">ロック解除</button>
+                                </form>
+                                <button type="button" class="btn btn-sm btn-outline-danger"
+                                        th:attr="data-action=@{/admin/accounts/delete/{id}(id=${user.id})},data-name=${user.name}"
+                                        onclick="openConfirmModal(this, 'delete')">削除</button>
+                            </div>
+                            <span th:if="${user.role == 'ADMIN'}" class="text-muted small">—</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
-
-    <p class="small text-muted mt-3 mb-0">
-        ※ 受講者の詳細プロフィールは<a th:href="@{/admin/reports}">実績レポート</a>の「詳細」からも確認できます。
-        ユーザー管理ではアカウント情報の編集・パスワードリセットを行います。
-    </p>
 </div>
 
-<!-- 編集モーダル -->
+<!-- 編集・確認モーダル（前回と同じ） -->
 <div class="modal fade" id="editUserModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -177,7 +171,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="small text-muted">パスワードは変更できません。変更時は「PWリセット」で SES リンクを再送してください。</p>
+                    <p class="small text-muted">パスワード変更は「PWリセット」→ SES メールで本人が設定します。</p>
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">氏名</label>
                         <input type="text" name="name" id="editName" class="form-control" required>
@@ -186,7 +180,7 @@
                         <label class="form-label small fw-semibold">メール</label>
                         <input type="email" name="email" id="editEmail" class="form-control" required>
                     </div>
-                    <div class="mb-0" id="editRoleWrap">
+                    <div class="mb-0">
                         <label class="form-label small fw-semibold">ロール</label>
                         <select name="role" id="editRole" class="form-select">
                             <option value="INSTRUCTOR">講師</option>
@@ -203,7 +197,6 @@
     </div>
 </div>
 
-<!-- 確認モーダル（リセット・削除・代理ログイン） -->
 <div class="modal fade" id="confirmActionModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -212,9 +205,7 @@
                     <h5 class="modal-title" id="confirmModalTitle">確認</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <p id="confirmModalBody" class="mb-0"></p>
-                </div>
+                <div class="modal-body"><p id="confirmModalBody" class="mb-0"></p></div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">キャンセル</button>
                     <button type="submit" class="btn" id="confirmModalSubmit">実行</button>
@@ -233,8 +224,7 @@ function filterUsers(q) {
     });
 }
 function openEditModal(btn) {
-    const id = btn.dataset.id;
-    document.getElementById('editUserForm').action = '/admin/accounts/update/' + id;
+    document.getElementById('editUserForm').action = '/admin/accounts/update/' + btn.dataset.id;
     document.getElementById('editName').value = btn.dataset.name;
     document.getElementById('editEmail').value = btn.dataset.email;
     document.getElementById('editRole').value = btn.dataset.role;
@@ -243,29 +233,24 @@ function openEditModal(btn) {
 function openConfirmModal(btn, type) {
     const name = btn.dataset.name;
     const form = document.getElementById('confirmActionForm');
+    document.getElementById('confirmActionForm').action = btn.dataset.action;
     const header = document.getElementById('confirmModalHeader');
-    const title = document.getElementById('confirmModalTitle');
-    const body = document.getElementById('confirmModalBody');
     const submit = document.getElementById('confirmModalSubmit');
-    form.action = btn.dataset.action;
     if (type === 'reset') {
         header.className = 'modal-header bg-warning';
-        title.textContent = 'パスワードリセットの確認';
-        body.innerHTML = 'ユーザー「<strong>' + name + '</strong>」のパスワードをリセットします。<br>AWS SES で設定リンクを再送します。管理者は新しいパスワードを知りません。';
-        submit.className = 'btn btn-warning';
-        submit.textContent = 'リセットする';
+        document.getElementById('confirmModalTitle').textContent = 'パスワードリセットの確認';
+        document.getElementById('confirmModalBody').innerHTML = '「' + name + '」へ AWS SES で設定リンクを再送します。';
+        submit.className = 'btn btn-warning'; submit.textContent = 'リセットする';
     } else if (type === 'delete') {
         header.className = 'modal-header bg-danger text-white';
-        title.textContent = 'ユーザー削除の確認';
-        body.innerHTML = 'ユーザー「<strong>' + name + '</strong>」を削除します。<br><span class="text-danger">この操作は取り消せません。</span>';
-        submit.className = 'btn btn-danger';
-        submit.textContent = '削除する';
+        document.getElementById('confirmModalTitle').textContent = '削除の確認';
+        document.getElementById('confirmModalBody').innerHTML = '「' + name + '」を削除します。<span class="text-danger">取り消せません。</span>';
+        submit.className = 'btn btn-danger'; submit.textContent = '削除する';
     } else {
         header.className = 'modal-header bg-info text-white';
-        title.textContent = '代理ログインの確認';
-        body.innerHTML = 'ユーザー「<strong>' + name + '</strong>」として代理ログインします。';
-        submit.className = 'btn btn-info text-white';
-        submit.textContent = '代理ログイン';
+        document.getElementById('confirmModalTitle').textContent = '代理ログインの確認';
+        document.getElementById('confirmModalBody').innerHTML = '「' + name + '」として代理ログインします。';
+        submit.className = 'btn btn-info text-white'; submit.textContent = '代理ログイン';
     }
     new bootstrap.Modal(document.getElementById('confirmActionModal')).show();
 }

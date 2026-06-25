@@ -3,6 +3,8 @@ package lecture_management_system.service;
 import jakarta.annotation.PostConstruct;
 import lecture_management_system.dto.PasswordOperationResult;
 import lecture_management_system.entity.User;
+import lecture_management_system.entity.Course;
+import lecture_management_system.entity.CourseUser;
 import lecture_management_system.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,6 +19,7 @@ public class UserService {
 
     @Autowired private UserRepository userRepository;
     @Autowired private CourseUserRepository courseUserRepository;
+    @Autowired private CourseRepository courseRepository;
     @Autowired private AttendanceRepository attendanceRepository;
     @Autowired private SubmissionRepository submissionRepository;
     @Autowired private BCryptPasswordEncoder passwordEncoder;
@@ -165,8 +168,49 @@ public class UserService {
     @PostConstruct
     public void createDefaultUsers() {
         createOrUpdateUser("管理者",    "admin@test.com",    "Admin1234", "ADMIN");
-        createOrUpdateUser("講師-奈良鹿丸",  "teacher@test.com",  "Admin1234", "INSTRUCTOR");
-        createOrUpdateUser("受講者-渡辺勇大", "student@test.com",  "Admin1234", "STUDENT");
+        createOrUpdateUser("奈良鹿丸",  "teacher@test.com",  "Admin1234", "INSTRUCTOR");
+        createOrUpdateUser("渡辺勇大", "student@test.com",  "Admin1234", "STUDENT");
+    }
+
+    /**
+     * デモ用受講者を一括作成（既存メールはスキップ）。
+     * @return 新規作成件数
+     */
+    @Transactional
+    public int seedDemoStudents(int count, Long assignToCourseId) {
+        String[] family = {"佐藤","鈴木","高橋","田中","伊藤","渡辺","山本","中村","小林","加藤",
+                "吉田","山田","佐々木","山口","松本","井上","木村","林","斎藤","清水"};
+        String[] given = {"太郎","花子","健太","美咲","翔","結衣","大輔","愛","誠","さくら",
+                "悠斗","陽菜","蓮","結菜","颯太","莉子","湊","葵","陸","心春"};
+        int created = 0;
+        for (int i = 1; i <= count; i++) {
+            String email = String.format("student%03d@demo.pcfa.jp", i);
+            if (userRepository.existsByEmail(email)) continue;
+            User user = new User();
+            user.setName(family[i % family.length] + given[i % given.length] + String.format("%02d", i));
+            user.setEmail(email);
+            user.setPassword(passwordEncoder.encode("Demo1234"));
+            user.setRole("STUDENT");
+            user.setActive(true);
+            user.setLocked(false);
+            user.setLoginFailureCount(0);
+            user.setPasswordResetRequired(false);
+            user.setPasswordNotSet(false);
+            userRepository.save(user);
+            if (assignToCourseId != null) {
+                Course course = courseRepository.findById(assignToCourseId).orElse(null);
+                if (course != null && courseUserRepository
+                        .findByCourse_IdAndUser_Id(assignToCourseId, user.getId()).isEmpty()) {
+                    CourseUser cu = new CourseUser();
+                    cu.setCourse(course);
+                    cu.setUser(user);
+                    cu.setRole("STUDENT");
+                    courseUserRepository.save(cu);
+                }
+            }
+            created++;
+        }
+        return created;
     }
 
     private void createOrUpdateUser(String name, String email, String password, String role) {

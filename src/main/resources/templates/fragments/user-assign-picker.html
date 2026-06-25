@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- 検索＋スクロール一覧でユーザーを選択（氏名・メール分列表示） -->
+<div th:fragment="addPicker(pickerId, users, submitLabel, submitBtnClass, emptyMessage)"
+     class="pcfa-user-picker" th:attr="id=${pickerId}">
+    <input type="hidden" name="userId" th:id="${pickerId + 'UserId'}" required>
+    <input type="text" class="form-control form-control-sm mb-2"
+           placeholder="氏名またはメールで検索…"
+           th:attr="oninput=|pcfaFilterUserPicker('${pickerId}', this.value)|">
+    <div class="pcfa-user-scroll-list" th:id="${pickerId + 'List'}">
+        <button type="button" class="pcfa-user-list-item w-100 text-start"
+                th:each="u : ${users}"
+                th:attr="data-id=${u.id},data-search=${u.name + ' ' + u.email}"
+                th:onclick="|pcfaSelectUserPicker('${pickerId}', this)|">
+            <span class="pcfa-user-list-name" th:text="${u.name}">氏名</span>
+            <span class="pcfa-user-list-email" th:text="${u.email}">email</span>
+        </button>
+        <p th:if="${users.empty}" class="text-muted small text-center py-3 mb-0"
+           th:text="${emptyMessage}">候補なし</p>
+    </div>
+    <p class="small text-muted mb-2 mt-1">※ 一覧から1名クリックで選択（緑枠）</p>
+    <button type="submit" class="btn btn-sm" th:classappend="${submitBtnClass}" th:text="${submitLabel}">追加</button>
+</div>
+</body>
+</html>

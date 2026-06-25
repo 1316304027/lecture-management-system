@@ -27,5 +27,8 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
      * course_id に関係なく student_id で全件取得する。
      */
     List<Attendance> findByStudent_Id(Long studentId);
+
+    /** 指定授業日の出席人数（コース単位） */
+    long countByCourse_IdAndDate(Long courseId, LocalDate date);
 }
 
