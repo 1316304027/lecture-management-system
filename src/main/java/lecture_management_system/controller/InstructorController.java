@@ -47,6 +47,7 @@ public class InstructorController {
     @Autowired private ProfileService profileService;
     @Autowired private ChatService chatService;
     @Autowired private AnnouncementService announcementService;
+    @Autowired private ReportService reportService;
 
     // ===================== ダッシュボード（SCR-101）/ Dashboard =====================
 
@@ -60,7 +61,32 @@ public class InstructorController {
         model.addAttribute("courseList", courses);
         model.addAttribute("chatUnreadMap", chatService.buildUnreadMap(loginUser, courses));
         model.addAttribute("isProxy", session.getAttribute("adminUser") != null);
+        model.addAttribute("scheduleRows", buildInstructorSchedule(courses));
         return "instructor-home";
+    }
+
+    private List<lecture_management_system.dto.InstructorScheduleRowDto> buildInstructorSchedule(
+            List<Course> courses) {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        List<lecture_management_system.dto.InstructorScheduleRowDto> rows = new java.util.ArrayList<>();
+        for (Course c : courses) {
+            for (CourseSchedule s : courseScheduleService.getSchedules(c.getId())) {
+                lecture_management_system.dto.InstructorScheduleRowDto row =
+                        new lecture_management_system.dto.InstructorScheduleRowDto();
+                row.setCourseId(c.getId());
+                row.setCourseName(c.getName());
+                row.setLessonDate(s.getLessonDate());
+                row.setStartTime(s.getStartTime());
+                row.setEndTime(s.getEndTime());
+                if (s.getLessonDate().isBefore(today)) row.setTiming("past");
+                else if (s.getLessonDate().isEqual(today)) row.setTiming("today");
+                else row.setTiming("upcoming");
+                rows.add(row);
+            }
+        }
+        rows.sort(java.util.Comparator.comparing(
+                lecture_management_system.dto.InstructorScheduleRowDto::getLessonDate));
+        return rows;
     }
 
     /**
@@ -409,6 +435,16 @@ public class InstructorController {
         model.addAttribute("rateMap", rateMap);
         model.addAttribute("countMap", countMap);
         model.addAttribute("totalLessons", totalLessons);
+        model.addAttribute("lessonStats", reportService.getLessonAttendanceStats(courseId));
+        long pastLessons = courseScheduleService.getSchedules(courseId).stream()
+                .filter(s -> !s.getLessonDate().isAfter(java.time.LocalDate.now()))
+                .count();
+        if (!students.isEmpty() && pastLessons > 0) {
+            double sum = rateMap.values().stream().mapToDouble(Double::doubleValue).sum();
+            model.addAttribute("overallAttendanceRate",
+                    Math.round(sum / students.size() * 10) / 10.0);
+        }
+        model.addAttribute("pastLessonCount", pastLessons);
 
         // 学生詳細選択時は出席履歴も表示 / Show attendance history when student is selected
         if (studentId != null) {
@@ -427,6 +463,7 @@ public class InstructorController {
     public String studentProfile(
             @PathVariable Long studentId,
             @RequestParam Long courseId,
+            @RequestParam(required = false) String returnTo,
             HttpSession session, Model model) {
         User loginUser = getLoginUser(session);
         if (loginUser == null) return "redirect:/login";
@@ -438,6 +475,15 @@ public class InstructorController {
         model.addAttribute("user", student);
         model.addAttribute("avatarUrl", profileService.getAvatarUrl(student));
         model.addAttribute("courseList", courseService.getStudentCourses(studentId));
+        if (returnTo != null && returnTo.startsWith("/instructor/")) {
+            model.addAttribute("returnUrl", returnTo);
+            model.addAttribute("returnLabel",
+                    returnTo.contains("students") ? "受講者一覧" : "出欠確認");
+        } else {
+            model.addAttribute("returnUrl",
+                    "/instructor/attendance?courseId=" + courseId);
+            model.addAttribute("returnLabel", "出欠確認");
+        }
         return "instructor-student-profile";
     }
 

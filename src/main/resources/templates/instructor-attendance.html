@@ -13,17 +13,68 @@
     <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
 </nav>
 
-<div class="container py-4" style="max-width: 960px;">
-    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-4">
-        <div class="pcfa-page-header mb-0">
-            <h1 class="h4 fw-bold mb-1">出欠状況</h1>
-            <p class="text-muted small mb-0">授業数：<span th:text="${totalLessons}"></span> 回</p>
-        </div>
-        <a th:href="@{/instructor/students(courseId=${course.id})}"
-           class="btn btn-sm btn-outline-primary">受講者・プロフィール一覧へ</a>
+<div class="container py-4" style="max-width: 1000px;">
+    <div class="pcfa-page-header mb-3">
+        <h1 class="h4 fw-bold mb-1">出欠状況</h1>
+        <p class="text-muted small mb-0" th:text="${course.name}"></p>
     </div>
 
-    <div class="card pcfa-course-card">
+    <div class="pcfa-report-summary mb-4">
+        <div class="pcfa-report-stat">
+            <div class="val" th:text="${totalLessons}">0</div>
+            <div class="lbl">登録授業数</div>
+        </div>
+        <div class="pcfa-report-stat">
+            <div class="val" th:text="${pastLessonCount}">0</div>
+            <div class="lbl">実施済み授業</div>
+        </div>
+        <div class="pcfa-report-stat pcfa-report-stat--green" th:if="${overallAttendanceRate != null}">
+            <div class="val" th:text="${overallAttendanceRate} + '%'">0%</div>
+            <div class="lbl">コース全体出席率</div>
+        </div>
+        <div class="pcfa-report-stat">
+            <div class="val" th:text="${studentList.size()}">0</div>
+            <div class="lbl">受講者数</div>
+        </div>
+    </div>
+
+    <div class="pcfa-admin-section mb-4" th:if="${lessonStats != null and !lessonStats.empty}">
+        <div class="pcfa-admin-section-header py-2">授業日別：出席率</div>
+        <div class="pcfa-admin-section-body p-0">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>授業日</th>
+                        <th class="text-end">出席人数</th>
+                        <th style="width:200px">出席率</th>
+                        <th class="text-end">率</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="ls : ${lessonStats}">
+                        <td th:text="${ls.lessonDate}"></td>
+                        <td class="text-end" th:text="${ls.presentCount} + ' / ' + ${ls.enrolledCount}"></td>
+                        <td>
+                            <div class="progress pcfa-progress-thin">
+                                <div class="progress-bar bg-success"
+                                     th:style="'width:' + ${ls.attendanceRate} + '%'"></div>
+                            </div>
+                        </td>
+                        <td class="text-end fw-semibold" th:text="${ls.attendanceRate} + '%'"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="pcfa-admin-section">
+        <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <span>受講者別：出席状況</span>
+            <a th:href="@{/instructor/students(courseId=${course.id})}"
+               class="btn btn-sm btn-light">受講者一覧へ</a>
+        </div>
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
@@ -32,8 +83,8 @@
                         <th style="width:56px"></th>
                         <th>受講者名</th>
                         <th style="width:100px">出席回数</th>
-                        <th style="width:180px">出席率</th>
-                        <th style="width:100px">操作</th>
+                        <th style="width:200px">出席率</th>
+                        <th style="width:110px">操作</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -44,20 +95,26 @@
                                   th:text="${#strings.substring(u.name,0,1)}"></span>
                         </td>
                         <td class="fw-semibold" th:text="${u.name}"></td>
-                        <td th:text="${countMap[u.id]}"></td>
+                        <td>
+                            <span th:text="${countMap[u.id]}">0</span>
+                            <span class="text-muted">/</span>
+                            <span th:text="${pastLessonCount}">0</span>
+                        </td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 <div class="progress flex-grow-1 pcfa-progress-thin">
                                     <div class="progress-bar"
-                                         th:classappend="${rateMap[u.id] < 70} ? 'bg-danger' : 'bg-success'"
-                                         th:style="'width:' + ${rateMap[u.id]} + '%'"></div>
+                                         th:classappend="${rateMap[u.id] != null and rateMap[u.id] < 70} ? 'bg-danger' : 'bg-success'"
+                                         th:style="|width: ${rateMap[u.id] != null ? rateMap[u.id] : 0}%|"></div>
                                 </div>
-                                <span class="small text-nowrap" th:text="${rateMap[u.id]} + '%'"></span>
+                                <span class="small text-nowrap"
+                                      th:text="|${rateMap[u.id] != null ? rateMap[u.id] : 0}%|"></span>
                             </div>
                         </td>
                         <td>
-                            <a th:href="@{/instructor/attendance(courseId=${course.id}, studentId=${u.id})}"
-                               class="btn btn-sm btn-outline-secondary">出席詳細</a>
+                            <a th:href="|/instructor/attendance?courseId=${course.id}&studentId=${u.id}#detail|"
+                               class="btn btn-sm btn-outline-secondary"
+                               th:classappend="${selectedStudent != null and selectedStudent.id == u.id} ? 'active' : ''">出席詳細</a>
                         </td>
                     </tr>
                     <tr th:if="${studentList.empty}">
@@ -69,29 +126,37 @@
         </div>
     </div>
 
-    <div th:if="${selectedStudent != null}" class="card pcfa-course-card mt-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
+    <div th:if="${selectedStudent != null}" id="detail" class="pcfa-admin-section mt-4">
+        <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <span th:text="${selectedStudent.name} + ' の出席履歴'"></span>
-            <a th:href="@{/instructor/students/{studentId}/profile(studentId=${selectedStudent.id}, courseId=${course.id})}"
-               class="btn btn-sm btn-light">プロフィールを見る</a>
+            <div class="d-flex gap-2">
+                <a th:href="@{/instructor/attendance(courseId=${course.id})}"
+                   class="btn btn-sm btn-light">← 一覧に戻る</a>
+                <a th:href="@{/instructor/students/{studentId}/profile(studentId=${selectedStudent.id}, courseId=${course.id}, returnTo=${'/instructor/attendance?courseId=' + course.id})}"
+                   class="btn btn-sm btn-outline-light">プロフィール</a>
+            </div>
         </div>
-        <div class="card-body p-0">
+        <div class="pcfa-admin-section-body p-0">
             <table class="table table-sm mb-0">
                 <thead class="table-light">
-                <tr><th>日付</th><th>登録時刻</th></tr>
+                <tr><th>授業日</th><th>登録時刻</th><th>状態</th></tr>
                 </thead>
                 <tbody>
                 <tr th:each="a : ${detailHistory}">
                     <td th:text="${a.date}"></td>
-                    <td th:text="${#temporals.format(a.attendedAt, 'HH:mm')}"></td>
+                    <td th:text="${#temporals.format(a.attendedAt, 'yyyy/MM/dd HH:mm')}"></td>
+                    <td><span class="badge bg-success">出席</span></td>
                 </tr>
                 <tr th:if="${detailHistory.empty}">
-                    <td colspan="2" class="text-muted text-center py-3">出席記録なし</td>
+                    <td colspan="3" class="text-muted text-center py-3">出席記録がありません</td>
                 </tr>
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+<script th:if="${selectedStudent != null}">
+document.getElementById('detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+</script>
 </body>
 </html>

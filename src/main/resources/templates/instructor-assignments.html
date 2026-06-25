@@ -1,89 +1,142 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
-<head><meta charset="UTF-8"><title>課題管理</title>
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-<link rel="stylesheet" th:href="@{/pcfa-theme.css}"></head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>課題管理</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_green.css">
+    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+</head>
 <body class="pcfa-body">
 <nav class="navbar navbar-dark pcfa-navbar px-3">
-    <a class="navbar-brand" href="/instructor/home">← ホームへ戻る</a>
-    <span class="text-white" th:text="'課題管理 - ' + ${course.name}"></span>
+    <a class="navbar-brand" href="/instructor/home">← 講師ホーム</a>
+    <span class="text-white small fw-bold" th:text="'課題管理 - ' + ${course.name}"></span>
     <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
 </nav>
-<div class="container mt-4">
+
+<div class="container py-4" style="max-width: 960px;">
     <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
     <div th:if="${errorMessage}" class="alert alert-danger" th:text="${errorMessage}"></div>
 
-    <!-- 課題作成フォーム -->
-    <div class="card mb-4">
-        <div class="card-header bg-warning text-dark">課題作成</div>
-        <div class="card-body">
-            <form th:action="@{/instructor/assignments}" method="post" enctype="multipart/form-data" class="row g-2">
+    <div class="pcfa-admin-section mb-4">
+        <div class="pcfa-admin-section-header">課題作成</div>
+        <div class="pcfa-admin-section-body">
+            <form th:action="@{/instructor/assignments}" method="post" enctype="multipart/form-data"
+                  id="assignmentForm" class="pcfa-assignment-create-form">
                 <input type="hidden" name="courseId" th:value="${course.id}">
-                <div class="col-md-4">
-                    <input type="text" name="title" class="form-control" placeholder="課題タイトル" required>
-                </div>
-                <div class="col-md-3">
-                    <input type="datetime-local" name="deadline" class="form-control" required>
-                </div>
-                <div class="col-md-2">
-                    <input type="file" name="file" class="form-control" accept=".pdf">
-                    <small class="text-muted">課題PDFを添付（任意）</small>
-                </div>
-                <div class="col-md-1">
-                    <div class="form-check mt-2">
-                        <input class="form-check-input" type="checkbox" name="published" value="true" id="pub2">
-                        <label class="form-check-label" for="pub2">アップロード後すぐ受講者に表示</label>
+                <input type="hidden" name="deadline" id="deadlineValue" required>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold mb-1">課題タイトル</label>
+                        <input type="text" name="title" class="form-control" placeholder="例：第1回レポート" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold mb-1">提出期限</label>
+                        <input type="text" id="deadlinePicker" class="form-control pcfa-flatpickr-datetime"
+                               placeholder="日時を選択" autocomplete="off" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small fw-semibold mb-1">課題PDF（任意）</label>
+                        <input type="file" name="file" class="form-control form-control-sm" accept=".pdf">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-warning w-100 fw-semibold">作成</button>
                     </div>
                 </div>
-                <div class="col-md-2">
-                    <button type="submit" class="btn btn-warning w-100">作成</button>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" name="published" value="true" id="pubAssign">
+                    <label class="form-check-label small" for="pubAssign">作成後すぐ受講者に表示する</label>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- 課題一覧 + 全課題削除 -->
-    <div class="d-flex justify-content-between align-items-center mb-2">
-        <h5 class="mb-0">課題一覧</h5>
-        <form th:if="${!assignmentList.empty}"
-              th:action="@{/instructor/assignments/delete-all}" method="post"
-              onsubmit="return confirm('全課題を削除しますか？提出物も全て削除されます。')">
-            <input type="hidden" name="courseId" th:value="${course.id}">
-            <button type="submit" class="btn btn-danger btn-sm">🗑️ 全課題を削除</button>
-        </form>
+    <div class="pcfa-admin-section">
+        <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center">
+            <span>課題一覧</span>
+            <form th:if="${!assignmentList.empty}"
+                  th:action="@{/instructor/assignments/delete-all}" method="post" class="mb-0"
+                  onsubmit="return confirm('全課題を削除しますか？提出物も全て削除されます。')">
+                <input type="hidden" name="courseId" th:value="${course.id}">
+                <button type="submit" class="btn btn-sm btn-outline-light">全課題を削除</button>
+            </form>
+        </div>
+        <div class="pcfa-admin-section-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                    <tr>
+                        <th>課題名</th>
+                        <th style="width:160px">提出期限</th>
+                        <th style="width:120px">表示</th>
+                        <th style="width:200px">操作</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="a : ${assignmentList}">
+                        <td class="fw-semibold" th:text="${a.title}"></td>
+                        <td th:text="${#temporals.format(a.deadline, 'yyyy/MM/dd HH:mm')}"></td>
+                        <td>
+                            <span th:if="${a.published}" class="badge bg-success">表示中</span>
+                            <span th:unless="${a.published}" class="badge bg-secondary">非表示</span>
+                        </td>
+                        <td class="text-nowrap">
+                            <form th:action="@{/instructor/assignments/{id}/toggle(id=${a.id})}" method="post" class="d-inline">
+                                <input type="hidden" name="courseId" th:value="${course.id}">
+                                <button type="submit" class="btn btn-sm"
+                                        th:classappend="${a.published} ? 'btn-outline-secondary' : 'btn-outline-success'"
+                                        th:text="${a.published} ? '非表示' : '表示'"></button>
+                            </form>
+                            <form th:action="@{/instructor/assignments/{id}/delete(id=${a.id})}" method="post" class="d-inline"
+                                  onsubmit="return confirm('この課題を削除しますか？')">
+                                <input type="hidden" name="courseId" th:value="${course.id}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger">削除</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <tr th:if="${assignmentList.empty}">
+                        <td colspan="4" class="text-muted text-center py-4">課題が登録されていません</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
-    <table class="table table-bordered table-hover">
-        <thead class="table-dark">
-            <tr><th>課題名</th><th>提出期限</th><th>受講者への表示</th><th>操作</th></tr>
-        </thead>
-        <tbody>
-            <tr th:each="a : ${assignmentList}">
-                <td th:text="${a.title}"></td>
-                <td th:text="${#temporals.format(a.deadline, 'yyyy/MM/dd HH:mm')}"></td>
-                <td>
-                    <span th:if="${a.published}" class="badge bg-success">表示中</span>
-                    <span th:unless="${a.published}" class="badge bg-secondary">非表示</span>
-                </td>
-                <td class="d-flex gap-2">
-                    <!-- 公開切替 -->
-                    <form th:action="@{/instructor/assignments/{id}/toggle(id=${a.id})}" method="post">
-                        <input type="hidden" name="courseId" th:value="${course.id}">
-                        <button type="submit" class="btn btn-sm"
-                                th:classappend="${a.published} ? 'btn-outline-secondary' : 'btn-outline-success'"
-                                th:text="${a.published} ? '非表示にする' : '表示する'"></button>
-                    </form>
-                    <!-- 1件削除 -->
-                    <form th:action="@{/instructor/assignments/{id}/delete(id=${a.id})}" method="post"
-                          onsubmit="return confirm('この課題を削除しますか？提出物も削除されます。')">
-                        <input type="hidden" name="courseId" th:value="${course.id}">
-                        <button type="submit" class="btn btn-sm btn-outline-danger">削除</button>
-                    </form>
-                </td>
-            </tr>
-            <tr th:if="${assignmentList.empty}">
-                <td colspan="4" class="text-muted text-center">課題が登録されていません</td>
-            </tr>
-        </tbody>
-    </table>
 </div>
-</body></html>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+<script>
+const deadlineHidden = document.getElementById('deadlineValue');
+const picker = flatpickr('#deadlinePicker', {
+    locale: 'ja',
+    enableTime: true,
+    time_24hr: true,
+    minuteIncrement: 15,
+    dateFormat: 'Y/m/d H:i',
+    altInput: true,
+    altFormat: 'Y年m月d日 H:i',
+    minDate: 'today',
+    defaultHour: 17,
+    defaultMinute: 30,
+    onChange: function(selectedDates) {
+        if (selectedDates.length && deadlineHidden) {
+            const d = selectedDates[0];
+            const pad = n => String(n).padStart(2, '0');
+            deadlineHidden.value = d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate())
+                + 'T' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+        }
+    }
+});
+document.getElementById('assignmentForm')?.addEventListener('submit', function(e) {
+    if (!deadlineHidden.value) {
+        e.preventDefault();
+        alert('提出期限を選択してください');
+        picker.open();
+    }
+});
+</script>
+</body>
+</html>

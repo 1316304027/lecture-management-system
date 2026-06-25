@@ -566,6 +566,27 @@ public class AdminController {
             }
             model.addAttribute("lessonStats", reportService.getLessonAttendanceStats(courseId));
             model.addAttribute("assignmentStats", reportService.getAssignmentAvgScores(courseId));
+            long attGood = 0, attMid = 0, attLow = 0;
+            long subFull = 0, subPartial = 0, subNone = 0;
+            for (StudentReportDto r : reportList) {
+                if (r.getTotalLessons() > 0) {
+                    double ar = r.getAttendanceRate();
+                    if (ar >= 80) attGood++;
+                    else if (ar >= 60) attMid++;
+                    else attLow++;
+                }
+                if (r.getTotalAssignments() > 0) {
+                    if (r.getSubmittedCount() >= r.getTotalAssignments()) subFull++;
+                    else if (r.getSubmittedCount() == 0) subNone++;
+                    else subPartial++;
+                }
+            }
+            model.addAttribute("attDistGood", attGood);
+            model.addAttribute("attDistMid", attMid);
+            model.addAttribute("attDistLow", attLow);
+            model.addAttribute("subDistFull", subFull);
+            model.addAttribute("subDistPartial", subPartial);
+            model.addAttribute("subDistNone", subNone);
         }
         return "admin-reports";
     }
@@ -592,12 +613,17 @@ public class AdminController {
 
     private void exportSummaryCsv(Long courseId, Course course, HttpServletResponse response) throws IOException {
         List<StudentReportDto> list = reportService.getCourseReport(courseId);
-        prepareCsv(response, "report_summary_" + courseId + ".csv");
-        PrintWriter w = response.getWriter();
+        PrintWriter w = prepareCsv(response, "report_summary_" + courseId + ".csv");
         w.println("コース," + csv(course != null ? course.getName() : ""));
         w.println("氏名,メール,出席,出席率%,提出,提出率%,未提出,採点済,採点待ち,平均スコア");
         for (StudentReportDto r : list) {
-            String score = r.getAverageScore() != null ? r.getAverageScore().toString() : "採点待ち";
+            String score = switch (r.getScoreStatus()) {
+                case "NO_ASSIGNMENT" -> "—";
+                case "UNSUBMITTED" -> "未提出";
+                case "PENDING" -> "採点待ち";
+                case "PARTIAL" -> r.getAverageScore() + "（一部採点待ち）";
+                default -> r.getAverageScore().toString();
+            };
             w.printf("%s,%s,%d/%d,%s,%d/%d,%s,%d,%d,%d,%s%n",
                     csv(r.getStudentName()), csv(r.getStudentEmail()),
                     r.getAttendedCount(), r.getTotalLessons(),
@@ -615,8 +641,7 @@ public class AdminController {
             students = students.stream().filter(u -> u.getId().equals(studentId)).toList();
         }
         List<CourseSchedule> schedules = courseScheduleService.getSchedules(courseId);
-        prepareCsv(response, "attendance_" + courseId + (studentId != null ? "_s" + studentId : "") + ".csv");
-        PrintWriter w = response.getWriter();
+        PrintWriter w = prepareCsv(response, "attendance_" + courseId + (studentId != null ? "_s" + studentId : "") + ".csv");
         w.println("コース," + csv(courseName));
         w.println("氏名,メール,授業日,出席状態");
         for (User s : students) {
@@ -638,8 +663,7 @@ public class AdminController {
             students = students.stream().filter(u -> u.getId().equals(studentId)).toList();
         }
         List<Assignment> assignments = assignmentRepository.findByCourse_IdAndPublishedTrue(courseId);
-        prepareCsv(response, "assignments_" + courseId + (studentId != null ? "_s" + studentId : "") + ".csv");
-        PrintWriter w = response.getWriter();
+        PrintWriter w = prepareCsv(response, "assignments_" + courseId + (studentId != null ? "_s" + studentId : "") + ".csv");
         w.println("コース," + csv(courseName));
         w.println("氏名,メール,課題名,提出状態,スコア,提出日時");
         for (User s : students) {
@@ -656,10 +680,12 @@ public class AdminController {
         w.flush();
     }
 
-    private void prepareCsv(HttpServletResponse response, String filename) throws IOException {
+    private PrintWriter prepareCsv(HttpServletResponse response, String filename) throws IOException {
         response.setContentType("text/csv; charset=UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        response.getOutputStream().write(new byte[]{(byte) 0xEF, (byte) 0xBB, (byte) 0xBF});
+        PrintWriter w = response.getWriter();
+        w.write('\uFEFF');
+        return w;
     }
 
     private String csv(String v) {

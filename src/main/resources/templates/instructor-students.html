@@ -11,7 +11,10 @@
 <nav class="navbar navbar-dark pcfa-navbar px-3">
     <a class="navbar-brand" href="/instructor/home">← 講師ホーム</a>
     <span class="text-white small fw-bold" th:text="'受講者一覧 - ' + ${course.name}"></span>
-    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+    <div class="d-flex gap-2">
+        <a th:href="@{/instructor/attendance(courseId=${course.id})}" class="btn btn-outline-light btn-sm">出欠確認へ</a>
+        <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
+    </div>
 </nav>
 
 <div class="container py-4" style="max-width: 960px;">
@@ -42,7 +45,7 @@
                         <td class="fw-semibold" th:text="${u.name}"></td>
                         <td class="text-muted small" th:text="${u.email}"></td>
                         <td class="text-nowrap">
-                            <a th:href="@{/instructor/students/{studentId}/profile(studentId=${u.id}, courseId=${course.id})}"
+                            <a th:href="@{/instructor/students/{studentId}/profile(studentId=${u.id}, courseId=${course.id}, returnTo=${'/instructor/students?courseId=' + course.id})}"
                                class="btn btn-sm btn-outline-primary">プロフィール</a>
                         </td>
                     </tr>

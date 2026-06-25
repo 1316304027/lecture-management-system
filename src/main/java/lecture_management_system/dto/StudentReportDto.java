@@ -80,4 +80,16 @@ public class StudentReportDto {
      * 1件も採点済みがない場合は null → 画面「採点待ち」。
      */
     private Double averageScore;
+
+    /**
+     * 平均点表示用ステータス。
+     * NO_ASSIGNMENT / UNSUBMITTED / PENDING / PARTIAL / SCORED
+     */
+    public String getScoreStatus() {
+        if (totalAssignments == 0) return "NO_ASSIGNMENT";
+        if (submittedCount == 0) return "UNSUBMITTED";
+        if (evaluatedCount == 0) return "PENDING";
+        if (pendingGradeCount > 0) return "PARTIAL";
+        return "SCORED";
+    }
 }

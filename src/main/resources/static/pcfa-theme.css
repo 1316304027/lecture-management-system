@@ -716,3 +716,18 @@ span.flatpickr-weekday {
   color: var(--pcfa-primary);
   font-weight: 600;
 }
+
+.pcfa-flatpickr-datetime {
+  width: 100%;
+  min-width: 200px;
+  cursor: pointer;
+  background-color: #fff;
+}
+
+.pcfa-assignment-create-form .form-label {
+  color: #495057;
+}
+
+.pcfa-assignment-create-form .row {
+  align-items: flex-end;
+}
