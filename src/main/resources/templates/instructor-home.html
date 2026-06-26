@@ -10,7 +10,6 @@
 <body class="pcfa-body">
 <nav class="navbar navbar-dark pcfa-navbar">
     <span class="navbar-brand mb-0">PCFA受講管理システム</span>
-    <span class="d-none d-md-inline text-white-50 small">中項目</span>
     <div class="d-flex align-items-center gap-2">
         <span class="text-white small" th:text="${loginUser.name} + ' 先生'"></span>
         <form th:if="${isProxy}" action="/admin/restore-session" method="post" class="d-inline">
@@ -21,10 +20,9 @@
 </nav>
 
 <div class="container py-4" style="max-width: 1000px;">
-    <div th:replace="~{fragments/project-hierarchy :: badges(true)}"></div>
     <div class="pcfa-page-header">
         <h1>講師ホーム</h1>
-        <p th:text="'小項目：講師ポータル — ' + ${loginUser.name} + ' 先生の担当コース・授業スケジュール'"></p>
+        <p th:text="'ようこそ、' + ${loginUser.name} + ' 先生。担当コースと授業スケジュールを確認できます。'"></p>
     </div>
 
     <div th:if="${courseList.empty}" class="pcfa-empty-state">

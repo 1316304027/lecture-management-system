@@ -12,6 +12,9 @@
     <span class="text-white small">受講者プロフィール</span>
 </nav>
 <div class="container py-4" style="max-width: 640px;">
+    <div class="alert alert-light border small mb-3">
+        <strong>閲覧専用</strong> — 講師は受講者情報の確認のみ可能です。編集・パスワード操作は管理者がユーザー管理で行います。
+    </div>
     <div th:replace="~{fragments/profile-card :: card(${user}, ${avatarUrl}, ${courseList}, false)}"></div>
 </div>
 </body>

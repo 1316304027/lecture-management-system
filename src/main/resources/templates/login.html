@@ -12,9 +12,8 @@
 <div class="pcfa-login-card card">
     <div class="card-header">
         <div class="pcfa-login-logo">🏫</div>
-        <div th:replace="~{fragments/project-hierarchy :: badges(false)}"></div>
-        <h4 class="fw-bold mb-1 mt-2">PCFA 受講管理システム</h4>
-        <p class="text-muted small mb-0">Lecture Management System · AWS 本番環境</p>
+        <h4 class="fw-bold mb-1">PCFA 受講管理システム</h4>
+        <p class="text-muted small mb-0">研修コースの受講管理</p>
     </div>
     <div class="card-body">
         <div th:if="${errorMessage}" class="alert alert-danger py-2 small" th:text="${errorMessage}"></div>

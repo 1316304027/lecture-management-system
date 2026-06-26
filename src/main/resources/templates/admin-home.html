@@ -9,7 +9,6 @@
 <body class="pcfa-body">
 <nav class="navbar navbar-dark pcfa-navbar px-4 py-2 shadow-sm">
     <span class="navbar-brand fw-bold mb-0">PCFA管理システム</span>
-    <span class="d-none d-lg-inline text-white-50 small">大項目：システム開発研修</span>
     <div class="d-flex align-items-center gap-3">
         <span class="text-white small">
             管理者：<strong th:text="${realAdminUser.name}">管理者</strong>
@@ -19,10 +18,9 @@
 </nav>
 
 <div class="container py-4" style="max-width: 1100px;">
-    <div th:replace="~{fragments/project-hierarchy :: badges(true)}"></div>
     <div class="pcfa-page-header mb-4">
         <h1 class="h3 fw-bold mb-1">管理者ポータル</h1>
-        <p class="text-muted mb-0">中項目：PCFA 受講管理システム — システム全体の管理・設定</p>
+        <p class="text-muted mb-0">システム全体の管理・設定を行います。</p>
     </div>
 
     <div class="pcfa-report-summary mb-4">

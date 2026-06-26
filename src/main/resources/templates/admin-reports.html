@@ -30,92 +30,62 @@
     </div>
 
     <div class="col p-4" th:if="${courseNotFound}">
-        <div class="alert alert-warning">
-            コース ID <span th:text="${requestedCourseId}"></span> が見つかりません。左の一覧から選択してください。
-        </div>
+        <div class="alert alert-warning">コースが見つかりません。左の一覧から選択してください。</div>
     </div>
 
     <div class="col p-4" th:if="${selectedCourse != null}">
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-            <div>
-                <div th:replace="~{fragments/project-hierarchy :: badges(true)}"></div>
-                <h1 class="h4 fw-bold mb-1" th:text="'実績レポート：' + ${selectedCourse.name}"></h1>
-                <p class="text-muted small mb-0">小項目：実績レポート — コース全体の出席・提出・採点状況</p>
-            </div>
-            <div class="dropdown" th:if="${reportList != null and !reportList.empty}">
-                <button class="btn btn-success btn-sm dropdown-toggle" data-bs-toggle="dropdown">CSVダウンロード</button>
-                <ul class="dropdown-menu dropdown-menu-end shadow">
-                    <li><a class="dropdown-item small"
-                           th:href="@{/admin/reports/export(courseId=${selectedCourse.id}, type='summary')}">受講者サマリー</a></li>
-                    <li><a class="dropdown-item small"
-                           th:href="@{/admin/reports/export(courseId=${selectedCourse.id}, type='attendance')}">出席明細（授業日×受講者）</a></li>
-                    <li><a class="dropdown-item small"
-                           th:href="@{/admin/reports/export(courseId=${selectedCourse.id}, type='assignments')}">課題提出・採点明細</a></li>
-                </ul>
-            </div>
+        <div class="mb-3">
+            <h1 class="h4 fw-bold mb-1" th:text="'実績レポート：' + ${selectedCourse.name}"></h1>
+            <p class="text-muted small mb-0">コース全体の集計と、受講者ごとの出席・課題明細の確認ができます。</p>
         </div>
 
-        <div class="pcfa-report-summary" th:if="${selectedCourse != null}">
-            <div class="pcfa-report-stat"><div class="val" th:text="${reportList != null ? reportList.size() : 0}">0</div><div class="lbl">受講者数</div></div>
-            <div class="pcfa-report-stat"><div class="val" th:text="${reportList != null and !reportList.empty ? reportList[0].totalLessons : 0}">0</div><div class="lbl">実施済み授業</div></div>
-            <div class="pcfa-report-stat"><div class="val" th:text="${reportList != null and !reportList.empty ? reportList[0].totalAssignments : 0}">0</div><div class="lbl">公開課題数</div></div>
+        <div class="pcfa-report-summary mb-4">
+            <div class="pcfa-report-stat">
+                <div class="val" th:text="${reportList != null ? reportList.size() : 0}">0</div>
+                <div class="lbl">受講者数</div>
+            </div>
+            <div class="pcfa-report-stat">
+                <div class="val" th:text="${reportList != null and !reportList.empty ? reportList[0].totalLessons : 0}">0</div>
+                <div class="lbl">実施済み授業</div>
+            </div>
+            <div class="pcfa-report-stat">
+                <div class="val" th:text="${reportList != null and !reportList.empty ? reportList[0].totalAssignments : 0}">0</div>
+                <div class="lbl">公開課題数</div>
+            </div>
             <div class="pcfa-report-stat pcfa-report-stat--green" th:if="${avgAttendanceRate != null}">
-                <div class="val" th:text="${avgAttendanceRate} + '%'">0%</div><div class="lbl">コース平均出席率</div></div>
+                <div class="val" th:text="|${avgAttendanceRate}%|">0%</div>
+                <div class="lbl">コース平均出席率<br><span class="text-muted fw-normal">（全受講者・全実施済み授業）</span></div>
+            </div>
             <div class="pcfa-report-stat pcfa-report-stat--blue" th:if="${avgSubmissionRate != null}">
-                <div class="val" th:text="${avgSubmissionRate} + '%'">0%</div><div class="lbl">コース平均提出率</div></div>
-        </div>
-
-        <div class="row g-3 mb-4" th:if="${selectedCourse != null}">
-            <div class="col-md-4">
-                <div class="pcfa-admin-section mb-0 h-100">
-                    <div class="pcfa-admin-section-header py-2">出席率分布（受講者数）</div>
-                    <div class="pcfa-admin-section-body d-flex align-items-center justify-content-center position-relative">
-                        <canvas id="attDistChart" height="200"></canvas>
-                        <p id="attDistEmpty" class="text-muted small mb-0 position-absolute d-none">分布データなし</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="pcfa-admin-section mb-0 h-100">
-                    <div class="pcfa-admin-section-header py-2">提出状況分布（受講者数）</div>
-                    <div class="pcfa-admin-section-body d-flex align-items-center justify-content-center">
-                        <canvas id="subDistChart" height="200"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="pcfa-admin-section mb-0 h-100">
-                    <div class="pcfa-admin-section-header py-2">課題別：平均点</div>
-                    <div class="pcfa-admin-section-body">
-                        <canvas id="assignmentChart" height="200"></canvas>
-                    </div>
-                </div>
+                <div class="val" th:text="|${avgSubmissionRate}%|">0%</div>
+                <div class="lbl">コース平均提出率<br><span class="text-muted fw-normal">（全受講者・全公開課題）</span></div>
             </div>
         </div>
 
         <div class="pcfa-admin-section mb-4" th:if="${lessonStats != null and !lessonStats.empty}">
-            <div class="pcfa-admin-section-header py-2">授業日別：コース出席率</div>
-            <div class="pcfa-admin-section-body">
-                <div class="row g-3">
-                    <div class="col-lg-7">
-                        <canvas id="lessonChart" height="140"></canvas>
-                    </div>
-                    <div class="col-lg-5">
-                        <div class="table-responsive" style="max-height:220px;overflow-y:auto">
-                            <table class="table table-sm table-striped mb-0">
-                                <thead class="table-light sticky-top">
-                                <tr><th>授業日</th><th class="text-end">出席</th><th class="text-end">率</th></tr>
-                                </thead>
-                                <tbody>
-                                <tr th:each="ls : ${lessonStats}">
-                                    <td th:text="${ls.lessonDate}"></td>
-                                    <td class="text-end" th:text="${ls.presentCount} + '/' + ${ls.enrolledCount}"></td>
-                                    <td class="text-end fw-semibold" th:text="${ls.attendanceRate} + '%'"></td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+            <div class="pcfa-admin-section-header py-2">授業ごとの出席状況（コース全体）</div>
+            <div class="pcfa-admin-section-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>授業日</th>
+                            <th>授業時間</th>
+                            <th class="text-end">出席人数</th>
+                            <th class="text-end">登録受講者</th>
+                            <th class="text-end">出席率</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="ls : ${lessonStats}">
+                            <td th:text="${ls.lessonDate}"></td>
+                            <td th:text="${ls.lessonTimeLabel}">時間未設定</td>
+                            <td class="text-end" th:text="${ls.presentCount}"></td>
+                            <td class="text-end" th:text="${ls.enrolledCount}"></td>
+                            <td class="text-end fw-semibold" th:text="|${ls.attendanceRate}%|"></td>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -131,21 +101,29 @@
                 <table class="table table-hover align-middle mb-0" id="reportTable">
                     <thead class="table-light">
                         <tr>
-                            <th>氏名</th><th>メール</th>
-                            <th class="text-center">出席</th><th class="text-center">出席率</th>
-                            <th class="text-center">提出</th><th class="text-center">平均点</th>
-                            <th class="text-center" style="min-width:160px">CSV</th>
+                            <th>氏名</th>
+                            <th>メール</th>
+                            <th class="text-center">出席<br><span class="fw-normal text-muted">回数/実施済</span></th>
+                            <th class="text-center">出席率<br><span class="fw-normal text-muted">コース通算</span></th>
+                            <th class="text-center">提出<br><span class="fw-normal text-muted">件数/課題数</span></th>
+                            <th class="text-center">平均点</th>
+                            <th class="text-center" style="min-width:180px">明細</th>
                         </tr>
                     </thead>
                     <tbody>
                         <tr th:each="r : ${reportList != null ? reportList : {}}" th:attr="data-search=${r.studentName + ' ' + r.studentEmail}">
                             <td class="fw-semibold" th:text="${r.studentName}"></td>
                             <td class="small text-muted" th:text="${r.studentEmail}"></td>
-                            <td class="text-center small"><span th:text="${r.attendedCount}"></span>/<span th:text="${r.totalLessons}"></span></td>
-                            <td class="text-center" th:text="${r.totalLessons == 0} ? '―' : (r.attendanceRate + '%')"></td>
+                            <td class="text-center small">
+                                <span th:text="${r.attendedCount}"></span>/<span th:text="${r.totalLessons}"></span>
+                            </td>
+                            <td class="text-center">
+                                <span th:if="${r.totalLessons == 0}">―</span>
+                                <span th:if="${r.totalLessons > 0}" th:text="|${r.attendanceRate}%|"></span>
+                            </td>
                             <td class="text-center small">
                                 <span th:text="${r.submittedCount}"></span>/<span th:text="${r.totalAssignments}"></span>
-                                <div class="text-muted" th:if="${r.totalAssignments > 0}" th:text="${r.submissionRate} + '%'"></div>
+                                <div class="text-muted" th:if="${r.totalAssignments > 0}" th:text="|${r.submissionRate}%|"></div>
                                 <span th:if="${r.totalAssignments == 0}" class="text-muted">―</span>
                             </td>
                             <td class="text-center">
@@ -153,18 +131,15 @@
                                 <span th:if="${r.scoreStatus == 'UNSUBMITTED'}" class="badge bg-warning text-dark">未提出</span>
                                 <span th:if="${r.scoreStatus == 'PENDING'}" class="badge bg-secondary">採点待ち</span>
                                 <span th:if="${r.scoreStatus == 'PARTIAL'}">
-                                    <span class="fw-semibold" th:text="${r.averageScore} + '点'"></span>
-                                    <span class="badge bg-info text-dark ms-1">一部採点待ち</span>
+                                    <span class="fw-semibold" th:text="|${r.averageScore}点|"></span>
                                 </span>
-                                <span th:if="${r.scoreStatus == 'SCORED'}" class="fw-semibold text-success" th:text="${r.averageScore} + '点'"></span>
+                                <span th:if="${r.scoreStatus == 'SCORED'}" class="fw-semibold text-success" th:text="|${r.averageScore}点|"></span>
                             </td>
                             <td class="text-center text-nowrap">
                                 <a class="btn btn-sm btn-outline-success me-1"
-                                   th:href="@{/admin/reports/export(courseId=${selectedCourse.id}, type='attendance', studentId=${r.studentId})}"
-                                   title="この受講者の出席CSV">出席</a>
+                                   th:href="@{/admin/reports/student-attendance(courseId=${selectedCourse.id}, studentId=${r.studentId})}">出席明細</a>
                                 <a class="btn btn-sm btn-outline-primary"
-                                   th:href="@{/admin/reports/export(courseId=${selectedCourse.id}, type='assignments', studentId=${r.studentId})}"
-                                   title="この受講者の課題CSV">課題</a>
+                                   th:href="@{/admin/reports/student-assignments(courseId=${selectedCourse.id}, studentId=${r.studentId})}">課題明細</a>
                             </td>
                         </tr>
                         <tr th:if="${reportList == null or reportList.empty}">
@@ -175,7 +150,7 @@
                 </div>
             </div>
         </div>
-        <p class="small text-muted mt-2 mb-0">CSVは UTF-8（BOM付き）形式です。Excel でそのまま開けます。</p>
+        <p class="small text-muted mt-2 mb-0">「出席明細」「課題明細」から内容を確認し、必要な場合のみ Excel 用ファイルをダウンロードできます。</p>
     </div>
 
     <div class="col d-flex align-items-center justify-content-center text-muted" th:unless="${selectedCourse != null}">
@@ -184,9 +159,7 @@
 </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<script th:inline="javascript">
+<script>
 function filterCourses(q) {
     q = q.toLowerCase();
     document.querySelectorAll('#courseList a').forEach(el => {
@@ -199,85 +172,6 @@ function filterReportRows(q) {
         tr.style.display = (tr.dataset.search || '').toLowerCase().includes(q) ? '' : 'none';
     });
 }
-(function() {
-    if (typeof Chart === 'undefined') {
-        console.error('Chart.js not loaded');
-        return;
-    }
-    const chartData = /*[[${chartData}]]*/ { att: [0,0,0], sub: [0,0,0], lessonLabels: [], lessonRates: [], asgLabels: [], asgScores: [] };
-    const chartFont = { family: 'system-ui, sans-serif', size: 12 };
-    const doughnutOpts = {
-        responsive: true,
-        maintainAspectRatio: true,
-        plugins: { legend: { position: 'bottom', labels: { font: chartFont, boxWidth: 12 } } }
-    };
-    function sum(arr) { return (arr || []).reduce((a, b) => a + Number(b), 0); }
-    function renderDoughnut(canvasId, emptyId, labels, data, colors) {
-        const el = document.getElementById(canvasId);
-        if (!el) return;
-        if (sum(data) === 0) {
-            if (emptyId) document.getElementById(emptyId)?.classList.remove('d-none');
-            return;
-        }
-        new Chart(el, {
-            type: 'doughnut',
-            data: { labels: labels, datasets: [{ data: data, backgroundColor: colors, borderWidth: 0 }] },
-            options: doughnutOpts
-        });
-    }
-    renderDoughnut('attDistChart', 'attDistEmpty',
-        ['良好(80%以上)', '普通(60〜79%)', '要注意(60%未満)'],
-        chartData.att, ['#198754', '#ffc107', '#dc3545']);
-    renderDoughnut('subDistChart', null,
-        ['全課題提出済', '一部提出', '未提出'],
-        chartData.sub, ['#0d6efd', '#6c757d', '#fd7e14']);
-    const ctx3 = document.getElementById('assignmentChart');
-    if (ctx3 && chartData.asgLabels && chartData.asgLabels.length) {
-        new Chart(ctx3, {
-            type: 'bar',
-            data: {
-                labels: chartData.asgLabels,
-                datasets: [{
-                    label: '平均点',
-                    data: chartData.asgScores,
-                    backgroundColor: 'rgba(25,135,84,0.8)',
-                    borderRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: {
-                    y: { beginAtZero: true, max: 100, ticks: { font: chartFont } },
-                    x: { ticks: { font: chartFont, maxRotation: 45, minRotation: 0 } }
-                },
-                plugins: { legend: { display: false } }
-            }
-        });
-    }
-    const ctx2 = document.getElementById('lessonChart');
-    if (ctx2 && chartData.lessonLabels && chartData.lessonLabels.length) {
-        new Chart(ctx2, {
-            type: 'line',
-            data: {
-                labels: chartData.lessonLabels,
-                datasets: [{
-                    label: '授業日別出席率 %',
-                    data: chartData.lessonRates,
-                    borderColor: '#198754',
-                    backgroundColor: 'rgba(25,135,84,0.12)',
-                    tension: 0.25,
-                    fill: true,
-                    pointRadius: 4
-                }]
-            },
-            options: {
-                responsive: true,
-                scales: { y: { beginAtZero: true, max: 100 }, x: { ticks: { maxRotation: 45 } } },
-                plugins: { legend: { display: false } }
-            }
-        });
-    }
-})();
 </script>
 </body>
 </html>

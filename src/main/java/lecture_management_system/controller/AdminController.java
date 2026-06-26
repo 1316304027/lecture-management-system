@@ -18,12 +18,15 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import lecture_management_system.dto.StudentReportDto;
+import lecture_management_system.dto.StudentAttendancePreviewRow;
+import lecture_management_system.dto.StudentAssignmentPreviewRow;
 import lecture_management_system.repository.AssignmentRepository;
 import lecture_management_system.repository.SubmissionRepository;
 import lecture_management_system.repository.AttendanceRepository;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -542,19 +545,6 @@ public class AdminController {
         if (loginUser == null) return "redirect:/login";
         model.addAttribute("loginUser", loginUser);
         model.addAttribute("courseList", courseService.findAll());
-        model.addAttribute("attDistGood", 0L);
-        model.addAttribute("attDistMid", 0L);
-        model.addAttribute("attDistLow", 0L);
-        model.addAttribute("subDistFull", 0L);
-        model.addAttribute("subDistPartial", 0L);
-        model.addAttribute("subDistNone", 0L);
-        model.addAttribute("chartData", Map.of(
-                "att", List.of(0L, 0L, 0L),
-                "sub", List.of(0L, 0L, 0L),
-                "lessonLabels", List.of(),
-                "lessonRates", List.of(),
-                "asgLabels", List.of(),
-                "asgScores", List.of()));
         if (courseId != null) {
             Course selected = courseService.findById(courseId);
             if (selected == null) {
@@ -565,11 +555,8 @@ public class AdminController {
             model.addAttribute("selectedCourse", selected);
             List<StudentReportDto> reportList = reportService.getCourseReport(courseId);
             model.addAttribute("reportList", reportList != null ? reportList : List.of());
-            var lessonStats = reportService.getLessonAttendanceStats(courseId);
-            var assignmentStats = reportService.getAssignmentAvgScores(courseId);
-            model.addAttribute("lessonStats", lessonStats);
-            model.addAttribute("assignmentStats", assignmentStats);
-            if (!reportList.isEmpty()) {
+            model.addAttribute("lessonStats", reportService.getLessonAttendanceStats(courseId));
+            if (reportList != null && !reportList.isEmpty()) {
                 double avgAtt = reportList.stream()
                         .filter(r -> r.getTotalLessons() > 0)
                         .mapToDouble(StudentReportDto::getAttendanceRate)
@@ -581,52 +568,51 @@ public class AdminController {
                 model.addAttribute("avgAttendanceRate", Math.round(avgAtt * 10) / 10.0);
                 model.addAttribute("avgSubmissionRate", Math.round(avgSub * 10) / 10.0);
             }
-            long attGood = 0, attMid = 0, attLow = 0;
-            long subFull = 0, subPartial = 0, subNone = 0;
-            for (StudentReportDto r : reportList) {
-                if (r.getTotalLessons() > 0) {
-                    double ar = r.getAttendanceRate();
-                    if (ar >= 80) attGood++;
-                    else if (ar >= 60) attMid++;
-                    else attLow++;
-                }
-                if (r.getTotalAssignments() > 0) {
-                    if (r.getSubmittedCount() >= r.getTotalAssignments()) subFull++;
-                    else if (r.getSubmittedCount() == 0) subNone++;
-                    else subPartial++;
-                }
-            }
-            model.addAttribute("attDistGood", attGood);
-            model.addAttribute("attDistMid", attMid);
-            model.addAttribute("attDistLow", attLow);
-            model.addAttribute("subDistFull", subFull);
-            model.addAttribute("subDistPartial", subPartial);
-            model.addAttribute("subDistNone", subNone);
-            List<String> lessonLabels = lessonStats.stream()
-                    .map(ls -> ls.getLessonDate().toString()).toList();
-            List<Double> lessonRates = lessonStats.stream()
-                    .map(lecture_management_system.dto.LessonAttendanceStatDto::getAttendanceRate).toList();
-            List<String> asgLabels = assignmentStats.stream()
-                    .map(lecture_management_system.dto.AssignmentAvgScoreDto::getTitle).toList();
-            List<Double> asgScores = assignmentStats.stream()
-                    .map(a -> a.getAverageScore() != null ? a.getAverageScore() : 0.0).toList();
-            Map<String, Object> chartData = new LinkedHashMap<>();
-            chartData.put("att", List.of(attGood, attMid, attLow));
-            chartData.put("sub", List.of(subFull, subPartial, subNone));
-            chartData.put("lessonLabels", lessonLabels);
-            chartData.put("lessonRates", lessonRates);
-            chartData.put("asgLabels", asgLabels);
-            chartData.put("asgScores", asgScores);
-            model.addAttribute("chartData", chartData);
         }
         return "admin-reports";
+    }
+
+    @GetMapping("/admin/reports/student-attendance")
+    public String previewStudentAttendance(
+            @RequestParam Long courseId,
+            @RequestParam Long studentId,
+            HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+        Course course = courseService.findById(courseId);
+        User student = userService.findById(studentId);
+        if (course == null || student == null) return "redirect:/admin/reports?courseId=" + courseId;
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("course", course);
+        model.addAttribute("student", student);
+        model.addAttribute("rows", reportService.getStudentAttendancePreview(courseId, studentId));
+        model.addAttribute("returnUrl", "/admin/reports?courseId=" + courseId);
+        return "admin-report-preview-attendance";
+    }
+
+    @GetMapping("/admin/reports/student-assignments")
+    public String previewStudentAssignments(
+            @RequestParam Long courseId,
+            @RequestParam Long studentId,
+            HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+        Course course = courseService.findById(courseId);
+        User student = userService.findById(studentId);
+        if (course == null || student == null) return "redirect:/admin/reports?courseId=" + courseId;
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("course", course);
+        model.addAttribute("student", student);
+        model.addAttribute("rows", reportService.getStudentAssignmentPreview(courseId, studentId));
+        model.addAttribute("returnUrl", "/admin/reports?courseId=" + courseId);
+        return "admin-report-preview-assignments";
     }
 
     @GetMapping("/admin/reports/export")
     public void exportReportsCsv(
             @RequestParam Long courseId,
-            @RequestParam(defaultValue = "summary") String type,
-            @RequestParam(required = false) Long studentId,
+            @RequestParam String type,
+            @RequestParam Long studentId,
             HttpSession session,
             HttpServletResponse response) throws IOException {
         if (getLoginUser(session) == null) {
@@ -635,78 +621,54 @@ public class AdminController {
         }
         Course course = courseService.findById(courseId);
         String courseName = course != null ? course.getName() : "course";
-        switch (type) {
-            case "attendance" -> exportAttendanceCsv(courseId, courseName, studentId, response);
-            case "assignments" -> exportAssignmentsCsv(courseId, courseName, studentId, response);
-            default -> exportSummaryCsv(courseId, course, response);
+        User student = userService.findById(studentId);
+        if (student == null) {
+            response.sendError(404);
+            return;
+        }
+        if ("assignments".equals(type)) {
+            exportStudentAssignmentsCsv(courseId, courseName, student, response);
+        } else {
+            exportStudentAttendanceCsv(courseId, courseName, student, response);
         }
     }
 
-    private void exportSummaryCsv(Long courseId, Course course, HttpServletResponse response) throws IOException {
-        List<StudentReportDto> list = reportService.getCourseReport(courseId);
-        PrintWriter w = prepareCsv(response, "report_summary_" + courseId + ".csv");
-        w.println("コース," + csv(course != null ? course.getName() : ""));
-        w.println("氏名,メール,出席,出席率%,提出,提出率%,未提出,採点済,採点待ち,平均スコア");
-        for (StudentReportDto r : list) {
-            String score = switch (r.getScoreStatus()) {
-                case "NO_ASSIGNMENT" -> "—";
-                case "UNSUBMITTED" -> "未提出";
-                case "PENDING" -> "採点待ち";
-                case "PARTIAL" -> r.getAverageScore() + "（一部採点待ち）";
-                default -> r.getAverageScore().toString();
-            };
-            w.printf("%s,%s,%d/%d,%s,%d/%d,%s,%d,%d,%d,%s%n",
-                    csv(r.getStudentName()), csv(r.getStudentEmail()),
-                    r.getAttendedCount(), r.getTotalLessons(),
-                    r.getTotalLessons() == 0 ? "-" : String.valueOf(r.getAttendanceRate()),
-                    r.getSubmittedCount(), r.getTotalAssignments(), r.getSubmissionRate(),
-                    r.getUnsubmittedCount(), r.getEvaluatedCount(), r.getPendingGradeCount(), score);
+    private static final DateTimeFormatter CSV_DT = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm");
+
+    private void exportStudentAttendanceCsv(Long courseId, String courseName, User student,
+                                            HttpServletResponse response) throws IOException {
+        List<StudentAttendancePreviewRow> rows = reportService.getStudentAttendancePreview(courseId, student.getId());
+        PrintWriter w = prepareCsv(response,
+                "出席一覧_" + student.getName() + "_コース" + courseId + ".csv");
+        w.println("コース," + csv(courseName));
+        w.println("氏名," + csv(student.getName()));
+        w.println("メール," + csv(student.getEmail()));
+        w.println();
+        w.println("授業日,授業時間,出席状態,打刻日時");
+        for (StudentAttendancePreviewRow r : rows) {
+            String checkIn = r.getCheckInAt() != null ? r.getCheckInAt().format(CSV_DT) : "";
+            w.printf("%s,%s,%s,%s%n",
+                    r.getLessonDate(), csv(r.getLessonTimeLabel()), r.getStatus(), checkIn);
         }
         w.flush();
     }
 
-    private void exportAttendanceCsv(Long courseId, String courseName, Long studentId,
-                                     HttpServletResponse response) throws IOException {
-        List<User> students = courseService.getStudents(courseId);
-        if (studentId != null) {
-            students = students.stream().filter(u -> u.getId().equals(studentId)).toList();
-        }
-        List<CourseSchedule> schedules = courseScheduleService.getSchedules(courseId);
-        PrintWriter w = prepareCsv(response, "attendance_" + courseId + (studentId != null ? "_s" + studentId : "") + ".csv");
+    private void exportStudentAssignmentsCsv(Long courseId, String courseName, User student,
+                                             HttpServletResponse response) throws IOException {
+        List<StudentAssignmentPreviewRow> rows = reportService.getStudentAssignmentPreview(courseId, student.getId());
+        PrintWriter w = prepareCsv(response,
+                "課題一覧_" + student.getName() + "_コース" + courseId + ".csv");
         w.println("コース," + csv(courseName));
-        w.println("氏名,メール,授業日,出席状態");
-        for (User s : students) {
-            for (CourseSchedule sch : schedules) {
-                boolean present = attendanceRepository.findByStudent_IdAndCourse_IdAndDate(
-                        s.getId(), courseId, sch.getLessonDate()).isPresent();
-                w.printf("%s,%s,%s,%s%n",
-                        csv(s.getName()), csv(s.getEmail()), sch.getLessonDate(),
-                        present ? "出席" : (sch.getLessonDate().isAfter(LocalDate.now()) ? "未実施" : "欠席"));
-            }
-        }
-        w.flush();
-    }
-
-    private void exportAssignmentsCsv(Long courseId, String courseName, Long studentId,
-                                      HttpServletResponse response) throws IOException {
-        List<User> students = courseService.getStudents(courseId);
-        if (studentId != null) {
-            students = students.stream().filter(u -> u.getId().equals(studentId)).toList();
-        }
-        List<Assignment> assignments = assignmentRepository.findByCourse_IdAndPublishedTrue(courseId);
-        PrintWriter w = prepareCsv(response, "assignments_" + courseId + (studentId != null ? "_s" + studentId : "") + ".csv");
-        w.println("コース," + csv(courseName));
-        w.println("氏名,メール,課題名,提出状態,スコア,提出日時");
-        for (User s : students) {
-            for (Assignment a : assignments) {
-                Submission sub = submissionRepository
-                        .findByStudent_IdAndAssignment_Id(s.getId(), a.getId()).orElse(null);
-                String status = sub != null ? "提出済" : "未提出";
-                String score = (sub != null && sub.getScore() != null) ? sub.getScore() + "点" : "—";
-                String at = sub != null && sub.getSubmittedAt() != null ? sub.getSubmittedAt().toString() : "";
-                w.printf("%s,%s,%s,%s,%s,%s%n",
-                        csv(s.getName()), csv(s.getEmail()), csv(a.getTitle()), status, score, at);
-            }
+        w.println("氏名," + csv(student.getName()));
+        w.println("メール," + csv(student.getEmail()));
+        w.println();
+        w.println("課題名,提出期限,提出状態,スコア,提出日時");
+        for (StudentAssignmentPreviewRow r : rows) {
+            String deadline = r.getDeadline() != null ? r.getDeadline().format(CSV_DT) : "";
+            String submitted = r.getSubmittedAt() != null ? r.getSubmittedAt().format(CSV_DT) : "";
+            String score = r.getScore() != null ? r.getScore() + "点" : "—";
+            w.printf("%s,%s,%s,%s,%s%n",
+                    csv(r.getTitle()), deadline, r.getStatus(), score, submitted);
         }
         w.flush();
     }

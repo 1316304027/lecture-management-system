@@ -69,7 +69,7 @@
                 <span class="badge bg-light text-dark" th:if="${selectedCourse != null}" th:text="${selectedCourse.name}"></span>
             </div>
             <div class="pcfa-admin-section-body">
-                <p class="text-muted small mb-3">本日以前の授業日のみ修正できます。未来の授業はグレー表示です。</p>
+                <p class="text-muted small mb-3">本日以前の授業日のみ修正できます。未来の授業はグレー表示です。授業時間はコース管理の授業日登録時に設定します。</p>
 
                 <div th:if="${orphanAttendances != null and !orphanAttendances.empty}" class="alert alert-warning py-2 mb-3">
                     <strong>⚠️ 授業日未登録の出席データ</strong>（出席率に含まれています）
@@ -96,7 +96,8 @@
                     <table class="table table-hover align-middle mb-0">
                         <thead class="table-light">
                             <tr>
-                                <th style="width:140px">授業日</th>
+                                <th style="width:120px">授業日</th>
+                                <th style="width:120px">授業時間</th>
                                 <th style="width:100px" class="text-center">出席状態</th>
                                 <th>修正操作</th>
                             </tr>
@@ -113,6 +114,8 @@
                                     <span th:if="${isToday}" class="badge bg-primary ms-1" style="font-size:10px">今日</span>
                                     <span th:if="${isFuture}" class="badge bg-secondary ms-1" style="font-size:10px">未実施</span>
                                 </td>
+                                <td class="small text-muted"
+                                    th:text="${T(lecture_management_system.service.ReportService).formatLessonTime(s.startTime, s.endTime)}"></td>
                                 <td class="text-center">
                                     <span th:unless="${isFuture}">
                                         <span th:if="${attended}" class="badge bg-success">出席</span>
@@ -145,7 +148,7 @@
                                 </td>
                             </tr>
                             <tr th:if="${schedules.empty}">
-                                <td colspan="3" class="text-muted text-center py-4">授業日が登録されていません</td>
+                                <td colspan="4" class="text-muted text-center py-4">授業日が登録されていません</td>
                             </tr>
                         </tbody>
                     </table>

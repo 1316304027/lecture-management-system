@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>出席明細プレビュー</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+</head>
+<body class="pcfa-body">
+<nav class="navbar navbar-dark pcfa-navbar px-3">
+    <a class="navbar-brand" th:href="${returnUrl}">← 実績レポートに戻る</a>
+    <span class="text-white small fw-bold">出席明細プレビュー</span>
+</nav>
+<div class="container py-4" style="max-width: 900px;">
+    <div class="pcfa-page-header mb-3">
+        <h1 class="h4 fw-bold mb-1" th:text="${student.name} + ' さんの出席一覧'"></h1>
+        <p class="text-muted small mb-0">
+            コース：<span th:text="${course.name}"></span> ／
+            メール：<span th:text="${student.email}"></span>
+        </p>
+    </div>
+    <div class="d-flex flex-wrap gap-2 justify-content-end mb-3">
+        <a th:href="${returnUrl}" class="btn btn-outline-secondary btn-sm">戻る</a>
+        <a th:href="@{/admin/reports/export(courseId=${course.id}, studentId=${student.id}, type='attendance')}"
+           class="btn btn-success btn-sm">Excel用ファイルをダウンロード</a>
+    </div>
+    <div class="pcfa-admin-section">
+        <div class="pcfa-admin-section-header">授業日ごとの出席状況</div>
+        <div class="pcfa-admin-section-body p-0">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                <tr>
+                    <th>授業日</th>
+                    <th>授業時間</th>
+                    <th>出席状態</th>
+                    <th>打刻日時</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="row : ${rows}" th:class="${row.futureLesson} ? 'table-secondary' : ''">
+                    <td th:text="${row.lessonDate}"></td>
+                    <td th:text="${row.lessonTimeLabel}"></td>
+                    <td>
+                        <span th:if="${row.status == '出席'}" class="badge bg-success">出席</span>
+                        <span th:if="${row.status == '欠席'}" class="badge bg-danger">欠席</span>
+                        <span th:if="${row.status == '未実施'}" class="badge bg-secondary">未実施</span>
+                    </td>
+                    <td>
+                        <span th:if="${row.checkInAt != null}" th:text="${#temporals.format(row.checkInAt, 'yyyy/MM/dd HH:mm')}"></span>
+                        <span th:if="${row.checkInAt == null}" class="text-muted">—</span>
+                    </td>
+                </tr>
+                <tr th:if="${rows.empty}">
+                    <td colspan="4" class="text-muted text-center py-4">授業日が登録されていません</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <p class="small text-muted mt-2">※ 授業時間はコース管理で登録した開始・終了時刻です。未設定の場合は「時間未設定」と表示します。</p>
+</div>
+</body>
+</html>
