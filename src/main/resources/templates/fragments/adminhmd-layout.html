@@ -66,9 +66,11 @@
         </nav>
 
         <div class="sidebar-user" th:if="${displayUser != null}">
-            <img class="avatar-img avatar-md sidebar-user-avatar"
-                 th:src="@{/adminhmd/images/avatar/avatar.jpg}"
-                 th:alt="${displayUser.name}">
+            <img th:if="${adminNavAvatarUrl != null}" class="avatar-img avatar-md sidebar-user-avatar"
+                 th:src="${adminNavAvatarUrl}" th:alt="${displayUser.name}">
+            <span th:unless="${adminNavAvatarUrl != null}"
+                  class="avatar-img avatar-md sidebar-user-avatar pcfa-nav-initials"
+                  th:text="${#strings.substring(displayUser.name,0,1)}">管</span>
             <strong th:text="${displayUser.name}">管理者</strong>
             <small>管理者ワークスペース</small>
         </div>
@@ -94,9 +96,11 @@
                     <div class="dropdown">
                         <button class="profile-button dropdown-toggle" type="button"
                                 data-bs-toggle="dropdown" aria-expanded="false">
-                            <img class="avatar-img avatar-sm"
-                                 th:src="@{/adminhmd/images/avatar/avatar.jpg}"
-                                 th:alt="${displayUser != null ? displayUser.name : 'Admin'}">
+                            <img th:if="${adminNavAvatarUrl != null}" class="avatar-img avatar-sm"
+                                 th:src="${adminNavAvatarUrl}" th:alt="${displayUser != null ? displayUser.name : 'Admin'}">
+                            <span th:unless="${adminNavAvatarUrl != null}"
+                                  class="avatar-img avatar-sm pcfa-nav-initials"
+                                  th:text="${displayUser != null ? #strings.substring(displayUser.name,0,1) : '管'}">管</span>
                             <span class="profile-name d-none d-sm-inline"
                                   th:text="${displayUser != null ? displayUser.name : '管理者'}">管理者</span>
                         </button>

@@ -387,5 +387,147 @@
     border-right: 0;
     border-bottom: 1px solid var(--admin-border);
     max-height: none;
+    position: static;
   }
+
+  body:not(.sidebar-open) .admin-main {
+    margin-left: 0 !important;
+  }
+}
+
+/* ---- Nav avatar initials (no broken image) ---- */
+.pcfa-nav-initials {
+  display: inline-grid !important;
+  place-items: center;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8) !important;
+  color: #fff !important;
+  font-weight: 700;
+  object-fit: unset !important;
+}
+
+/* ---- Bar chart with axes ---- */
+.pcfa-bar-chart-wrap {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr;
+  gap: 0.75rem;
+  align-items: stretch;
+  min-height: 280px;
+}
+
+.pcfa-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--admin-muted);
+  padding: 0.5rem 0 1.75rem;
+  text-align: right;
+}
+
+.pcfa-chart-area {
+  position: relative;
+  min-width: 0;
+}
+
+.pcfa-chart-gridlines {
+  position: absolute;
+  inset: 0 0 1.5rem 0;
+  background: repeating-linear-gradient(
+    to top,
+    transparent,
+    transparent calc(25% - 1px),
+    var(--admin-border) calc(25% - 1px),
+    var(--admin-border) 25%
+  );
+  opacity: 0.55;
+  pointer-events: none;
+  border-radius: 8px;
+}
+
+.pcfa-chart-area .chart-bars.pcfa-lesson-chart {
+  position: relative;
+  z-index: 1;
+  height: 260px;
+  background: transparent;
+  padding-bottom: 0;
+}
+
+.pcfa-x-axis-label {
+  text-align: center;
+  margin-top: 0.35rem;
+  font-weight: 600;
+}
+
+.pcfa-lesson-bar {
+  cursor: pointer;
+  border-radius: 8px;
+  transition: outline 0.15s ease, transform 0.15s ease;
+}
+
+.pcfa-lesson-bar:hover {
+  transform: translateY(-2px);
+}
+
+.pcfa-lesson-bar.is-selected {
+  outline: 3px solid rgba(37, 99, 235, 0.45);
+  outline-offset: 2px;
+}
+
+.pcfa-lesson-bar.is-selected span {
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.35);
+}
+
+/* ---- Dark mode readability ---- */
+[data-theme="dark"] .pcfa-split-page,
+[data-theme="dark"] .pcfa-split-sidebar,
+[data-theme="dark"] .pcfa-sidebar-panel {
+  background: var(--admin-surface);
+}
+
+[data-theme="dark"] .pcfa-chart-area .chart-bars.pcfa-lesson-chart {
+  background: transparent;
+}
+
+[data-theme="dark"] .donut-chart span {
+  background: var(--admin-surface) !important;
+  color: var(--admin-text) !important;
+}
+
+[data-theme="dark"] .pcfa-chart-gridlines {
+  opacity: 0.35;
+}
+
+[data-theme="dark"] .pcfa-lesson-bar.is-selected span {
+  box-shadow: 0 12px 24px rgba(96, 165, 250, 0.25);
+}
+
+[data-theme="dark"] .pcfa-nav-list a.active {
+  background: rgba(96, 165, 250, 0.15);
+  color: #93c5fd;
+}
+
+[data-theme="dark"] .table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .metric-card,
+[data-theme="dark"] .panel,
+[data-theme="dark"] .pcfa-admin-menu-card {
+  background: var(--admin-surface);
+  border-color: var(--admin-border);
+}
+
+[data-theme="dark"] .text-muted {
+  color: var(--admin-muted) !important;
+}
+
+/* Sidebar mini: hide broken overflow text on narrow rail */
+body.sidebar-mini .sidebar-user strong,
+body.sidebar-mini .sidebar-user small {
+  display: none;
+}
+
+body.sidebar-mini .sidebar-user {
+  padding: 0.75rem 0.5rem;
 }

@@ -109,62 +109,71 @@
                         </div>
                     </section>
 
-                    <!-- 图表区：模板 chart-bars + donut -->
+                    <!-- 图表区：带坐标轴 + 点击联动圆环 -->
                     <section class="pcfa-chart-grid mb-3">
                         <div class="panel h-100 mb-0">
                             <div class="panel-header">
                                 <div>
                                     <h2 class="h5 mb-1 section-title"><i class="bi bi-bar-chart-line"></i><span>授業ごとの出席率</span></h2>
-                                    <p class="text-muted mb-0">各授業日のコース全体出席率（実データ）</p>
+                                    <p class="text-muted mb-0">縦軸＝出席率（%）／横軸＝授業日。棒をクリックすると右側にその授業の詳細が表示されます。</p>
                                 </div>
                             </div>
-                            <div th:if="${lessonStats != null and !lessonStats.empty}"
-                                 class="chart-bars pcfa-lesson-chart px-3 pb-3"
-                                 th:attr="aria-label='授業出席率チャート'">
-                                <div class="chart-column" th:each="ls : ${lessonStats}"
-                                     th:style="|--bar-size: ${ls.attendanceRate}%;|"
-                                     th:title="|${ls.lessonDate} ${ls.attendanceRate}%|">
-                                    <span></span>
-                                    <small th:text="${#temporals.format(ls.lessonDate, 'M/d')}">1/1</small>
+                            <div class="panel-body" th:if="${lessonStats != null and !lessonStats.empty}">
+                                <div class="pcfa-bar-chart-wrap">
+                                    <div class="pcfa-y-axis" aria-hidden="true">
+                                        <span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span>
+                                    </div>
+                                    <div class="pcfa-chart-area">
+                                        <div class="pcfa-chart-gridlines" aria-hidden="true"></div>
+                                        <div class="chart-bars pcfa-lesson-chart" id="lessonBarChart">
+                                            <div class="chart-column pcfa-lesson-bar"
+                                                 th:each="ls, stat : ${lessonStats}"
+                                                 th:classappend="${stat.first} ? ' is-selected' : ''"
+                                                 th:style="|--bar-size: ${ls.attendanceRate}%;|"
+                                                 th:attr="data-date=${ls.lessonDate},
+                                                          data-rate=${ls.attendanceRate},
+                                                          data-present=${ls.presentCount},
+                                                          data-enrolled=${ls.enrolledCount},
+                                                          data-time=${ls.lessonTimeLabel}"
+                                                 role="button" tabindex="0">
+                                                <span></span>
+                                                <small th:text="${#temporals.format(ls.lessonDate, 'M/d')}">6/26</small>
+                                            </div>
+                                        </div>
+                                        <div class="pcfa-x-axis-label text-muted small">授業日</div>
+                                    </div>
                                 </div>
                             </div>
                             <div th:if="${lessonStats == null or lessonStats.empty}"
-                                 class="chart-bars pcfa-empty mx-3 mb-3">
-                                授業日が未登録のためグラフを表示できません
+                                 class="panel-body text-muted small py-4 text-center">
+                                授業日が未登録のためグラフを表示できません（コース管理で授業日を登録してください）
                             </div>
                         </div>
 
                         <div class="panel h-100 mb-0">
                             <div class="panel-header">
                                 <div>
-                                    <h2 class="h5 mb-1 section-title"><i class="bi bi-pie-chart"></i><span>コース達成度</span></h2>
-                                    <p class="text-muted mb-0">出席・提出のコース平均</p>
+                                    <h2 class="h5 mb-1 section-title"><i class="bi bi-pie-chart"></i><span id="donutPanelTitle">選択中の授業</span></h2>
+                                    <p class="text-muted mb-0" id="donutPanelSubtitle">棒グラフの授業を選択</p>
                                 </div>
                             </div>
                             <div class="panel-body text-center py-3">
-                                <div class="row g-3 align-items-center">
-                                    <div class="col-sm-6" th:if="${avgAttendanceRate != null}">
-                                        <p class="small fw-semibold text-muted mb-2">平均出席率</p>
-                                        <div class="donut-chart pcfa-donut-sm mx-auto"
-                                             th:style="|background: conic-gradient(var(--admin-primary) 0 ${avgAttendanceRate}%, #e2e8f0 ${avgAttendanceRate}% 100%);|">
-                                            <span th:text="|${avgAttendanceRate}%|">0%</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-6" th:if="${avgSubmissionRate != null}">
-                                        <p class="small fw-semibold text-muted mb-2">平均提出率</p>
-                                        <div class="donut-chart pcfa-donut-sm mx-auto"
-                                             th:style="|background: conic-gradient(var(--admin-success) 0 ${avgSubmissionRate}%, #e2e8f0 ${avgSubmissionRate}% 100%);|">
-                                            <span th:text="|${avgSubmissionRate}%|">0%</span>
-                                        </div>
-                                    </div>
-                                    <div class="col-12" th:if="${avgAttendanceRate == null and avgSubmissionRate == null}">
-                                        <p class="text-muted small mb-0">受講者・授業データが揃うと円グラフが表示されます。</p>
-                                    </div>
+                                <div class="donut-chart pcfa-donut-sm mx-auto" id="lessonDonut"
+                                     th:style="${avgAttendanceRate != null} ? |background: conic-gradient(var(--admin-primary) 0 ${avgAttendanceRate}%, #e2e8f0 ${avgAttendanceRate}% 100%);| : ''">
+                                    <span id="lessonDonutValue"
+                                          th:text="${avgAttendanceRate != null} ? |${avgAttendanceRate}%| : '—'">—</span>
                                 </div>
-                                <div class="legend-list mt-3 text-start" th:if="${avgAttendanceRate != null}">
-                                    <div><span><span class="legend-dot bg-primary"></span>出席（コース平均）</span><strong th:text="|${avgAttendanceRate}%|"></strong></div>
-                                    <div th:if="${avgSubmissionRate != null}"><span><span class="legend-dot bg-success"></span>提出（コース平均）</span><strong th:text="|${avgSubmissionRate}%|"></strong></div>
+                                <div class="legend-list mt-3 text-start" id="lessonDonutLegend">
+                                    <div><span><span class="legend-dot bg-primary"></span>出席</span><strong id="legendPresent">—</strong></div>
+                                    <div><span><span class="legend-dot bg-secondary"></span>欠席・未打刻</span><strong id="legendAbsent">—</strong></div>
+                                    <div><span><span class="legend-dot bg-success"></span>登録受講者</span><strong id="legendEnrolled">—</strong></div>
                                 </div>
+                                <p class="small text-muted mt-3 mb-0" id="lessonDonutHint">
+                                    コース平均出席率：
+                                    <strong th:if="${avgAttendanceRate != null}" th:text="|${avgAttendanceRate}%|">—</strong>
+                                    <span th:unless="${avgAttendanceRate != null}">—</span>
+                                    （棒をクリックで授業単位に切替）
+                                </p>
                             </div>
                         </div>
                     </section>
@@ -288,6 +297,43 @@ function filterReportRows(q) {
         tr.style.display = (tr.dataset.search || '').toLowerCase().includes(q) ? '' : 'none';
     });
 }
+
+(function initLessonChart() {
+    const bars = document.querySelectorAll('.pcfa-lesson-bar');
+    if (!bars.length) return;
+
+    const donut = document.getElementById('lessonDonut');
+    const donutVal = document.getElementById('lessonDonutValue');
+    const title = document.getElementById('donutPanelTitle');
+    const subtitle = document.getElementById('donutPanelSubtitle');
+    const legendPresent = document.getElementById('legendPresent');
+    const legendAbsent = document.getElementById('legendAbsent');
+    const legendEnrolled = document.getElementById('legendEnrolled');
+
+    function selectBar(bar) {
+        bars.forEach(b => b.classList.remove('is-selected'));
+        bar.classList.add('is-selected');
+        const rate = parseFloat(bar.dataset.rate) || 0;
+        const present = parseInt(bar.dataset.present, 10) || 0;
+        const enrolled = parseInt(bar.dataset.enrolled, 10) || 0;
+        const absent = Math.max(0, enrolled - present);
+        if (donut) {
+            donut.style.background = 'conic-gradient(var(--admin-primary) 0 ' + rate + '%, #e2e8f0 ' + rate + '% 100%)';
+        }
+        if (donutVal) donutVal.textContent = rate + '%';
+        if (title) title.textContent = bar.dataset.date + ' の出席率';
+        if (subtitle) subtitle.textContent = (bar.dataset.time || '時間未設定') + ' ／ クリックで選択中';
+        if (legendPresent) legendPresent.textContent = present + ' 名';
+        if (legendAbsent) legendAbsent.textContent = absent + ' 名';
+        if (legendEnrolled) legendEnrolled.textContent = enrolled + ' 名';
+    }
+
+    bars.forEach(bar => {
+        bar.addEventListener('click', () => selectBar(bar));
+        bar.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectBar(bar); }});
+    });
+    selectBar(bars[0]);
+})();
 </script>
 </th:block>
 </body>

@@ -3,7 +3,6 @@ package lecture_management_system.controller;
 import jakarta.servlet.http.HttpSession;
 import lecture_management_system.entity.*;
 import lecture_management_system.service.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -65,13 +64,22 @@ public class ChatController {
      * 全コースのメッセージを新しい順で表示
      */
     @GetMapping("/admin/chat")
-    public String adminChat(HttpSession session, Model model) {
+    public String adminChat(
+            @RequestParam(required = false) Long courseId,
+            HttpSession session, Model model) {
         User loginUser = (User) session.getAttribute("loginUser");
         if (loginUser == null) return "redirect:/login";
         if (!"ADMIN".equals(loginUser.getRole())) return "redirect:/login";
 
         model.addAttribute("loginUser", loginUser);
-        model.addAttribute("messages", chatService.getAllMessages());
+        model.addAttribute("courseList", courseService.findAll());
+        if (courseId != null) {
+            Course selected = courseService.findById(courseId);
+            model.addAttribute("selectedCourse", selected);
+            model.addAttribute("messages", selected != null ? chatService.getMessages(courseId) : java.util.List.of());
+        } else {
+            model.addAttribute("messages", java.util.List.of());
+        }
         return "admin-chat";
     }
 
@@ -82,12 +90,16 @@ public class ChatController {
      */
     @PostMapping("/admin/chat/delete/{id}")
     public String deleteMessage(@PathVariable Long id,
+                                @RequestParam(required = false) Long courseId,
                                 HttpSession session) {
         User loginUser = (User) session.getAttribute("loginUser");
         if (loginUser == null) return "redirect:/login";
         if (!"ADMIN".equals(loginUser.getRole())) return "redirect:/login";
 
         chatService.deleteMessage(id);
+        if (courseId != null) {
+            return "redirect:/admin/chat?courseId=" + courseId;
+        }
         return "redirect:/admin/chat";
     }
 }
