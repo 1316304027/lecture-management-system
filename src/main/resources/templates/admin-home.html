@@ -1,86 +1,114 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/adminhmd-layout :: layout(~{::title}, 'home', ~{::main}, ~{::extraHead}, ~{::extraScripts}, false)}">
 <head>
-    <meta charset="UTF-8">
     <title>管理者ホーム</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+    <th:block th:fragment="extraHead"></th:block>
 </head>
-<body class="pcfa-body">
-<nav class="navbar navbar-dark pcfa-navbar px-4 py-2 shadow-sm">
-    <span class="navbar-brand fw-bold mb-0">PCFA管理システム</span>
-    <div class="d-flex align-items-center gap-3">
-        <span class="text-white small">
-            管理者：<strong th:text="${realAdminUser.name}">管理者</strong>
-        </span>
-        <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
-    </div>
-</nav>
-
-<div class="container py-4" style="max-width: 1100px;">
-    <div class="pcfa-page-header mb-4">
-        <h1 class="h3 fw-bold mb-1">管理者ポータル</h1>
-        <p class="text-muted mb-0">システム全体の管理・設定を行います。</p>
-    </div>
-
-    <div class="pcfa-report-summary mb-4">
-        <div class="pcfa-report-stat pcfa-report-stat--blue">
-            <div class="icon">👥</div>
-            <div class="val" th:text="${userCount}">0</div>
-            <div class="lbl">登録ユーザー数</div>
-        </div>
-        <div class="pcfa-report-stat pcfa-report-stat--green">
-            <div class="icon">📚</div>
-            <div class="val" th:text="${courseCount}">0</div>
-            <div class="lbl">開設コース数</div>
+<body>
+<th:block th:fragment="main">
+    <div class="page-heading mb-4">
+        <div class="page-heading-copy">
+            <span class="page-icon"><i class="bi bi-speedometer2" aria-hidden="true"></i></span>
+            <div>
+                <p class="eyebrow mb-1">Overview</p>
+                <h1 class="h3 mb-1">管理者ポータル</h1>
+                <p class="text-muted mb-0">システム全体の管理・設定を行います。</p>
+            </div>
         </div>
     </div>
 
-    <h2 class="h6 text-muted fw-bold mb-3 text-uppercase" style="letter-spacing:.05em;">機能メニュー</h2>
+    <section class="row g-3" aria-label="サマリー">
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="metric-card metric-primary">
+                <div class="metric-top">
+                    <span class="metric-label">登録ユーザー</span>
+                    <span class="metric-icon"><i class="bi bi-people" aria-hidden="true"></i></span>
+                </div>
+                <div class="metric-value" th:text="${userCount}">0</div>
+                <div class="metric-meta"><span>全ロール合計</span></div>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="metric-card metric-success">
+                <div class="metric-top">
+                    <span class="metric-label">開設コース</span>
+                    <span class="metric-icon"><i class="bi bi-journal-bookmark" aria-hidden="true"></i></span>
+                </div>
+                <div class="metric-value" th:text="${courseCount}">0</div>
+                <div class="metric-meta"><span>管理中のコース数</span></div>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="metric-card metric-warning">
+                <div class="metric-top">
+                    <span class="metric-label">受講者</span>
+                    <span class="metric-icon"><i class="bi bi-person-badge" aria-hidden="true"></i></span>
+                </div>
+                <div class="metric-value" th:text="${studentCount}">0</div>
+                <div class="metric-meta"><span>STUDENT ロール</span></div>
+            </article>
+        </div>
+        <div class="col-12 col-sm-6 col-xl-3">
+            <article class="metric-card metric-danger">
+                <div class="metric-top">
+                    <span class="metric-label">ログイン中</span>
+                    <span class="metric-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
+                </div>
+                <div class="metric-value" style="font-size:1.1rem" th:text="${realAdminUser.name}">Admin</div>
+                <div class="metric-meta"><span>管理者セッション</span></div>
+            </article>
+        </div>
+    </section>
+
+    <h2 class="h6 text-muted fw-bold mt-4 mb-3 text-uppercase" style="letter-spacing:.05em;">機能メニュー</h2>
     <div class="row g-3 pcfa-admin-menu">
         <div class="col-6 col-md-4">
             <a href="/admin/accounts" class="pcfa-admin-menu-card pcfa-admin-menu-card--blue">
-                <span class="pcfa-admin-menu-icon">👤</span>
+                <span class="pcfa-admin-menu-icon"><i class="bi bi-people"></i></span>
                 <strong>ユーザー管理</strong>
-                <small>アカウントの作成・編集・削除</small>
+                <small class="text-muted d-block">アカウントの作成・編集・削除</small>
             </a>
         </div>
         <div class="col-6 col-md-4">
             <a href="/admin/courses" class="pcfa-admin-menu-card pcfa-admin-menu-card--green">
-                <span class="pcfa-admin-menu-icon">📚</span>
+                <span class="pcfa-admin-menu-icon"><i class="bi bi-journal-bookmark"></i></span>
                 <strong>コース管理</strong>
-                <small>コース・授業日・受講者の設定</small>
+                <small class="text-muted d-block">コース・授業日・受講者の設定</small>
             </a>
         </div>
         <div class="col-6 col-md-4">
             <a href="/admin/attendance" class="pcfa-admin-menu-card pcfa-admin-menu-card--amber">
-                <span class="pcfa-admin-menu-icon">📋</span>
+                <span class="pcfa-admin-menu-icon"><i class="bi bi-calendar-check"></i></span>
                 <strong>出欠修正</strong>
-                <small>学生の出欠状態を手動修正</small>
+                <small class="text-muted d-block">学生の出欠状態を手動修正</small>
             </a>
         </div>
         <div class="col-6 col-md-4">
             <a href="/admin/reports" class="pcfa-admin-menu-card pcfa-admin-menu-card--red">
-                <span class="pcfa-admin-menu-icon">📊</span>
+                <span class="pcfa-admin-menu-icon"><i class="bi bi-bar-chart-line"></i></span>
                 <strong>実績レポート</strong>
-                <small>出席率・提出率・スコア確認</small>
+                <small class="text-muted d-block">出席率・提出率・スコア確認</small>
             </a>
         </div>
         <div class="col-6 col-md-4">
             <a href="/admin/chat" class="pcfa-admin-menu-card pcfa-admin-menu-card--cyan">
-                <span class="pcfa-admin-menu-icon">💬</span>
+                <span class="pcfa-admin-menu-icon"><i class="bi bi-chat-dots"></i></span>
                 <strong>チャット閲覧</strong>
-                <small>全コースのメッセージを確認</small>
+                <small class="text-muted d-block">全コースのメッセージを確認</small>
             </a>
         </div>
     </div>
 
-    <div th:if="${studentCount != null and studentCount < 93}" class="mt-4 p-3 border rounded bg-light small">
-        <strong>発表準備（1回だけ）：</strong>
-        受講者は現在 <span th:text="${studentCount}"></span> 名です。
-        <a href="/admin/setup/seed-students">ここから 93 名まで一括投入</a>
-        （押すのは1回だけ・再起動では動きません）
+    <div th:if="${studentCount != null and studentCount < 93}" class="panel mt-4">
+        <div class="panel-body py-3 px-3 small">
+            <strong>発表準備（1回だけ）：</strong>
+            受講者は現在 <span th:text="${studentCount}"></span> 名です。
+            <a th:href="@{/admin/setup/seed-students}">ここから 93 名まで一括投入</a>
+            （押すのは1回だけ・再起動では動きません）
+        </div>
     </div>
-</div>
+</th:block>
+<th:block th:fragment="extraScripts"></th:block>
 </body>
 </html>

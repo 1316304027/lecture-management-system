@@ -2,34 +2,52 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ログイン | PCFA受講管理システム</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
-    <link rel="stylesheet" href="https://dyb4upvaqqfld.cloudfront.net/static/custom.css">
+    <link rel="stylesheet" th:href="@{/adminhmd/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/adminhmd/vendors/bootstrap-icons/bootstrap-icons.css}">
+    <link rel="stylesheet" th:href="@{/adminhmd/css/style.css}">
 </head>
-<body class="pcfa-body pcfa-login-page">
-<div class="pcfa-login-card card">
-    <div class="card-header">
-        <div class="pcfa-login-logo">🏫</div>
-        <h4 class="fw-bold mb-1">PCFA 受講管理システム</h4>
-        <p class="text-muted small mb-0">研修コースの受講管理</p>
-    </div>
-    <div class="card-body">
-        <div th:if="${errorMessage}" class="alert alert-danger py-2 small" th:text="${errorMessage}"></div>
-
+<body class="auth-body">
+<button class="icon-button theme-toggle auth-theme-toggle" type="button" data-theme-toggle
+        aria-label="テーマ切替" title="テーマ切替">
+    <i class="bi bi-moon-stars" data-theme-icon aria-hidden="true"></i>
+</button>
+<main class="auth-page">
+    <section class="auth-card">
+        <a class="auth-brand" th:href="@{/login}">
+            <span class="brand-icon"><i class="bi bi-mortarboard-fill" aria-hidden="true"></i></span>
+            <span>
+                <strong>PCFA 受講管理システム</strong>
+                <small>研修コースの受講管理ポータル</small>
+            </span>
+        </a>
+        <div class="auth-visual">
+            <img th:src="@{/adminhmd/images/png/dasher-ui-bootstrap-5.jpg}" alt="PCFA 管理画面">
+        </div>
         <form th:action="@{/login}" method="post">
+            <div class="mb-4">
+                <p class="eyebrow mb-1">Secure Access</p>
+                <h1 class="h3 mb-1">ログイン</h1>
+                <p class="text-muted mb-0">メールアドレスとパスワードでサインイン</p>
+            </div>
+            <div th:if="${errorMessage}" class="alert alert-danger py-2 small" th:text="${errorMessage}"></div>
             <div class="mb-3">
-                <label class="form-label fw-semibold small">メールアドレス</label>
-                <input type="email" name="email" class="form-control" required placeholder="mail@example.com">
+                <label class="form-label" for="loginEmail">メールアドレス</label>
+                <input class="form-control" id="loginEmail" type="email" name="email" required
+                       placeholder="mail@example.com">
             </div>
             <div class="mb-4">
-                <label class="form-label fw-semibold small">パスワード</label>
-                <input type="password" name="password" class="form-control" required>
+                <label class="form-label" for="loginPassword">パスワード</label>
+                <input class="form-control" id="loginPassword" type="password" name="password" required>
             </div>
-            <button type="submit" class="btn btn-primary pcfa-btn-primary w-100">ログイン</button>
+            <button class="btn btn-primary w-100" type="submit">
+                <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> ログイン
+            </button>
         </form>
-    </div>
-</div>
+    </section>
+</main>
+<script th:src="@{/adminhmd/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/adminhmd/js/main.js}"></script>
 </body>
 </html>
