@@ -2,17 +2,86 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>ユーザープロフィール</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
 </head>
 <body class="pcfa-body">
-<nav class="navbar navbar-dark pcfa-navbar px-3">
+<nav class="navbar navbar-dark pcfa-navbar px-3 shadow-sm">
     <a class="navbar-brand" th:href="${returnUrl}">← <span th:text="${returnLabel}">ユーザー管理</span></a>
-    <span class="text-white small">プロフィール詳細</span>
+    <span class="text-white small fw-bold">プロフィール詳細</span>
+    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
 </nav>
-<div class="container py-4" style="max-width: 640px;">
-    <div th:replace="~{fragments/profile-card :: card(${user}, ${avatarUrl}, ${courseList})}"></div>
+
+<div class="container py-4" style="max-width: 720px;">
+    <div class="pcfa-page-header mb-3">
+        <h1 class="h4 fw-bold mb-1">ユーザープロフィール</h1>
+        <p class="text-muted small mb-0">受講者・講師のアカウント情報と所属コース（閲覧専用）</p>
+    </div>
+
+    <div th:replace="~{fragments/profile-card :: card(${user}, ${avatarUrl}, ${courseList}, true)}"></div>
+
+    <div class="alert alert-light border small mt-3 mb-3" th:if="${user.role != 'ADMIN'}">
+        <strong>パスワードについて</strong><br>
+        管理者はパスワードを直接設定しません。「パスワードリセット」で AWS SES により本人へ設定リンクを送信します。
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 justify-content-end" th:if="${user.role != 'ADMIN'}">
+        <a th:href="${returnUrl}" class="btn btn-outline-secondary">一覧に戻る</a>
+        <a th:href="@{/admin/accounts}" class="btn btn-outline-secondary">ユーザー一覧で編集</a>
+        <button type="button" class="btn btn-info text-white"
+                th:attr="data-action=@{/admin/proxy-login/{id}(id=${user.id})},data-name=${user.name}"
+                onclick="openProxyConfirm(this)">代理ログイン</button>
+        <button type="button" class="btn btn-outline-warning"
+                th:attr="data-action=@{/admin/accounts/{id}/reset-password(id=${user.id})},data-name=${user.name}"
+                onclick="openResetConfirm(this)">パスワードリセット</button>
+    </div>
+    <div class="text-end mt-3" th:if="${user.role == 'ADMIN'}">
+        <a th:href="${returnUrl}" class="btn btn-outline-secondary">一覧に戻る</a>
+    </div>
 </div>
+
+<div class="modal fade" id="confirmActionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="confirmActionForm" method="post">
+                <div class="modal-header" id="confirmModalHeader">
+                    <h5 class="modal-title" id="confirmModalTitle">確認</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body"><p id="confirmModalBody" class="mb-0"></p></div>
+                <div class="modal-footer d-flex justify-content-end gap-2 border-top-0 pt-0">
+                    <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn px-4" id="confirmModalSubmit">実行</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function openResetConfirm(btn) {
+    document.getElementById('confirmActionForm').action = btn.dataset.action;
+    document.getElementById('confirmModalHeader').className = 'modal-header bg-warning';
+    document.getElementById('confirmModalTitle').textContent = 'パスワードリセットの確認';
+    document.getElementById('confirmModalBody').innerHTML =
+        '「' + btn.dataset.name + '」のパスワードを無効化し、AWS SES で設定リンクを再送します。<br>' +
+        '<span class="small text-muted">管理者は新しいパスワードを知ることはできません。</span>';
+    const submit = document.getElementById('confirmModalSubmit');
+    submit.className = 'btn btn-warning'; submit.textContent = 'リセットしてメール送信';
+    new bootstrap.Modal(document.getElementById('confirmActionModal')).show();
+}
+function openProxyConfirm(btn) {
+    document.getElementById('confirmActionForm').action = btn.dataset.action;
+    document.getElementById('confirmModalHeader').className = 'modal-header bg-info text-white';
+    document.getElementById('confirmModalTitle').textContent = '代理ログインの確認';
+    document.getElementById('confirmModalBody').innerHTML = '「' + btn.dataset.name + '」として代理ログインします。';
+    const submit = document.getElementById('confirmModalSubmit');
+    submit.className = 'btn btn-info text-white'; submit.textContent = '代理ログイン';
+    new bootstrap.Modal(document.getElementById('confirmActionModal')).show();
+}
+</script>
 </body>
 </html>

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
-<div th:fragment="card(user, avatarUrl, courseList)" class="card pcfa-course-card pcfa-profile-card">
+<!-- showAdminMeta=true で管理者向けアカウント情報を表示 -->
+<div th:fragment="card(user, avatarUrl, courseList, showAdminMeta)" class="card pcfa-course-card pcfa-profile-card">
     <div class="card-body p-4">
-        <div class="text-center mb-4">
+        <div class="text-center mb-4 pb-3 border-bottom">
             <img th:if="${avatarUrl}" th:src="${avatarUrl}" alt="avatar" class="pcfa-avatar-lg mb-3">
             <div th:unless="${avatarUrl}" class="pcfa-avatar-placeholder-lg mx-auto mb-3">
                 <span th:text="${#strings.substring(user.name,0,1)}">?</span>
@@ -15,11 +16,44 @@
             <span class="badge bg-danger" th:if="${user.role == 'ADMIN'}">管理者</span>
         </div>
 
+        <div class="pcfa-profile-section" th:if="${showAdminMeta}">
+            <div class="pcfa-profile-label">アカウント情報</div>
+            <div class="row g-2 small">
+                <div class="col-6">
+                    <span class="text-muted">ユーザー ID</span>
+                    <div class="fw-semibold" th:text="${user.id}"></div>
+                </div>
+                <div class="col-6">
+                    <span class="text-muted">アカウント状態</span>
+                    <div>
+                        <span th:if="${user.locked}" class="badge bg-warning text-dark">ロック中</span>
+                        <span th:if="${!user.locked and user.active}" class="badge bg-success">正常</span>
+                        <span th:if="${!user.active}" class="badge bg-secondary">無効</span>
+                    </div>
+                </div>
+                <div class="col-6" th:if="${user.role != 'ADMIN'}">
+                    <span class="text-muted">パスワード</span>
+                    <div>
+                        <span th:if="${user.passwordNotSet}" class="badge bg-warning text-dark">未設定（メール待ち）</span>
+                        <span th:if="${!user.passwordNotSet}" class="badge bg-success">設定済</span>
+                    </div>
+                </div>
+                <div class="col-6" th:if="${user.role != 'ADMIN'}">
+                    <span class="text-muted">ログイン失敗</span>
+                    <div class="fw-semibold" th:text="${user.loginFailureCount} + ' 回'"></div>
+                </div>
+            </div>
+        </div>
+
         <div class="pcfa-profile-section" th:if="${courseList != null and !courseList.empty}">
             <div class="pcfa-profile-label">所属コース</div>
             <div class="d-flex flex-wrap gap-2">
                 <span th:each="c : ${courseList}" class="badge pcfa-course-badge" th:text="${c.name}"></span>
             </div>
+        </div>
+        <div class="pcfa-profile-section" th:if="${courseList == null or courseList.empty}">
+            <div class="pcfa-profile-label">所属コース</div>
+            <div class="text-muted small">未割り当て</div>
         </div>
 
         <div class="pcfa-profile-section">

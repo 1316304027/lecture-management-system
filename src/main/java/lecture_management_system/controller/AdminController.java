@@ -542,16 +542,33 @@ public class AdminController {
         if (loginUser == null) return "redirect:/login";
         model.addAttribute("loginUser", loginUser);
         model.addAttribute("courseList", courseService.findAll());
+        model.addAttribute("attDistGood", 0L);
+        model.addAttribute("attDistMid", 0L);
+        model.addAttribute("attDistLow", 0L);
+        model.addAttribute("subDistFull", 0L);
+        model.addAttribute("subDistPartial", 0L);
+        model.addAttribute("subDistNone", 0L);
+        model.addAttribute("chartData", Map.of(
+                "att", List.of(0L, 0L, 0L),
+                "sub", List.of(0L, 0L, 0L),
+                "lessonLabels", List.of(),
+                "lessonRates", List.of(),
+                "asgLabels", List.of(),
+                "asgScores", List.of()));
         if (courseId != null) {
-            model.addAttribute("selectedCourse", courseService.findById(courseId));
-            List<lecture_management_system.dto.StudentReportDto> reportList =
-                    reportService.getCourseReport(courseId);
-            model.addAttribute("reportList", reportList);
-            List<User> students = reportList.stream()
-                    .map(r -> userService.findById(r.getStudentId()))
-                    .filter(Objects::nonNull)
-                    .toList();
-            model.addAttribute("avatarUrlMap", profileService.buildAvatarUrlMap(students));
+            Course selected = courseService.findById(courseId);
+            if (selected == null) {
+                model.addAttribute("courseNotFound", true);
+                model.addAttribute("requestedCourseId", courseId);
+                return "admin-reports";
+            }
+            model.addAttribute("selectedCourse", selected);
+            List<StudentReportDto> reportList = reportService.getCourseReport(courseId);
+            model.addAttribute("reportList", reportList != null ? reportList : List.of());
+            var lessonStats = reportService.getLessonAttendanceStats(courseId);
+            var assignmentStats = reportService.getAssignmentAvgScores(courseId);
+            model.addAttribute("lessonStats", lessonStats);
+            model.addAttribute("assignmentStats", assignmentStats);
             if (!reportList.isEmpty()) {
                 double avgAtt = reportList.stream()
                         .filter(r -> r.getTotalLessons() > 0)
@@ -564,8 +581,6 @@ public class AdminController {
                 model.addAttribute("avgAttendanceRate", Math.round(avgAtt * 10) / 10.0);
                 model.addAttribute("avgSubmissionRate", Math.round(avgSub * 10) / 10.0);
             }
-            model.addAttribute("lessonStats", reportService.getLessonAttendanceStats(courseId));
-            model.addAttribute("assignmentStats", reportService.getAssignmentAvgScores(courseId));
             long attGood = 0, attMid = 0, attLow = 0;
             long subFull = 0, subPartial = 0, subNone = 0;
             for (StudentReportDto r : reportList) {
@@ -587,6 +602,22 @@ public class AdminController {
             model.addAttribute("subDistFull", subFull);
             model.addAttribute("subDistPartial", subPartial);
             model.addAttribute("subDistNone", subNone);
+            List<String> lessonLabels = lessonStats.stream()
+                    .map(ls -> ls.getLessonDate().toString()).toList();
+            List<Double> lessonRates = lessonStats.stream()
+                    .map(lecture_management_system.dto.LessonAttendanceStatDto::getAttendanceRate).toList();
+            List<String> asgLabels = assignmentStats.stream()
+                    .map(lecture_management_system.dto.AssignmentAvgScoreDto::getTitle).toList();
+            List<Double> asgScores = assignmentStats.stream()
+                    .map(a -> a.getAverageScore() != null ? a.getAverageScore() : 0.0).toList();
+            Map<String, Object> chartData = new LinkedHashMap<>();
+            chartData.put("att", List.of(attGood, attMid, attLow));
+            chartData.put("sub", List.of(subFull, subPartial, subNone));
+            chartData.put("lessonLabels", lessonLabels);
+            chartData.put("lessonRates", lessonRates);
+            chartData.put("asgLabels", asgLabels);
+            chartData.put("asgScores", asgScores);
+            model.addAttribute("chartData", chartData);
         }
         return "admin-reports";
     }

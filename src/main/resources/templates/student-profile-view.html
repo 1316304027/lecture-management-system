@@ -16,7 +16,7 @@
 </nav>
 
 <div class="container py-4" style="max-width: 640px;">
-    <div th:replace="~{fragments/profile-card :: card(${user}, ${avatarUrl}, ${courseList})}"></div>
+    <div th:replace="~{fragments/profile-card :: card(${user}, ${avatarUrl}, ${courseList}, false)}"></div>
     <div class="text-center mt-3">
         <a th:href="@{/student/profile}" class="btn btn-primary pcfa-btn-primary">編集する</a>
     </div>

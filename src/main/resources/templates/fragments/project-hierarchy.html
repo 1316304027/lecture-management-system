@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<!-- 大項目・中項目・小項目（研修・発表用） compact=true で1行表示 -->
+<div th:fragment="badges(compact)" class="pcfa-project-hierarchy"
+     th:classappend="${compact} ? 'pcfa-project-hierarchy--compact' : ''">
+    <span class="pcfa-project-badge pcfa-project-badge--large" title="大項目">大項目：システム開発研修</span>
+    <span class="pcfa-project-badge pcfa-project-badge--medium" title="中項目">中項目：PCFA 受講管理システム</span>
+    <span class="pcfa-project-badge pcfa-project-badge--small" title="小項目">小項目：実績レポート・講師ポータル機能</span>
+</div>
+</body>
+</html>

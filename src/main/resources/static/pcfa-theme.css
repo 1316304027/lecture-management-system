@@ -537,6 +537,7 @@ body.pcfa-body .nav-btn:hover {
   flex-wrap: wrap;
   gap: 0.35rem;
   align-items: center;
+  max-width: 420px;
 }
 
 .pcfa-user-table td {
@@ -730,4 +731,46 @@ span.flatpickr-weekday {
 
 .pcfa-assignment-create-form .row {
   align-items: flex-end;
+}
+
+/* 大項目・中項目・小項目（研修・発表用） */
+.pcfa-project-hierarchy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.pcfa-project-hierarchy--compact {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.pcfa-project-badge {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
+  line-height: 1.4;
+}
+
+.pcfa-project-badge--large {
+  background: #0f5132;
+  color: #fff;
+}
+
+.pcfa-project-badge--medium {
+  background: #d1e7dd;
+  color: #0f5132;
+  border: 1px solid #a3cfbb;
+}
+
+.pcfa-project-badge--small {
+  background: #fff3cd;
+  color: #664d03;
+  border: 1px solid #ffecb5;
 }

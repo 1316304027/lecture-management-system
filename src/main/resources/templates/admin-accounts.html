@@ -34,6 +34,17 @@
     </div>
 
     <div class="alert alert-light border mb-4 small">
+        <strong>画面の役割分担</strong>
+        <ul class="mb-2 ps-3 mt-2">
+            <li><strong>プロフィール</strong> … 头像・所属コース・連絡先など個人情報の<strong>閲覧</strong></li>
+            <li><strong>編集</strong> … 氏名・メール・ロールの<strong>変更</strong></li>
+            <li><strong>パスワードリセット</strong> … 本人に AWS SES で設定リンクを送る（管理者は新パスワードを知らない）</li>
+            <li><strong>実績レポート</strong> … 出席・提出・成績の<strong>数値確認</strong>（別メニュー）</li>
+        </ul>
+        <span class="text-muted">※「リセット」だけだとアカウント削除と混同されるため、ボタン表記は「パスワードリセット」にしています。</span>
+    </div>
+
+    <div class="alert alert-light border mb-4 small">
         <strong>ログインの仕組み（発表用に覚える）</strong>
         <ol class="mb-0 ps-3 mt-2">
             <li>管理者がここで<strong>氏名・メール・ロール</strong>を登録（パスワードは入力しない）</li>
@@ -90,7 +101,7 @@
                         <th style="width:90px">ロール</th>
                         <th style="width:72px">状態</th>
                         <th style="width:88px">パスワード</th>
-                        <th style="min-width:280px">操作</th>
+                        <th style="min-width:360px">操作</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -102,7 +113,11 @@
                             <span th:unless="${avatarUrlMap[user.id]}" class="pcfa-avatar-placeholder-sm"
                                   th:text="${#strings.substring(user.name,0,1)}"></span>
                         </td>
-                        <td class="fw-semibold" th:text="${user.name}"></td>
+                        <td class="fw-semibold">
+                            <a th:href="@{/admin/accounts/{id}/profile(id=${user.id}, returnTo='/admin/accounts')}"
+                               class="text-decoration-none text-dark"
+                               th:text="${user.name}"></a>
+                        </td>
                         <td class="small text-muted" th:text="${user.email}"></td>
                         <td>
                             <span th:switch="${user.role}">
@@ -122,6 +137,8 @@
                         </td>
                         <td>
                             <div class="pcfa-user-actions" th:if="${user.role != 'ADMIN'}">
+                                <a th:href="@{/admin/accounts/{id}/profile(id=${user.id}, returnTo='/admin/accounts')}"
+                                   class="btn btn-sm btn-outline-primary">プロフィール</a>
                                 <button type="button" class="btn btn-sm btn-outline-secondary"
                                         th:attr="data-id=${user.id},data-name=${user.name},data-email=${user.email},data-role=${user.role}"
                                         onclick="openEditModal(this)">編集</button>
@@ -130,7 +147,8 @@
                                         onclick="openConfirmModal(this, 'proxy')">代理ログイン</button>
                                 <button type="button" class="btn btn-sm btn-outline-warning"
                                         th:attr="data-action=@{/admin/accounts/{id}/reset-password(id=${user.id})},data-name=${user.name}"
-                                        onclick="openConfirmModal(this, 'reset')">PWリセット</button>
+                                        onclick="openConfirmModal(this, 'reset')"
+                                        title="パスワードを無効化し、AWS SES で本人に設定リンクを送信">パスワードリセット</button>
                                 <form th:if="${user.locked}" th:action="@{/admin/accounts/unlock/{id}(id=${user.id})}" method="post" class="d-inline">
                                     <button type="submit" class="btn btn-sm btn-warning">ロック解除</button>
                                 </form>
@@ -138,7 +156,10 @@
                                         th:attr="data-action=@{/admin/accounts/delete/{id}(id=${user.id})},data-name=${user.name}"
                                         onclick="openConfirmModal(this, 'delete')">削除</button>
                             </div>
-                            <span th:if="${user.role == 'ADMIN'}" class="text-muted small">—</span>
+                            <div th:if="${user.role == 'ADMIN'}">
+                                <a th:href="@{/admin/accounts/{id}/profile(id=${user.id}, returnTo='/admin/accounts')}"
+                                   class="btn btn-sm btn-outline-primary">プロフィール</a>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -225,8 +246,10 @@ function openConfirmModal(btn, type) {
     if (type === 'reset') {
         header.className = 'modal-header bg-warning';
         document.getElementById('confirmModalTitle').textContent = 'パスワードリセットの確認';
-        document.getElementById('confirmModalBody').innerHTML = '「' + name + '」へ AWS SES で設定リンクを再送します。';
-        submit.className = 'btn btn-warning'; submit.textContent = 'リセットする';
+        document.getElementById('confirmModalBody').innerHTML =
+            '「' + name + '」のパスワードを無効化し、AWS SES で設定リンクを再送します。<br>' +
+            '<span class="small text-muted">管理者は新しいパスワードを知ることはできません。</span>';
+        submit.className = 'btn btn-warning'; submit.textContent = 'リセットしてメール送信';
     } else if (type === 'delete') {
         header.className = 'modal-header bg-danger text-white';
         document.getElementById('confirmModalTitle').textContent = '削除の確認';
