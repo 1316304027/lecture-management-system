@@ -1,191 +1,391 @@
-/* PCFA business screens on adminHMD shell */
+/* PCFA — adminHMD enterprise layer (layout, split views, business widgets) */
 
+.pcfa-fluid-root {
+  width: 100%;
+}
+
+/* ---- Split layout (reports / courses / attendance) ---- */
+.pcfa-split-page {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  min-height: calc(100vh - 8.5rem);
+  background: var(--admin-surface-soft, #f8fafc);
+}
+
+.pcfa-split-sidebar {
+  flex: 0 0 17.5rem;
+  width: 17.5rem;
+  max-width: 40vw;
+  border-right: 1px solid var(--admin-border);
+  background: var(--admin-surface);
+  padding: 1.25rem;
+  overflow-y: auto;
+}
+
+.pcfa-split-sidebar--narrow {
+  flex-basis: 14rem;
+  width: 14rem;
+}
+
+.pcfa-split-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.pcfa-split-main-inner {
+  padding: 1.25rem 1.5rem 2rem;
+}
+
+.pcfa-split-page .page-heading {
+  margin-bottom: 1.25rem;
+}
+
+.pcfa-sidebar-panel {
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  background: var(--admin-surface);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.pcfa-sidebar-panel-header {
+  padding: 0.75rem 1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-muted);
+  border-bottom: 1px solid var(--admin-border);
+  background: var(--admin-surface-soft);
+}
+
+.pcfa-sidebar-panel-body {
+  padding: 0.75rem;
+}
+
+.pcfa-nav-list {
+  display: grid;
+  gap: 0.35rem;
+  max-height: 22rem;
+  overflow-y: auto;
+}
+
+.pcfa-nav-list a {
+  display: block;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--admin-text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.pcfa-nav-list a:hover {
+  background: var(--admin-surface-soft);
+  border-color: var(--admin-border);
+  color: var(--admin-text);
+}
+
+.pcfa-nav-list a.active {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.25);
+  color: var(--admin-primary);
+  font-weight: 600;
+}
+
+/* ---- Charts (template + real data) ---- */
+.chart-bars.pcfa-lesson-chart {
+  height: 260px;
+  grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+}
+
+.chart-bars.pcfa-lesson-chart .chart-column span {
+  min-height: 12px;
+}
+
+.chart-bars.pcfa-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: var(--admin-muted);
+  font-size: 0.9rem;
+}
+
+.donut-chart.pcfa-donut-sm {
+  width: 160px;
+  height: 160px;
+}
+
+.donut-chart.pcfa-donut-sm span {
+  width: 96px;
+  height: 96px;
+  font-size: 1.35rem;
+}
+
+.pcfa-chart-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 1200px) {
+  .pcfa-chart-grid {
+    grid-template-columns: 1.4fr 1fr;
+  }
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0.5rem;
+}
+
+/* ---- Legacy section → panel bridge ---- */
 .pcfa-admin-section {
-    background: var(--surface, #fff);
-    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
-    border-radius: 0.75rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  background: var(--admin-surface);
+  margin-bottom: 1rem;
+  box-shadow: var(--admin-shadow-sm);
+  overflow: hidden;
 }
 
 .pcfa-admin-section-header {
-    padding: 0.85rem 1.15rem;
-    font-weight: 600;
-    border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
-    background: var(--surface-muted, #f8fafc);
-    border-radius: 0.75rem 0.75rem 0 0;
+  padding: 1rem 1.25rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--admin-border);
+  background: var(--admin-surface-soft);
 }
 
 .pcfa-admin-section-body {
-    padding: 1.15rem;
+  padding: 1.25rem;
 }
 
 .pcfa-admin-section-body.p-0 {
-    padding: 0;
+  padding: 0;
 }
 
-.pcfa-report-summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 0.75rem;
+/* ---- Tables & actions ---- */
+.pcfa-user-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
 }
 
-.pcfa-report-stat {
-    background: var(--surface, #fff);
-    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
-    border-radius: 0.75rem;
-    padding: 1rem;
-    text-align: center;
-}
-
-.pcfa-report-stat .val {
-    font-size: 1.5rem;
-    font-weight: 700;
-    line-height: 1.2;
-}
-
-.pcfa-report-stat .lbl {
-    font-size: 0.78rem;
-    color: var(--text-muted, #64748b);
-    margin-top: 0.25rem;
-}
-
-.pcfa-report-stat--green .val { color: #16a34a; }
-.pcfa-report-stat--blue .val { color: #2563eb; }
-
-.pcfa-admin-menu-card {
-    display: block;
-    padding: 1.15rem;
-    border-radius: 0.75rem;
-    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.08));
-    background: var(--surface, #fff);
-    text-decoration: none;
-    color: inherit;
-    height: 100%;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-
-.pcfa-admin-menu-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
-    color: inherit;
-}
-
-.pcfa-admin-menu-icon {
-    font-size: 1.5rem;
-    display: block;
-    margin-bottom: 0.5rem;
-}
-
-.pcfa-admin-menu-card--blue { border-left: 4px solid #3b82f6; }
-.pcfa-admin-menu-card--green { border-left: 4px solid #22c55e; }
-.pcfa-admin-menu-card--amber { border-left: 4px solid #f59e0b; }
-.pcfa-admin-menu-card--red { border-left: 4px solid #ef4444; }
-.pcfa-admin-menu-card--cyan { border-left: 4px solid #06b6d4; }
-
-.pcfa-course-sidebar,
-.pcfa-attendance-sidebar {
-    background: var(--surface, #fff);
-    min-height: calc(100vh - 120px);
+.pcfa-user-actions .btn {
+  white-space: nowrap;
 }
 
 .pcfa-scroll-list,
 .pcfa-scroll-table,
 .pcfa-user-scroll-list {
-    max-height: 280px;
-    overflow-y: auto;
+  max-height: 280px;
+  overflow-y: auto;
 }
 
 .pcfa-user-scroll-list {
-    border: 1px solid var(--border-color, rgba(0, 0, 0, 0.1));
-    border-radius: 0.5rem;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
 }
 
 .pcfa-user-list-item {
-    border: none;
-    border-bottom: 1px solid var(--border-color, rgba(0, 0, 0, 0.06));
-    padding: 0.55rem 0.75rem;
-    background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--admin-border);
+  padding: 0.55rem 0.75rem;
+  background: transparent;
 }
 
-.pcfa-user-list-item:hover { background: #f1f5f9; }
+.pcfa-user-list-item:hover {
+  background: var(--admin-surface-soft);
+}
+
 .pcfa-user-list-item.pcfa-selected {
-    outline: 2px solid #22c55e;
-    background: #f0fdf4;
+  outline: 2px solid var(--admin-success);
+  background: rgba(34, 197, 94, 0.08);
 }
 
-.pcfa-user-list-name { display: block; font-weight: 600; font-size: 0.875rem; }
-.pcfa-user-list-email { display: block; font-size: 0.75rem; color: #64748b; }
-
-.pcfa-avatar-sm {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    object-fit: cover;
+.pcfa-user-list-name {
+  display: block;
+  font-weight: 600;
+  font-size: 0.875rem;
 }
 
-.pcfa-avatar-lg {
-    width: 96px;
-    height: 96px;
-    border-radius: 50%;
-    object-fit: cover;
+.pcfa-user-list-email {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--admin-muted);
 }
 
 .pcfa-avatar-placeholder-sm,
 .pcfa-avatar-placeholder-lg {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background: #e2e8f0;
-    color: #475569;
-    font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--admin-surface-soft);
+  color: var(--admin-muted);
+  font-weight: 700;
 }
 
-.pcfa-avatar-placeholder-sm { width: 36px; height: 36px; font-size: 0.9rem; }
-.pcfa-avatar-placeholder-lg { width: 96px; height: 96px; font-size: 2rem; }
-
-.pcfa-user-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
+.pcfa-avatar-placeholder-sm {
+  width: 36px;
+  height: 36px;
+  font-size: 0.9rem;
 }
 
-.pcfa-table-overflow-visible { overflow: visible; }
+.pcfa-avatar-placeholder-lg {
+  width: 96px;
+  height: 96px;
+  font-size: 2rem;
+}
 
-.pcfa-profile-card { border: none; box-shadow: none; }
-.pcfa-profile-section { margin-bottom: 1rem; }
+.pcfa-avatar-lg {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.pcfa-table-overflow-visible {
+  overflow: visible;
+}
+
+.pcfa-no-resize {
+  resize: none;
+}
+
+.pcfa-col-email {
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ---- Profile card (template profile style) ---- */
+.pcfa-profile-card {
+  border: none;
+  box-shadow: none;
+}
+
+.pcfa-profile-cover {
+  margin: -1.35rem -1.35rem 0;
+  height: 100px;
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #0ea5e9 100%);
+  border-radius: 12px 12px 0 0;
+}
+
+.pcfa-profile-photo-wrap {
+  margin-top: -48px;
+  text-align: center;
+}
+
+.pcfa-profile-photo-wrap .pcfa-avatar-lg,
+.pcfa-profile-photo-wrap .pcfa-avatar-placeholder-lg {
+  border: 4px solid var(--admin-surface);
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.pcfa-profile-section {
+  margin-bottom: 1rem;
+}
+
 .pcfa-profile-label {
-    font-size: 0.72rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: #64748b;
-    margin-bottom: 0.35rem;
-    font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--admin-muted);
+  margin-bottom: 0.35rem;
+  font-weight: 600;
 }
 
 .pcfa-course-badge {
-    background: #eff6ff;
-    color: #1d4ed8;
-    font-weight: 500;
+  background: rgba(37, 99, 235, 0.1);
+  color: var(--admin-primary);
+  font-weight: 500;
 }
 
-.pcfa-no-resize { resize: none; }
+/* ---- Admin menu cards (home) ---- */
+.pcfa-admin-menu-card {
+  display: block;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface);
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+  box-shadow: var(--admin-shadow-sm);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
 
-.pcfa-user-table td { vertical-align: middle; }
+.pcfa-admin-menu-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--admin-shadow);
+  color: inherit;
+}
+
+.pcfa-admin-menu-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  font-size: 1.15rem;
+  margin-bottom: 0.75rem;
+  background: var(--admin-surface-soft);
+  color: var(--admin-primary);
+}
+
+.pcfa-admin-menu-card--blue .pcfa-admin-menu-icon { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+.pcfa-admin-menu-card--green .pcfa-admin-menu-icon { background: rgba(34, 197, 94, 0.12); color: #16a34a; }
+.pcfa-admin-menu-card--amber .pcfa-admin-menu-icon { background: rgba(245, 158, 11, 0.12); color: #d97706; }
+.pcfa-admin-menu-card--red .pcfa-admin-menu-icon { background: rgba(239, 68, 68, 0.12); color: #dc2626; }
+.pcfa-admin-menu-card--cyan .pcfa-admin-menu-icon { background: rgba(6, 182, 212, 0.12); color: #0891b2; }
 
 .pcfa-modal-header {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: #fff;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
 }
 
-.pcfa-modal-header .btn-close { filter: invert(1); }
-
-.break-all { word-break: break-all; }
+.pcfa-modal-header .btn-close {
+  filter: invert(1);
+}
 
 .role-admin { background: #dc3545 !important; }
 .role-instructor { background: #198754 !important; }
 .role-student { background: #0dcaf0 !important; color: #000 !important; }
 .msg-content { white-space: pre-wrap; word-break: break-word; }
+.break-all { word-break: break-all; }
 
-.page-heading .page-icon { color: #2563eb; }
+/* Fix bootstrap list-group clash in sidebars */
+.pcfa-split-sidebar .list-group-item {
+  border-radius: 8px !important;
+  margin-bottom: 0.25rem;
+  border: 1px solid transparent;
+}
+
+.pcfa-split-sidebar .list-group-item.active {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.25);
+  color: var(--admin-primary);
+}
+
+@media (max-width: 991.98px) {
+  .pcfa-split-page {
+    flex-direction: column;
+  }
+
+  .pcfa-split-sidebar {
+    width: 100%;
+    max-width: none;
+    flex-basis: auto;
+    border-right: 0;
+    border-bottom: 1px solid var(--admin-border);
+    max-height: none;
+  }
+}

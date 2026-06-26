@@ -7,72 +7,71 @@
 </head>
 <body>
 <th:block th:fragment="main">
-    <div class="page-heading px-3 px-lg-4 pt-3 mb-0">
-        <div class="page-heading-copy">
-            <span class="page-icon"><i class="bi bi-calendar-check" aria-hidden="true"></i></span>
-            <div>
-                <p class="eyebrow mb-1">Attendance</p>
-                <h1 class="h3 mb-1">出欠修正</h1>
-                <p class="text-muted mb-0">コース・学生を選択して出欠状態を手動修正します。</p>
-            </div>
-        </div>
+    <div th:if="${message}" class="alert alert-success alert-dismissible fade show mx-3 mt-2 mb-0" role="alert">
+        <strong th:text="${message}"></strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${errorMessage}" class="alert alert-warning alert-dismissible fade show mx-3 mt-2 mb-0" role="alert">
+        <strong th:text="${errorMessage}"></strong>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <div class="container-fluid p-0">
-        <div th:if="${message}" class="alert alert-success alert-dismissible fade show rounded-0 mb-0" role="alert">
-            <strong th:text="${message}"></strong>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        <div th:if="${errorMessage}" class="alert alert-warning alert-dismissible fade show rounded-0 mb-0" role="alert">
-            <strong th:text="${errorMessage}"></strong>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-
-        <div class="row g-0 pcfa-attendance-layout">
-
-            <div class="col-lg-2 col-md-3 pcfa-attendance-sidebar p-3">
-                <div class="pcfa-admin-section mb-3">
-                    <div class="pcfa-admin-section-header py-2">① コース選択</div>
-                    <div class="pcfa-admin-section-body py-2">
-                        <input type="text" class="form-control form-control-sm mb-2" placeholder="コース検索…"
-                               oninput="filterList(this, 'courseList')">
-                        <div class="list-group list-group-flush pcfa-scroll-list" id="courseList">
-                            <a th:each="c : ${courseList}"
-                               th:href="@{/admin/attendance(courseId=${c.id})}"
-                               class="list-group-item list-group-item-action py-2 small"
-                               th:classappend="${selectedCourse != null and selectedCourse.id == c.id} ? 'active' : ''"
-                               th:attr="data-search=${c.name}" th:text="${c.name}"></a>
-                            <span th:if="${courseList.empty}" class="text-muted small px-2">コースなし</span>
-                        </div>
-                    </div>
+    <div class="pcfa-split-page">
+        <aside class="pcfa-split-sidebar pcfa-split-sidebar--narrow">
+            <div class="pcfa-sidebar-panel">
+                <div class="pcfa-sidebar-panel-header">① コース</div>
+                <div class="pcfa-sidebar-panel-body">
+                    <input type="text" class="form-control form-control-sm search-input mb-2" placeholder="検索…"
+                           oninput="filterList(this, 'courseList')">
+                    <nav class="pcfa-nav-list" id="courseList">
+                        <a th:each="c : ${courseList}"
+                           th:href="@{/admin/attendance(courseId=${c.id})}"
+                           th:classappend="${selectedCourse != null and selectedCourse.id == c.id} ? 'active' : ''"
+                           th:attr="data-search=${c.name}" th:text="${c.name}"></a>
+                    </nav>
                 </div>
             </div>
+        </aside>
 
-            <div class="col-lg-2 col-md-3 pcfa-attendance-sidebar p-3 border-start" th:if="${selectedCourse != null}">
-                <div class="pcfa-admin-section mb-0">
-                    <div class="pcfa-admin-section-header py-2">② 学生選択</div>
-                    <div class="pcfa-admin-section-body py-2">
-                        <input type="text" class="form-control form-control-sm mb-2" placeholder="名前で検索…"
-                               oninput="filterList(this, 'studentList')">
-                        <div class="list-group list-group-flush pcfa-scroll-list" id="studentList">
-                            <a th:each="u : ${studentList}"
-                               th:href="@{/admin/attendance(courseId=${selectedCourse.id}, studentId=${u.id})}"
-                               class="list-group-item list-group-item-action py-2 small"
-                               th:classappend="${selectedStudent != null and selectedStudent.id == u.id} ? 'active' : ''"
-                               th:attr="data-search=${u.name + ' ' + u.email}" th:text="${u.name}"></a>
-                            <span th:if="${studentList.empty}" class="text-muted small px-2">学生未登録</span>
-                        </div>
-                    </div>
+        <aside class="pcfa-split-sidebar pcfa-split-sidebar--narrow" th:if="${selectedCourse != null}">
+            <div class="pcfa-sidebar-panel">
+                <div class="pcfa-sidebar-panel-header">② 学生</div>
+                <div class="pcfa-sidebar-panel-body">
+                    <input type="text" class="form-control form-control-sm search-input mb-2" placeholder="検索…"
+                           oninput="filterList(this, 'studentList')">
+                    <nav class="pcfa-nav-list" id="studentList">
+                        <a th:each="u : ${studentList}"
+                           th:href="@{/admin/attendance(courseId=${selectedCourse.id}, studentId=${u.id})}"
+                           th:classappend="${selectedStudent != null and selectedStudent.id == u.id} ? 'active' : ''"
+                           th:attr="data-search=${u.name + ' ' + u.email}" th:text="${u.name}"></a>
+                    </nav>
                 </div>
             </div>
+        </aside>
 
-            <div class="col p-4" th:if="${selectedStudent != null}">
-                <div class="pcfa-admin-section">
-                    <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <span>③ 出欠修正：<span th:text="${selectedStudent.name}"></span> さん</span>
-                        <span class="badge bg-light text-dark" th:if="${selectedCourse != null}" th:text="${selectedCourse.name}"></span>
+        <div class="pcfa-split-main">
+            <div class="pcfa-split-main-inner">
+
+                <div th:if="${selectedCourse == null}" class="panel">
+                    <div class="panel-body text-center py-5 text-muted">
+                        <p class="mb-0">← コースを選択してください</p>
                     </div>
-                    <div class="pcfa-admin-section-body">
+                </div>
+                <div th:if="${selectedStudent == null and selectedCourse != null}" class="panel">
+                    <div class="panel-body text-center py-5 text-muted">
+                        <p class="mb-0">← 学生を選択してください</p>
+                    </div>
+                </div>
+
+                <section class="panel" th:if="${selectedStudent != null}">
+                    <div class="panel-header">
+                        <div>
+                            <h2 class="h5 mb-1 section-title"><i class="bi bi-calendar-check"></i>
+                                <span th:text="|出欠修正：${selectedStudent.name} さん|"></span></h2>
+                            <p class="text-muted mb-0" th:text="${selectedCourse.name}">コース</p>
+                        </div>
+                    </div>
+                    <div class="panel-body">
                         <p class="text-muted small mb-3">本日以前の授業日のみ修正できます。未来の授業はグレー表示です。授業時間はコース管理の授業日登録時に設定します。</p>
 
                         <div th:if="${orphanAttendances != null and !orphanAttendances.empty}" class="alert alert-warning py-2 mb-3">
@@ -164,18 +163,9 @@
                             現在の状態と同じボタンは無効です。
                         </div>
                     </div>
-                </div>
-            </div>
+                </section>
 
-            <div class="col d-flex align-items-center justify-content-center text-muted"
-                 th:if="${selectedStudent == null and selectedCourse != null}">
-                <div class="text-center py-5"><p class="mb-0">← 学生を選択してください（検索で絞り込み可）</p></div>
             </div>
-            <div class="col d-flex align-items-center justify-content-center text-muted"
-                 th:if="${selectedCourse == null}">
-                <div class="text-center py-5"><p class="mb-0">← コースを選択してください</p></div>
-            </div>
-
         </div>
     </div>
 </th:block>

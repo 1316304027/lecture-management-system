@@ -7,83 +7,188 @@
 </head>
 <body>
 <th:block th:fragment="main">
-    <div class="page-heading px-3 px-lg-4 pt-3 mb-0">
-        <div class="page-heading-copy">
-            <span class="page-icon"><i class="bi bi-bar-chart-line" aria-hidden="true"></i></span>
-            <div>
-                <p class="eyebrow mb-1">Reports</p>
-                <h1 class="h3 mb-1">実績レポート</h1>
-                <p class="text-muted mb-0">コース全体の集計と受講者ごとの出席・課題明細を確認します。</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="container-fluid p-0">
-        <div class="row g-0">
-
-            <div class="col-md-3 col-lg-2 pcfa-course-sidebar border-end p-3">
-                <p class="small fw-bold text-muted text-uppercase mb-2">コース選択</p>
-                <input type="text" class="form-control form-control-sm mb-2" placeholder="検索…" oninput="filterCourses(this.value)">
-                <div class="list-group list-group-flush" id="courseList">
-                    <a th:each="c : ${courseList}"
-                       th:href="@{/admin/reports(courseId=${c.id})}"
-                       class="list-group-item list-group-item-action py-2 small"
-                       th:classappend="${selectedCourse != null and selectedCourse.id == c.id} ? 'active' : ''"
-                       th:attr="data-name=${c.name}" th:text="${c.name}"></a>
+    <div class="pcfa-split-page">
+        <!-- 左：コース選択 -->
+        <aside class="pcfa-split-sidebar">
+            <div class="pcfa-sidebar-panel">
+                <div class="pcfa-sidebar-panel-header"><i class="bi bi-journal-bookmark me-1"></i> コース選択</div>
+                <div class="pcfa-sidebar-panel-body">
+                    <input type="text" class="form-control form-control-sm search-input mb-2"
+                           placeholder="コース名で検索…" oninput="filterCourses(this.value)">
+                    <nav class="pcfa-nav-list" id="courseList">
+                        <a th:each="c : ${courseList}"
+                           th:href="@{/admin/reports(courseId=${c.id})}"
+                           th:classappend="${selectedCourse != null and selectedCourse.id == c.id} ? 'active' : ''"
+                           th:attr="data-name=${c.name}" th:text="${c.name}"></a>
+                    </nav>
                 </div>
             </div>
+            <p class="small text-muted mb-0 px-1">コースを選ぶと右側に集計・グラフ・一覧が表示されます。</p>
+        </aside>
 
-            <div class="col p-4" th:if="${courseNotFound}">
-                <div class="alert alert-warning">コースが見つかりません。左の一覧から選択してください。</div>
-            </div>
+        <!-- 右：メイン -->
+        <div class="pcfa-split-main">
+            <div class="pcfa-split-main-inner">
 
-            <div class="col p-4" th:if="${selectedCourse != null}">
-                <div class="mb-3">
-                    <h2 class="h4 fw-bold mb-1" th:text="'実績レポート：' + ${selectedCourse.name}"></h2>
-                    <p class="text-muted small mb-0">コース全体の集計と、受講者ごとの出席・課題明細の確認ができます。</p>
+                <div th:if="${courseNotFound}" class="alert alert-warning">
+                    コースが見つかりません。左の一覧から選択してください。
                 </div>
 
-                <div class="pcfa-report-summary mb-4">
-                    <div class="pcfa-report-stat">
-                        <div class="val" th:text="${reportList != null ? reportList.size() : 0}">0</div>
-                        <div class="lbl">受講者数</div>
-                    </div>
-                    <div class="pcfa-report-stat">
-                        <div class="val" th:text="${reportList != null and !reportList.empty ? reportList[0].totalLessons : 0}">0</div>
-                        <div class="lbl">実施済み授業</div>
-                    </div>
-                    <div class="pcfa-report-stat">
-                        <div class="val" th:text="${reportList != null and !reportList.empty ? reportList[0].totalAssignments : 0}">0</div>
-                        <div class="lbl">公開課題数</div>
-                    </div>
-                    <div class="pcfa-report-stat pcfa-report-stat--green" th:if="${avgAttendanceRate != null}">
-                        <div class="val" th:text="|${avgAttendanceRate}%|">0%</div>
-                        <div class="lbl">コース平均出席率<br><span class="text-muted fw-normal">（全受講者・全実施済み授業）</span></div>
-                    </div>
-                    <div class="pcfa-report-stat pcfa-report-stat--blue" th:if="${avgSubmissionRate != null}">
-                        <div class="val" th:text="|${avgSubmissionRate}%|">0%</div>
-                        <div class="lbl">コース平均提出率<br><span class="text-muted fw-normal">（全受講者・全公開課題）</span></div>
+                <div th:unless="${selectedCourse != null}" class="panel">
+                    <div class="panel-body text-center py-5 text-muted">
+                        <i class="bi bi-bar-chart-line display-4 d-block mb-3 opacity-50"></i>
+                        <p class="mb-0 fw-semibold">← 左のコースを選択してください</p>
                     </div>
                 </div>
 
-                <div class="pcfa-admin-section mb-4" th:if="${lessonStats != null and !lessonStats.empty}">
-                    <div class="pcfa-admin-section-header py-2">授業ごとの出席状況（コース全体）</div>
-                    <div class="pcfa-admin-section-body p-0">
+                <th:block th:if="${selectedCourse != null}">
+                    <div class="page-heading">
+                        <div class="page-heading-copy">
+                            <span class="page-icon"><i class="bi bi-bar-chart-line"></i></span>
+                            <div>
+                                <p class="eyebrow mb-1">Course Analytics</p>
+                                <h1 class="h3 mb-1" th:text="${selectedCourse.name}">コース名</h1>
+                                <p class="text-muted mb-0">出席・提出・成績の可視化と受講者明細の確認</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KPI 指标卡 -->
+                    <section class="row g-3 mb-3" aria-label="コースサマリー">
+                        <div class="col-6 col-xl">
+                            <article class="metric-card metric-primary h-100">
+                                <div class="metric-top">
+                                    <span class="metric-label">受講者数</span>
+                                    <span class="metric-icon"><i class="bi bi-people"></i></span>
+                                </div>
+                                <div class="metric-value" th:text="${reportList != null ? reportList.size() : 0}">0</div>
+                                <div class="metric-meta"><span>登録済み</span></div>
+                            </article>
+                        </div>
+                        <div class="col-6 col-xl">
+                            <article class="metric-card metric-success h-100">
+                                <div class="metric-top">
+                                    <span class="metric-label">実施済み授業</span>
+                                    <span class="metric-icon"><i class="bi bi-calendar-check"></i></span>
+                                </div>
+                                <div class="metric-value"
+                                     th:text="${reportList != null and !reportList.empty ? reportList[0].totalLessons : 0}">0</div>
+                                <div class="metric-meta"><span>授業日ベース</span></div>
+                            </article>
+                        </div>
+                        <div class="col-6 col-xl">
+                            <article class="metric-card metric-warning h-100">
+                                <div class="metric-top">
+                                    <span class="metric-label">公開課題</span>
+                                    <span class="metric-icon"><i class="bi bi-file-earmark-text"></i></span>
+                                </div>
+                                <div class="metric-value"
+                                     th:text="${reportList != null and !reportList.empty ? reportList[0].totalAssignments : 0}">0</div>
+                                <div class="metric-meta"><span>採点対象</span></div>
+                            </article>
+                        </div>
+                        <div class="col-6 col-xl" th:if="${avgAttendanceRate != null}">
+                            <article class="metric-card metric-primary h-100">
+                                <div class="metric-top">
+                                    <span class="metric-label">平均出席率</span>
+                                    <span class="metric-icon"><i class="bi bi-graph-up"></i></span>
+                                </div>
+                                <div class="metric-value" th:text="|${avgAttendanceRate}%|">0%</div>
+                                <div class="metric-meta"><span>コース通算</span></div>
+                            </article>
+                        </div>
+                        <div class="col-6 col-xl" th:if="${avgSubmissionRate != null}">
+                            <article class="metric-card metric-danger h-100">
+                                <div class="metric-top">
+                                    <span class="metric-label">平均提出率</span>
+                                    <span class="metric-icon"><i class="bi bi-upload"></i></span>
+                                </div>
+                                <div class="metric-value" th:text="|${avgSubmissionRate}%|">0%</div>
+                                <div class="metric-meta"><span>全課題対象</span></div>
+                            </article>
+                        </div>
+                    </section>
+
+                    <!-- 图表区：模板 chart-bars + donut -->
+                    <section class="pcfa-chart-grid mb-3">
+                        <div class="panel h-100 mb-0">
+                            <div class="panel-header">
+                                <div>
+                                    <h2 class="h5 mb-1 section-title"><i class="bi bi-bar-chart-line"></i><span>授業ごとの出席率</span></h2>
+                                    <p class="text-muted mb-0">各授業日のコース全体出席率（実データ）</p>
+                                </div>
+                            </div>
+                            <div th:if="${lessonStats != null and !lessonStats.empty}"
+                                 class="chart-bars pcfa-lesson-chart px-3 pb-3"
+                                 th:attr="aria-label='授業出席率チャート'">
+                                <div class="chart-column" th:each="ls : ${lessonStats}"
+                                     th:style="|--bar-size: ${ls.attendanceRate}%;|"
+                                     th:title="|${ls.lessonDate} ${ls.attendanceRate}%|">
+                                    <span></span>
+                                    <small th:text="${#temporals.format(ls.lessonDate, 'M/d')}">1/1</small>
+                                </div>
+                            </div>
+                            <div th:if="${lessonStats == null or lessonStats.empty}"
+                                 class="chart-bars pcfa-empty mx-3 mb-3">
+                                授業日が未登録のためグラフを表示できません
+                            </div>
+                        </div>
+
+                        <div class="panel h-100 mb-0">
+                            <div class="panel-header">
+                                <div>
+                                    <h2 class="h5 mb-1 section-title"><i class="bi bi-pie-chart"></i><span>コース達成度</span></h2>
+                                    <p class="text-muted mb-0">出席・提出のコース平均</p>
+                                </div>
+                            </div>
+                            <div class="panel-body text-center py-3">
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-sm-6" th:if="${avgAttendanceRate != null}">
+                                        <p class="small fw-semibold text-muted mb-2">平均出席率</p>
+                                        <div class="donut-chart pcfa-donut-sm mx-auto"
+                                             th:style="|background: conic-gradient(var(--admin-primary) 0 ${avgAttendanceRate}%, #e2e8f0 ${avgAttendanceRate}% 100%);|">
+                                            <span th:text="|${avgAttendanceRate}%|">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-6" th:if="${avgSubmissionRate != null}">
+                                        <p class="small fw-semibold text-muted mb-2">平均提出率</p>
+                                        <div class="donut-chart pcfa-donut-sm mx-auto"
+                                             th:style="|background: conic-gradient(var(--admin-success) 0 ${avgSubmissionRate}%, #e2e8f0 ${avgSubmissionRate}% 100%);|">
+                                            <span th:text="|${avgSubmissionRate}%|">0%</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-12" th:if="${avgAttendanceRate == null and avgSubmissionRate == null}">
+                                        <p class="text-muted small mb-0">受講者・授業データが揃うと円グラフが表示されます。</p>
+                                    </div>
+                                </div>
+                                <div class="legend-list mt-3 text-start" th:if="${avgAttendanceRate != null}">
+                                    <div><span><span class="legend-dot bg-primary"></span>出席（コース平均）</span><strong th:text="|${avgAttendanceRate}%|"></strong></div>
+                                    <div th:if="${avgSubmissionRate != null}"><span><span class="legend-dot bg-success"></span>提出（コース平均）</span><strong th:text="|${avgSubmissionRate}%|"></strong></div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- 授業別テーブル -->
+                    <section class="panel mb-3" th:if="${lessonStats != null and !lessonStats.empty}">
+                        <div class="panel-header">
+                            <h2 class="h5 mb-0 section-title"><i class="bi bi-table"></i><span>授業ごとの出席状況</span></h2>
+                        </div>
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="table-light">
+                            <table class="table align-middle mb-0">
+                                <thead>
                                 <tr>
                                     <th>授業日</th>
                                     <th>授業時間</th>
-                                    <th class="text-end">出席人数</th>
-                                    <th class="text-end">登録受講者</th>
+                                    <th class="text-end">出席</th>
+                                    <th class="text-end">登録数</th>
                                     <th class="text-end">出席率</th>
                                 </tr>
                                 </thead>
                                 <tbody>
                                 <tr th:each="ls : ${lessonStats}">
                                     <td th:text="${ls.lessonDate}"></td>
-                                    <td th:text="${ls.lessonTimeLabel}">時間未設定</td>
+                                    <td th:text="${ls.lessonTimeLabel}">—</td>
                                     <td class="text-end" th:text="${ls.presentCount}"></td>
                                     <td class="text-end" th:text="${ls.enrolledCount}"></td>
                                     <td class="text-end fw-semibold" th:text="|${ls.attendanceRate}%|"></td>
@@ -91,93 +196,99 @@
                                 </tbody>
                             </table>
                         </div>
-                    </div>
-                </div>
+                    </section>
 
-                <div class="pcfa-admin-section">
-                    <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-                        <span>受講者一覧</span>
-                        <input type="text" class="form-control form-control-sm" style="width:200px" placeholder="氏名・メール検索…"
-                               oninput="filterReportRows(this.value)">
-                    </div>
-                    <div class="pcfa-admin-section-body p-0">
+                    <!-- 受講者一覧 -->
+                    <section class="panel mb-0">
+                        <div class="panel-header">
+                            <div>
+                                <h2 class="h5 mb-1 section-title"><i class="bi bi-people"></i><span>受講者一覧</span></h2>
+                                <p class="text-muted mb-0">明細プレビュー・Excel 出力へ</p>
+                            </div>
+                            <input type="text" class="form-control form-control-sm table-search"
+                                   placeholder="氏名・メール検索…" oninput="filterReportRows(this.value)">
+                        </div>
                         <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0" id="reportTable">
-                            <thead class="table-light">
+                            <table class="table align-middle mb-0" id="reportTable">
+                                <thead>
                                 <tr>
                                     <th>氏名</th>
                                     <th>メール</th>
-                                    <th class="text-center">出席<br><span class="fw-normal text-muted">回数/実施済</span></th>
-                                    <th class="text-center">出席率<br><span class="fw-normal text-muted">コース通算</span></th>
-                                    <th class="text-center">提出<br><span class="fw-normal text-muted">件数/課題数</span></th>
+                                    <th class="text-center">出席</th>
+                                    <th class="text-center">出席率</th>
+                                    <th class="text-center">提出</th>
                                     <th class="text-center">平均点</th>
-                                    <th class="text-center" style="min-width:180px">明細</th>
+                                    <th class="text-end">明細</th>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                <tr th:each="r : ${reportList != null ? reportList : {}}" th:attr="data-search=${r.studentName + ' ' + r.studentEmail}">
-                                    <td class="fw-semibold" th:text="${r.studentName}"></td>
+                                </thead>
+                                <tbody>
+                                <tr th:each="r : ${reportList != null ? reportList : {}}"
+                                    th:attr="data-search=${r.studentName + ' ' + r.studentEmail}">
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="pcfa-avatar-placeholder-sm"
+                                                  th:text="${#strings.substring(r.studentName,0,1)}"></span>
+                                            <span class="fw-semibold" th:text="${r.studentName}"></span>
+                                        </div>
+                                    </td>
                                     <td class="small text-muted" th:text="${r.studentEmail}"></td>
                                     <td class="text-center small">
                                         <span th:text="${r.attendedCount}"></span>/<span th:text="${r.totalLessons}"></span>
                                     </td>
                                     <td class="text-center">
-                                        <span th:if="${r.totalLessons == 0}">―</span>
-                                        <span th:if="${r.totalLessons > 0}" th:text="|${r.attendanceRate}%|"></span>
+                                        <span th:if="${r.totalLessons == 0}" class="text-muted">―</span>
+                                        <span th:if="${r.totalLessons > 0}" class="badge text-bg-primary"
+                                              th:text="|${r.attendanceRate}%|"></span>
                                     </td>
                                     <td class="text-center small">
                                         <span th:text="${r.submittedCount}"></span>/<span th:text="${r.totalAssignments}"></span>
-                                        <div class="text-muted" th:if="${r.totalAssignments > 0}" th:text="|${r.submissionRate}%|"></div>
-                                        <span th:if="${r.totalAssignments == 0}" class="text-muted">―</span>
+                                        <div class="text-muted" th:if="${r.totalAssignments > 0}"
+                                             th:text="|${r.submissionRate}%|"></div>
                                     </td>
                                     <td class="text-center">
                                         <span th:if="${r.scoreStatus == 'NO_ASSIGNMENT'}" class="text-muted">―</span>
-                                        <span th:if="${r.scoreStatus == 'UNSUBMITTED'}" class="badge bg-warning text-dark">未提出</span>
-                                        <span th:if="${r.scoreStatus == 'PENDING'}" class="badge bg-secondary">採点待ち</span>
-                                        <span th:if="${r.scoreStatus == 'PARTIAL'}">
-                                            <span class="fw-semibold" th:text="|${r.averageScore}点|"></span>
-                                        </span>
-                                        <span th:if="${r.scoreStatus == 'SCORED'}" class="fw-semibold text-success" th:text="|${r.averageScore}点|"></span>
+                                        <span th:if="${r.scoreStatus == 'UNSUBMITTED'}" class="badge text-bg-warning">未提出</span>
+                                        <span th:if="${r.scoreStatus == 'PENDING'}" class="badge text-bg-secondary">採点待ち</span>
+                                        <span th:if="${r.scoreStatus == 'PARTIAL' or r.scoreStatus == 'SCORED'}"
+                                              class="fw-semibold text-success" th:text="|${r.averageScore}点|"></span>
                                     </td>
-                                    <td class="text-center text-nowrap">
-                                        <a class="btn btn-sm btn-outline-success me-1"
-                                           th:href="@{/admin/reports/student-attendance(courseId=${selectedCourse.id}, studentId=${r.studentId})}">出席明細</a>
-                                        <a class="btn btn-sm btn-outline-primary"
-                                           th:href="@{/admin/reports/student-assignments(courseId=${selectedCourse.id}, studentId=${r.studentId})}">課題明細</a>
+                                    <td class="text-end text-nowrap">
+                                        <a class="btn btn-light btn-sm"
+                                           th:href="@{/admin/reports/student-attendance(courseId=${selectedCourse.id}, studentId=${r.studentId})}">出席</a>
+                                        <a class="btn btn-light btn-sm"
+                                           th:href="@{/admin/reports/student-assignments(courseId=${selectedCourse.id}, studentId=${r.studentId})}">課題</a>
                                     </td>
                                 </tr>
                                 <tr th:if="${reportList == null or reportList.empty}">
                                     <td colspan="7" class="text-muted text-center py-4">受講者が登録されていません</td>
                                 </tr>
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
                         </div>
-                    </div>
-                </div>
-                <p class="small text-muted mt-2 mb-0">「出席明細」「課題明細」から内容を確認し、必要な場合のみ Excel 用ファイルをダウンロードできます。</p>
-            </div>
-
-            <div class="col d-flex align-items-center justify-content-center text-muted" th:unless="${selectedCourse != null}">
-                <p class="mb-0">← コースを選択してください</p>
+                        <div class="panel-body border-top py-2">
+                            <p class="small text-muted mb-0">「出席」「課題」からプレビュー確認後、必要時のみ Excel をダウンロードできます。</p>
+                        </div>
+                    </section>
+                </th:block>
             </div>
         </div>
     </div>
 </th:block>
 <th:block th:fragment="extraScripts">
-    <script>
-    function filterCourses(q) {
-        q = q.toLowerCase();
-        document.querySelectorAll('#courseList a').forEach(el => {
-            el.style.display = (el.dataset.name || '').toLowerCase().includes(q) ? '' : 'none';
-        });
-    }
-    function filterReportRows(q) {
-        q = q.toLowerCase();
-        document.querySelectorAll('#reportTable tbody tr[data-search]').forEach(tr => {
-            tr.style.display = (tr.dataset.search || '').toLowerCase().includes(q) ? '' : 'none';
-        });
-    }
-    </script>
+<script>
+function filterCourses(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('#courseList a[data-name]').forEach(el => {
+        el.style.display = (el.dataset.name || '').toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+function filterReportRows(q) {
+    q = q.toLowerCase();
+    document.querySelectorAll('#reportTable tbody tr[data-search]').forEach(tr => {
+        tr.style.display = (tr.dataset.search || '').toLowerCase().includes(q) ? '' : 'none';
+    });
+}
+</script>
 </th:block>
 </body>
 </html>

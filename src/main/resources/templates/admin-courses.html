@@ -10,50 +10,57 @@
 </head>
 <body>
 <th:block th:fragment="main">
-    <div class="page-heading px-3 px-lg-4 pt-3 mb-0">
-        <div class="page-heading-copy">
-            <span class="page-icon"><i class="bi bi-journal-bookmark" aria-hidden="true"></i></span>
-            <div>
-                <p class="eyebrow mb-1">Course Management</p>
-                <h1 class="h3 mb-1">コース管理</h1>
-                <p class="text-muted mb-0">コース・授業日・講師/学生の割当を設定します。</p>
-            </div>
-        </div>
-    </div>
-
-    <div class="container-fluid p-0">
-        <div class="row g-0">
-
-            <!-- 左：一覧のみ（作成は名前だけ・説明は右で編集） -->
-            <div class="col-md-3 pcfa-course-sidebar border-end bg-white p-3">
-                <p class="small fw-bold text-muted text-uppercase mb-2">新規コース</p>
-                <form th:action="@{/admin/courses/create}" method="post" class="mb-4">
-                    <input type="text" name="name" class="form-control form-control-sm mb-2" placeholder="コース名のみ入力" required maxlength="100">
-                    <input type="hidden" name="description" value="">
-                    <button type="submit" class="btn btn-success btn-sm w-100 pcfa-btn-primary">＋ 作成</button>
-                </form>
-                <p class="small text-muted mb-3">※ 説明は作成後、右側の「基本情報」で編集します</p>
-
-                <p class="small fw-bold text-muted text-uppercase mb-2">コース一覧</p>
-                <input type="text" id="courseSearch" class="form-control form-control-sm mb-2" placeholder="コース名で検索…" oninput="filterCourses(this.value)">
-                <div class="list-group list-group-flush pcfa-course-list" id="courseList">
-                    <a th:each="c : ${courseList}" th:href="@{/admin/courses(courseId=${c.id})}"
-                       class="list-group-item list-group-item-action py-2 small"
-                       th:classappend="${selectedCourse != null and selectedCourse.id == c.id} ? 'active' : ''"
-                       th:attr="data-name=${c.name}" th:text="${c.name}"></a>
+    <div class="pcfa-split-page">
+        <aside class="pcfa-split-sidebar">
+            <div class="pcfa-sidebar-panel">
+                <div class="pcfa-sidebar-panel-header"><i class="bi bi-plus-circle me-1"></i> 新規コース</div>
+                <div class="pcfa-sidebar-panel-body">
+                    <form th:action="@{/admin/courses/create}" method="post" class="mb-3">
+                        <input type="text" name="name" class="form-control form-control-sm mb-2" placeholder="コース名のみ入力" required maxlength="100">
+                        <input type="hidden" name="description" value="">
+                        <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-plus-lg"></i> 作成</button>
+                    </form>
+                    <p class="small text-muted mb-0">説明は右側「基本情報」で編集</p>
                 </div>
             </div>
+            <div class="pcfa-sidebar-panel">
+                <div class="pcfa-sidebar-panel-header"><i class="bi bi-journal-bookmark me-1"></i> コース一覧</div>
+                <div class="pcfa-sidebar-panel-body">
+                    <input type="text" id="courseSearch" class="form-control form-control-sm search-input mb-2"
+                           placeholder="コース名で検索…" oninput="filterCourses(this.value)">
+                    <nav class="pcfa-nav-list" id="courseList">
+                        <a th:each="c : ${courseList}" th:href="@{/admin/courses(courseId=${c.id})}"
+                           th:classappend="${selectedCourse != null and selectedCourse.id == c.id} ? 'active' : ''"
+                           th:attr="data-name=${c.name}" th:text="${c.name}"></a>
+                    </nav>
+                </div>
+            </div>
+        </aside>
 
-            <!-- 右：選択コースの詳細 -->
-            <div class="col-md-9 p-4" th:if="${selectedCourse != null}">
+        <div class="pcfa-split-main">
+            <div class="pcfa-split-main-inner">
 
-                <div class="d-flex justify-content-between align-items-start mb-3">
-                    <div>
-                        <h2 class="h4 fw-bold mb-1" th:text="${selectedCourse.name}"></h2>
-                        <p class="text-muted small mb-0">コースID: <span th:text="${selectedCourse.id}"></span></p>
+                <div th:unless="${selectedCourse != null}" class="panel">
+                    <div class="panel-body text-center py-5 text-muted">
+                        <i class="bi bi-journal-bookmark display-4 d-block mb-3 opacity-50"></i>
+                        <p class="mb-0">← 左のコースを選択するか、新規作成してください</p>
                     </div>
-                    <button type="button" class="btn btn-sm btn-outline-danger"
-                            data-bs-toggle="modal" data-bs-target="#deleteCourseModal">コース削除</button>
+                </div>
+
+                <th:block th:if="${selectedCourse != null}">
+                <div class="page-heading mb-3">
+                    <div class="page-heading-copy">
+                        <span class="page-icon"><i class="bi bi-journal-bookmark"></i></span>
+                        <div>
+                            <p class="eyebrow mb-1">Course Detail</p>
+                            <h1 class="h3 mb-1" th:text="${selectedCourse.name}"></h1>
+                            <p class="text-muted mb-0">コースID: <span th:text="${selectedCourse.id}"></span></p>
+                        </div>
+                    </div>
+                    <div class="heading-actions">
+                        <button type="button" class="btn btn-outline-danger btn-sm"
+                                data-bs-toggle="modal" data-bs-target="#deleteCourseModal">コース削除</button>
+                    </div>
                 </div>
 
                 <!-- 削除確認モーダル -->
@@ -270,12 +277,9 @@
                         </p>
                     </div>
                 </div>
-            </div>
+                </th:block>
 
-            <div class="col-md-9 d-flex align-items-center justify-content-center text-muted" th:unless="${selectedCourse != null}">
-                <p class="mb-0">← 左のコースを選択するか、新規作成してください</p>
             </div>
-
         </div>
     </div>
 </th:block>
@@ -286,7 +290,7 @@
     <script>
     function filterCourses(q) {
         q = q.toLowerCase();
-        document.querySelectorAll('#courseList a').forEach(el => {
+        document.querySelectorAll('#courseList a[data-name]').forEach(el => {
             el.style.display = (el.dataset.name || '').toLowerCase().includes(q) ? '' : 'none';
         });
     }

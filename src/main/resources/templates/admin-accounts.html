@@ -18,6 +18,41 @@
         </div>
     </div>
 
+    <section class="row g-3 mb-3" aria-label="ユーザー統計"
+             th:with="total=${userList.size()},
+                      instructors=${#lists.size(userList.?[role == 'INSTRUCTOR'])},
+                      students=${#lists.size(userList.?[role == 'STUDENT'])},
+                      unset=${#lists.size(userList.?[passwordNotSet == true and role != 'ADMIN'])}">
+        <div class="col-6 col-xl-3">
+            <article class="metric-card metric-primary h-100">
+                <div class="metric-top"><span class="metric-label">登録ユーザー</span><span class="metric-icon"><i class="bi bi-people"></i></span></div>
+                <div class="metric-value" th:text="${total}">0</div>
+                <div class="metric-meta"><span>全ロール</span></div>
+            </article>
+        </div>
+        <div class="col-6 col-xl-3">
+            <article class="metric-card metric-success h-100">
+                <div class="metric-top"><span class="metric-label">受講者</span><span class="metric-icon"><i class="bi bi-person-badge"></i></span></div>
+                <div class="metric-value" th:text="${students}">0</div>
+                <div class="metric-meta"><span>STUDENT</span></div>
+            </article>
+        </div>
+        <div class="col-6 col-xl-3">
+            <article class="metric-card metric-warning h-100">
+                <div class="metric-top"><span class="metric-label">講師</span><span class="metric-icon"><i class="bi bi-mortarboard"></i></span></div>
+                <div class="metric-value" th:text="${instructors}">0</div>
+                <div class="metric-meta"><span>INSTRUCTOR</span></div>
+            </article>
+        </div>
+        <div class="col-6 col-xl-3">
+            <article class="metric-card metric-danger h-100">
+                <div class="metric-top"><span class="metric-label">PW未設定</span><span class="metric-icon"><i class="bi bi-envelope"></i></span></div>
+                <div class="metric-value" th:text="${unset}">0</div>
+                <div class="metric-meta"><span>SES 待ち</span></div>
+            </article>
+        </div>
+    </section>
+
     <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
         <span th:text="${message}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
@@ -50,9 +85,11 @@
         </div>
     </div>
 
-    <div class="pcfa-admin-section mb-4">
-        <div class="pcfa-admin-section-header"><i class="bi bi-person-plus me-1"></i> 新規ユーザー作成</div>
-        <div class="pcfa-admin-section-body">
+    <section class="panel mb-4">
+        <div class="panel-header">
+            <h2 class="h5 mb-0 section-title"><i class="bi bi-person-plus"></i><span>新規ユーザー作成</span></h2>
+        </div>
+        <div class="panel-body">
             <form th:action="@{/admin/accounts/create}" method="post" class="row g-3 align-items-end">
                 <div class="col-md-3">
                     <label class="form-label small fw-semibold mb-1">氏名</label>
@@ -75,13 +112,16 @@
             </form>
             <p class="small text-muted mb-0 mt-2">パスワードは入力しません。作成後 AWS SES で本人に設定リンクを送信します。</p>
         </div>
-    </div>
+    </section>
 
-    <div class="panel">
-        <div class="panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <h2 class="h6 mb-0 section-title"><i class="bi bi-table"></i><span>ユーザー一覧</span></h2>
+    <section class="panel">
+        <div class="panel-header">
+            <div>
+                <h2 class="h5 mb-1 section-title"><i class="bi bi-table"></i><span>ユーザー一覧</span></h2>
+                <p class="text-muted mb-0">プロフィール・編集・パスワードリセット・代理ログイン</p>
+            </div>
             <div class="d-flex align-items-center gap-2">
-                <input type="text" class="form-control form-control-sm search-input" style="width:220px"
+                <input type="text" class="form-control form-control-sm table-search"
                        placeholder="氏名・メールで検索…" oninput="filterUsers(this.value)">
                 <span class="badge text-bg-light" th:text="${userList.size()} + ' 名'"></span>
             </div>
@@ -160,7 +200,7 @@
                 </tbody>
             </table>
         </div>
-    </div>
+    </section>
 
     <div class="modal fade" id="editUserModal" tabindex="-1">
         <div class="modal-dialog">

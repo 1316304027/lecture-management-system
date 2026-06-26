@@ -112,7 +112,7 @@
 
         <main class="dashboard-content">
             <th:block th:if="${fluid}">
-                <div th:replace="${main}"></div>
+                <div class="pcfa-fluid-root" th:replace="${main}"></div>
             </th:block>
             <div th:unless="${fluid}" class="container-fluid px-3 px-lg-4 py-4">
                 <div th:replace="${main}"></div>
@@ -122,7 +122,6 @@
         <footer class="admin-footer">
             <div class="container-fluid px-3 px-lg-4">
                 <span>PCFA 受講管理システム — 管理者ポータル</span>
-                <span class="d-none d-md-inline">UI: adminHMD (Bootstrap 5)</span>
             </div>
         </footer>
     </div>
