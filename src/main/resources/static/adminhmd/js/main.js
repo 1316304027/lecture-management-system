@@ -145,9 +145,15 @@
     initTableSearch();
     initThemeToggle();
 
-    // Initialize user profile values in UI. Provide a window.adminHMDUser object to override defaults.
+    // PCFA: サーバー（Thymeleaf）が既に描画した場合は上書きしない
     function initUserProfile() {
-      var user = window.adminHMDUser || { name: "Admin Hasan", workspace: "Active Workspace", avatar: "../assets/images/avatar/avatar.jpg" };
+      if (document.body && document.body.getAttribute("data-pcfa-shell") === "true") {
+        return;
+      }
+      if (!window.adminHMDUser) {
+        return;
+      }
+      var user = window.adminHMDUser;
 
       var sidebarNameEl = document.querySelector(".sidebar-user strong");
       var sidebarWorkspaceEl = document.querySelector(".sidebar-user small");

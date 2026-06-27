@@ -11,7 +11,7 @@
     <link rel="stylesheet" th:href="@{/adminhmd/pcfa-admin.css}">
     <th:block th:replace="${extraHead} ?: ~{}"></th:block>
 </head>
-<body th:with="displayUser=${realAdminUser != null ? realAdminUser : loginUser}">
+<body data-pcfa-shell="true" th:with="displayUser=${realAdminUser != null ? realAdminUser : loginUser}">
 <div class="admin-shell">
     <div class="sidebar-backdrop" data-sidebar-close></div>
 

@@ -12,7 +12,7 @@
     <link rel="stylesheet" th:href="@{/adminhmd/pcfa-portal.css}">
     <th:block th:replace="${extraHead} ?: ~{}"></th:block>
 </head>
-<body th:with="homeUrl=${portalRole == 'instructor'} ? @{/instructor/home} : @{/student/home},
+<body data-pcfa-shell="true" th:with="homeUrl=${portalRole == 'instructor'} ? @{/instructor/home} : @{/student/home},
                profileUrl=${portalRole == 'instructor'} ? @{/instructor/profile} : @{/student/profile},
                roleLabel=${portalRole == 'instructor'} ? '講師ポータル' : '受講者ポータル',
                displayUser=${portalUser != null ? portalUser : loginUser}">

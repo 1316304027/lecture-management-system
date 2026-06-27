@@ -101,11 +101,7 @@
                     </div>
                     <div class="pcfa-cal-grid" th:if="${calendarCells != null}">
                         <div th:each="cell : ${calendarCells}"
-                             class="pcfa-cal-cell"
-                             th:classappend="${!cell.inCurrentMonth} ? ' other-month' : ''"
-                             th:classappend="${cell.inCurrentMonth and !cell.lessons.isEmpty() and cell.lessons[0].timing == 'today'} ? ' is-today' : ''"
-                             th:classappend="${cell.inCurrentMonth and !cell.lessons.isEmpty() and cell.lessons[0].timing == 'upcoming'} ? ' has-upcoming' : ''"
-                             th:classappend="${cell.inCurrentMonth and !cell.lessons.isEmpty() and cell.lessons[0].timing == 'past'} ? ' has-past' : ''">
+                             th:class="|pcfa-cal-cell${!cell.inCurrentMonth ? ' other-month' : ''}${cell.inCurrentMonth and !cell.lessons.isEmpty() and cell.lessons[0].timing == 'today' ? ' is-today' : ''}${cell.inCurrentMonth and !cell.lessons.isEmpty() and cell.lessons[0].timing == 'upcoming' ? ' has-upcoming' : ''}${cell.inCurrentMonth and !cell.lessons.isEmpty() and cell.lessons[0].timing == 'past' ? ' has-past' : ''}|">
                             <span class="pcfa-cal-day" th:text="${cell.date.dayOfMonth}"></span>
                             <div th:each="les : ${cell.lessons}" class="pcfa-cal-event"
                                  th:title="${les.courseName}"
