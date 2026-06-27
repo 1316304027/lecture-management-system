@@ -7,7 +7,7 @@
 </head>
 <body>
 <th:block th:fragment="main">
-    <div class="pcfa-split-page">
+    <div class="pcfa-split-page pcfa-chat-page">
         <aside class="pcfa-split-sidebar">
             <div class="pcfa-sidebar-panel">
                 <div class="pcfa-sidebar-panel-header"><i class="bi bi-chat-dots me-1"></i> コース選択</div>
@@ -47,7 +47,7 @@
                         </div>
                     </div>
 
-                    <div th:replace="~{fragments/pcfa-chat-room :: chatRoom(${messages}, ${loginUser}, ${selectedCourse.id}, @{/admin/chat/send}, true)}"></div>
+                    <div th:replace="~{fragments/pcfa-chat-room :: chatRoom(${messages}, ${loginUser}, ${selectedCourse.id}, '/admin/chat/send', true)}"></div>
                 </th:block>
             </div>
         </div>

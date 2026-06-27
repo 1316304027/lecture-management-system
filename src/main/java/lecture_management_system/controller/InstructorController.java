@@ -17,7 +17,14 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
-import java.util.List;
+import java.time.YearMonth;
+import java.time.DayOfWeek;
+import java.time.format.TextStyle;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+import lecture_management_system.dto.CalendarCellDto;
+import lecture_management_system.dto.AvatarPresignResult;
 
 /**
  * 講師機能Controller / Instructor Feature Controller
@@ -66,7 +73,81 @@ public class InstructorController {
         model.addAttribute("scheduleRows", scheduleRows);
         long todayCount = scheduleRows.stream().filter(r -> "today".equals(r.getTiming())).count();
         model.addAttribute("todayLessonCount", todayCount);
+        model.addAttribute("nearTermRows", filterNearTermLessons(scheduleRows, 5));
+        addCalendarToModel(model, scheduleRows);
         return "instructor-home";
+    }
+
+    private List<lecture_management_system.dto.InstructorScheduleRowDto> filterNearTermLessons(
+            List<lecture_management_system.dto.InstructorScheduleRowDto> rows, int limit) {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        return rows.stream()
+                .filter(r -> !r.getLessonDate().isBefore(today))
+                .sorted(java.util.Comparator.comparing(
+                        lecture_management_system.dto.InstructorScheduleRowDto::getLessonDate))
+                .limit(limit)
+                .toList();
+    }
+
+    private void addCalendarToModel(Model model, List<lecture_management_system.dto.InstructorScheduleRowDto> rows) {
+        YearMonth ym = YearMonth.now();
+        model.addAttribute("calMonthLabel", ym.getMonth().getDisplayName(TextStyle.FULL, Locale.JAPANESE) + " " + ym.getYear());
+        Map<java.time.LocalDate, List<lecture_management_system.dto.InstructorScheduleRowDto>> byDate = rows.stream()
+                .collect(Collectors.groupingBy(lecture_management_system.dto.InstructorScheduleRowDto::getLessonDate));
+        java.time.LocalDate first = ym.atDay(1);
+        java.time.LocalDate gridStart = first.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        List<CalendarCellDto> cells = new java.util.ArrayList<>();
+        for (int i = 0; i < 42; i++) {
+            java.time.LocalDate d = gridStart.plusDays(i);
+            CalendarCellDto cell = new CalendarCellDto();
+            cell.setDate(d);
+            cell.setInCurrentMonth(d.getMonth() == ym.getMonth());
+            cell.setLessons(byDate.getOrDefault(d, List.of()));
+            cells.add(cell);
+        }
+        model.addAttribute("calendarCells", cells);
+    }
+
+    // ===================== 講師プロフィール =====================
+
+    @GetMapping("/instructor/profile")
+    public String profilePage(HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+        loginUser = profileService.refreshUser(loginUser);
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("avatarUrl", profileService.getAvatarUrl(loginUser));
+        return "instructor-profile";
+    }
+
+    @GetMapping("/instructor/profile/presign-avatar")
+    @ResponseBody
+    public ResponseEntity<?> presignAvatar(@RequestParam String fileName, HttpSession session) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
+        AvatarPresignResult r = profileService.prepareAvatarUpload(loginUser, fileName);
+        if (r == null) return ResponseEntity.badRequest().body(Map.of("error", "invalid_file"));
+        return ResponseEntity.ok(Map.of("uploadUrl", r.uploadUrl(), "s3Key", r.s3Key()));
+    }
+
+    @PostMapping("/instructor/profile")
+    public String saveProfile(
+            @RequestParam(required = false) String phone,
+            @RequestParam(required = false) String profileBio,
+            @RequestParam(required = false) String avatarS3Key,
+            HttpSession session, Model model) {
+        User loginUser = getLoginUser(session);
+        if (loginUser == null) return "redirect:/login";
+        profileService.updateProfile(loginUser, phone, profileBio);
+        if (avatarS3Key != null && !avatarS3Key.isBlank()) {
+            profileService.saveAvatarKey(loginUser, avatarS3Key);
+        }
+        loginUser = profileService.refreshUser(loginUser);
+        session.setAttribute("loginUser", loginUser);
+        model.addAttribute("message", "プロフィールを保存しました");
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("avatarUrl", profileService.getAvatarUrl(loginUser));
+        return "instructor-profile";
     }
 
     private List<lecture_management_system.dto.InstructorScheduleRowDto> buildInstructorSchedule(

@@ -544,6 +544,19 @@ body.sidebar-mini .sidebar-user {
 }
 
 /* ---- Chat room (WeChat-style) ---- */
+.pcfa-chat-page .pcfa-split-main-inner {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 140px);
+}
+
+.pcfa-chat-page .pcfa-chat-room {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
 .pcfa-chat-room {
   display: flex;
   flex-direction: column;
@@ -553,11 +566,25 @@ body.sidebar-mini .sidebar-user {
 
 .pcfa-chat-messages {
   flex: 1;
-  min-height: 380px;
-  max-height: 62vh;
+  min-height: 320px;
+  max-height: none;
   overflow-y: auto;
-  padding: 1.25rem;
-  background: var(--admin-surface-soft);
+  padding: 1rem 1.25rem;
+  background: linear-gradient(180deg, var(--admin-surface-soft) 0%, var(--admin-surface) 100%);
+}
+
+.pcfa-chat-date-divider {
+  text-align: center;
+  margin: 1rem 0;
+  font-size: 0.72rem;
+  color: var(--admin-muted);
+}
+
+.pcfa-chat-date-divider span {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 999px;
+  padding: 0.2rem 0.75rem;
 }
 
 .pcfa-msg-row {
@@ -567,7 +594,9 @@ body.sidebar-mini .sidebar-user {
 }
 
 .pcfa-msg-row.mine { justify-content: flex-end; }
-.pcfa-msg-row.other { justify-content: flex-start; }
+.pcfa-msg-row.other { justify-content: flex-start; align-items: flex-end; gap: 0.5rem; }
+
+.pcfa-msg-row.mine .pcfa-msg-block { margin-left: auto; }
 
 .pcfa-msg-block { max-width: min(420px, 85%); }
 
@@ -610,9 +639,13 @@ body.sidebar-mini .sidebar-user {
 .pcfa-msg-bubble.mine:hover .pcfa-msg-delete { opacity: 0.85; }
 
 .pcfa-chat-compose {
-  padding: 1rem 1.25rem;
+  padding: 0.85rem 1.25rem;
   border-top: 1px solid var(--admin-border);
   background: var(--admin-surface);
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.06);
 }
 
 .pcfa-chat-send {

@@ -13,7 +13,9 @@
     <th:block th:replace="${extraHead} ?: ~{}"></th:block>
 </head>
 <body th:with="homeUrl=${portalRole == 'instructor'} ? @{/instructor/home} : @{/student/home},
-               roleLabel=${portalRole == 'instructor'} ? '講師ポータル' : '受講者ポータル'">
+               profileUrl=${portalRole == 'instructor'} ? @{/instructor/profile} : @{/student/profile},
+               roleLabel=${portalRole == 'instructor'} ? '講師ポータル' : '受講者ポータル',
+               displayUser=${portalUser != null ? portalUser : loginUser}">
 <div class="admin-shell">
     <div class="sidebar-backdrop" data-sidebar-close></div>
 
@@ -35,20 +37,20 @@
                 <span class="nav-icon"><i class="bi bi-house-door" aria-hidden="true"></i></span>
                 <span class="nav-text">ホーム</span>
             </a>
-            <a th:if="${portalRole == 'student'}" class="nav-link" th:href="@{/student/profile}"
+            <a class="nav-link" th:href="${profileUrl}"
                th:classappend="${activeNav == 'profile'} ? ' active' : ''">
                 <span class="nav-icon"><i class="bi bi-person-circle" aria-hidden="true"></i></span>
                 <span class="nav-text">プロフィール</span>
             </a>
         </nav>
 
-        <div class="sidebar-user" th:if="${loginUser != null}">
+        <div class="sidebar-user" th:if="${displayUser != null}">
             <img th:if="${portalNavAvatarUrl != null}" class="avatar-img avatar-md sidebar-user-avatar"
-                 th:src="${portalNavAvatarUrl}" th:alt="${loginUser.name}">
+                 th:src="${portalNavAvatarUrl}" th:alt="${displayUser.name}">
             <span th:unless="${portalNavAvatarUrl != null}"
                   class="avatar-img avatar-md sidebar-user-avatar pcfa-nav-initials"
                   aria-hidden="true"><i class="bi bi-person-fill"></i></span>
-            <strong th:text="${loginUser.name}">ユーザー</strong>
+            <strong th:text="${displayUser.name}">ユーザー</strong>
             <small th:text="${roleLabel}">ポータル</small>
         </div>
 
@@ -65,26 +67,21 @@
                     <span></span><span></span><span></span>
                 </button>
                 <div class="navbar-actions ms-auto d-flex align-items-center gap-2">
-                    <form th:if="${isProxy}" action="/admin/restore-session" method="post" class="d-none d-md-inline">
-                        <button type="submit" class="btn btn-warning btn-sm">管理者へ戻る</button>
-                    </form>
                     <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="テーマ切替">
                         <i class="bi bi-moon-stars" data-theme-icon aria-hidden="true"></i>
                     </button>
-                    <div class="dropdown">
+                    <div class="dropdown" th:if="${displayUser != null}">
                         <button class="profile-button dropdown-toggle" type="button" data-bs-toggle="dropdown">
                             <img th:if="${portalNavAvatarUrl != null}" class="avatar-img avatar-sm"
-                                 th:src="${portalNavAvatarUrl}" th:alt="${loginUser.name}">
+                                 th:src="${portalNavAvatarUrl}" th:alt="${displayUser.name}">
                             <span th:unless="${portalNavAvatarUrl != null}"
                                   class="avatar-img avatar-sm pcfa-nav-initials"
                                   aria-hidden="true"><i class="bi bi-person-fill"></i></span>
-                            <span class="profile-name d-none d-sm-inline" th:text="${loginUser.name}">ユーザー</span>
+                            <span class="profile-name d-none d-sm-inline" th:text="${displayUser.name}">ユーザー</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" th:href="${homeUrl}"><i class="bi bi-house-door me-2"></i>ホーム</a></li>
-                            <li th:if="${portalRole == 'student'}">
-                                <a class="dropdown-item" th:href="@{/student/profile}"><i class="bi bi-person-circle me-2"></i>プロフィール</a>
-                            </li>
+                            <li><a class="dropdown-item" th:href="${profileUrl}"><i class="bi bi-person-circle me-2"></i>プロフィール</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" th:href="@{/logout}"><i class="bi bi-box-arrow-right me-2"></i>ログアウト</a></li>
                         </ul>
@@ -92,6 +89,23 @@
                 </div>
             </div>
         </nav>
+
+        <div th:if="${isProxy}" class="pcfa-proxy-banner">
+            <div class="container-fluid px-3 px-lg-4 py-2 d-flex flex-wrap align-items-center gap-2">
+                <i class="bi bi-eye-fill"></i>
+                <span>
+                    <strong>管理者プレビュー</strong> —
+                    <span th:text="${displayUser != null ? displayUser.name : 'ユーザー'}"></span>
+                    として表示中
+                    <span th:if="${proxyAdminName != null}" class="text-muted">
+                        （操作者：<span th:text="${proxyAdminName}"></span>）
+                    </span>
+                </span>
+                <form action="/admin/restore-session" method="post" class="ms-auto">
+                    <button type="submit" class="btn btn-warning btn-sm">管理者画面へ戻る</button>
+                </form>
+            </div>
+        </div>
 
         <main class="dashboard-content">
             <th:block th:if="${fluid}">

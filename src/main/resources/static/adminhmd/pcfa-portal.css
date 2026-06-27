@@ -131,3 +131,108 @@
 [data-theme="dark"] .table-light {
   --bs-table-bg: var(--admin-surface-soft);
 }
+
+/* ---- Proxy preview banner ---- */
+.pcfa-proxy-banner {
+  background: linear-gradient(90deg, #fef3c7, #fde68a);
+  border-bottom: 1px solid #f59e0b;
+  color: #92400e;
+  font-size: 0.88rem;
+}
+
+[data-theme="dark"] .pcfa-proxy-banner {
+  background: linear-gradient(90deg, #78350f, #92400e);
+  color: #fef3c7;
+  border-bottom-color: #b45309;
+}
+
+/* ---- Instructor month calendar ---- */
+.pcfa-cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.25rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  color: var(--admin-muted);
+}
+
+.pcfa-cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.35rem;
+}
+
+.pcfa-cal-cell {
+  min-height: 72px;
+  border: 1px solid var(--admin-border);
+  border-radius: 8px;
+  padding: 0.25rem;
+  background: var(--admin-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.pcfa-cal-cell.other-month {
+  opacity: 0.35;
+  background: var(--admin-surface-soft);
+}
+
+.pcfa-cal-cell.is-today {
+  border-color: #16a34a;
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.pcfa-cal-cell.has-upcoming {
+  border-color: rgba(37, 99, 235, 0.35);
+  background: rgba(37, 99, 235, 0.06);
+}
+
+.pcfa-cal-cell.has-past {
+  background: var(--admin-surface-soft);
+}
+
+.pcfa-cal-day {
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.pcfa-cal-event {
+  font-size: 0.65rem;
+  line-height: 1.2;
+  padding: 0.1rem 0.25rem;
+  border-radius: 4px;
+  background: rgba(37, 99, 235, 0.15);
+  color: var(--admin-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pcfa-cal-cell.is-today .pcfa-cal-event {
+  background: rgba(34, 197, 94, 0.2);
+  color: #15803d;
+}
+
+.pcfa-cal-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.75rem;
+  color: var(--admin-muted);
+}
+
+.pcfa-legend-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 0.25rem;
+  vertical-align: middle;
+}
+
+.pcfa-legend-dot.today { background: #16a34a; }
+.pcfa-legend-dot.upcoming { background: #2563eb; }
+.pcfa-legend-dot.past { background: #94a3b8; }

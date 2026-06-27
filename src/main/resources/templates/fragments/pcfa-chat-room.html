@@ -4,18 +4,22 @@
 <th:block th:fragment="chatRoom(messages, loginUser, courseId, sendAction, showDelete)">
     <div class="pcfa-chat-room panel mb-0">
         <div class="pcfa-chat-messages" id="chatBox">
-            <div th:each="msg : ${messages}">
+            <th:block th:each="msg, stat : ${messages}">
+                <div th:if="${stat.index == 0 or #temporals.format(messages[stat.index - 1].sentAt, 'yyyy/MM/dd') != #temporals.format(msg.sentAt, 'yyyy/MM/dd')}"
+                     class="pcfa-chat-date-divider">
+                    <span th:text="${#temporals.format(msg.sentAt, 'yyyy年M月d日')}"></span>
+                </div>
                 <div th:if="${msg.sender.id == loginUser.id}" class="pcfa-msg-row mine">
                     <div class="pcfa-msg-block">
                         <div class="pcfa-msg-meta text-end"
-                             th:text="${#temporals.format(msg.sentAt, 'yyyy/MM/dd HH:mm')}"></div>
+                             th:text="${#temporals.format(msg.sentAt, 'HH:mm')}"></div>
                         <div class="pcfa-msg-bubble mine">
                             <span th:text="${msg.content}"></span>
                             <form th:if="${showDelete}" class="pcfa-msg-delete"
                                   th:action="@{/admin/chat/delete/{id}(id=${msg.id})}" method="post"
                                   onsubmit="return confirm('このメッセージを削除しますか？')">
                                 <input type="hidden" name="courseId" th:value="${courseId}">
-                                <button type="submit" class="btn btn-link btn-sm text-danger p-0" title="削除">
+                                <button type="submit" class="btn btn-link btn-sm text-white-50 p-0" title="削除">
                                     <i class="bi bi-trash"></i>
                                 </button>
                             </form>
@@ -23,6 +27,8 @@
                     </div>
                 </div>
                 <div th:unless="${msg.sender.id == loginUser.id}" class="pcfa-msg-row other">
+                    <div class="pcfa-msg-avatar pcfa-avatar-placeholder-sm"
+                         th:text="${#strings.substring(msg.sender.name,0,1)}"></div>
                     <div class="pcfa-msg-block">
                         <div class="pcfa-msg-meta">
                             <span class="badge text-white"
@@ -31,31 +37,29 @@
                                   th:text="${msg.sender.role == 'ADMIN'} ? '管理者' :
                                            (${msg.sender.role == 'INSTRUCTOR'} ? '講師' : '受講者')"></span>
                             <strong th:text="${msg.sender.name}"></strong>
-                            <span th:text="${#temporals.format(msg.sentAt, 'yyyy/MM/dd HH:mm')}"></span>
+                            <span th:text="${#temporals.format(msg.sentAt, 'HH:mm')}"></span>
                         </div>
                         <div class="pcfa-msg-bubble other" th:text="${msg.content}"></div>
                     </div>
                 </div>
-            </div>
+            </th:block>
             <div th:if="${messages.empty}" class="pcfa-chat-empty text-muted">
                 <i class="bi bi-chat-dots display-6 d-block mb-2 opacity-50"></i>
                 <p class="mb-0">まだメッセージはありません。下の入力欄から送信できます。</p>
             </div>
         </div>
         <div class="pcfa-chat-compose">
-            <p class="small text-muted mb-2">
-                <i class="bi bi-info-circle me-1"></i>講師・受講者と同じルームです。Enterで送信、Shift+Enterで改行。
-            </p>
             <form th:action="${sendAction}" method="post" id="chatForm">
                 <input type="hidden" name="courseId" th:value="${courseId}">
                 <div class="d-flex gap-2 align-items-end">
                     <textarea name="content" id="messageInput" class="form-control" rows="2"
-                              placeholder="メッセージを入力して送信…"
+                              placeholder="メッセージを入力… Enterで送信"
                               maxlength="500" required></textarea>
                     <button type="submit" class="btn btn-primary pcfa-chat-send">
                         <i class="bi bi-send-fill"></i><span class="d-none d-sm-inline ms-1">送信</span>
                     </button>
                 </div>
+                <p class="small text-muted mb-0 mt-2">Shift+Enterで改行 ／ 講師・受講者と同じルームです</p>
             </form>
         </div>
     </div>
