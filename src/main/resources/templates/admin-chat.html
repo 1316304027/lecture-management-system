@@ -47,7 +47,7 @@
                         </div>
                     </div>
 
-                    <div th:replace="~{fragments/pcfa-chat-room :: chatRoom(${messages}, ${loginUser}, ${selectedCourse.id}, true, true)}"></div>
+                    <div th:replace="~{fragments/pcfa-chat-room :: chatRoom(${messages}, ${loginUser}, ${selectedCourse.id}, @{/admin/chat/send}, true)}"></div>
                 </th:block>
             </div>
         </div>

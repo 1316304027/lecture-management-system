@@ -16,6 +16,17 @@
 <th:block th:fragment="main">
     <a class="pcfa-back-link" th:href="@{/student/home}"><i class="bi bi-arrow-left"></i> ホームへ戻る</a>
 
+    <div class="page-heading mb-3">
+        <div class="page-heading-copy">
+            <span class="page-icon"><i class="bi bi-calendar-check"></i></span>
+            <div>
+                <p class="eyebrow mb-1">Attendance</p>
+                <h1 class="h3 mb-1">出席登録</h1>
+                <p class="text-muted mb-0" th:text="${course.name}"></p>
+            </div>
+        </div>
+    </div>
+
     <!-- メッセージ -->
     <div th:if="${message}" class="alert alert-dismissible fade show"
          th:classappend="${message.contains('完了')} ? 'alert-success' :
@@ -25,10 +36,10 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <!-- 本日の出席状況カード -->
-    <div class="card mb-4 shadow-sm">
-        <div class="card-header bg-success text-white fw-bold py-2">📅 本日の出席状況</div>
-        <div class="card-body">
+    <!-- 本日の出席状況 -->
+    <section class="panel mb-4">
+        <div class="panel-header"><h2 class="h6 mb-0">本日の出席状況</h2></div>
+        <div class="panel-body">
             <div class="row text-center mb-3">
                 <div class="col-3">
                     <div class="text-muted small mb-1">本日の日付</div>
@@ -105,12 +116,12 @@
                 </button>
             </form>
         </div>
-    </div>
+    </section>
 
     <!-- 全授業日の出席状況一覧 -->
-    <div class="card shadow-sm">
-        <div class="card-header bg-light fw-bold py-2">📋 授業日別 出席状況一覧</div>
-        <div class="card-body p-0">
+    <section class="panel mb-0">
+        <div class="panel-header"><h2 class="h6 mb-0">授業日別 出席状況一覧</h2></div>
+        <div class="table-responsive">
             <table class="table table-bordered table-sm mb-0 align-middle">
                 <thead class="table-dark">
                     <tr>
@@ -168,15 +179,15 @@
                 </tbody>
             </table>
         </div>
-        <div class="card-footer bg-light text-muted small d-flex gap-3">
-            <span>✅ 出席：<strong th:text="${historyList.size()}"></strong>回</span>
-            <span>📊 出席率：
+        <div class="panel-body border-top py-2 text-muted small d-flex gap-3">
+            <span>出席：<strong th:text="${historyList.size()}"></strong>回</span>
+            <span>出席率：
                 <strong th:classappend="${attendanceRate >= 80} ? 'text-success' :
                                         (${attendanceRate >= 70} ? 'text-warning' : 'text-danger')"
                         th:text="${attendanceRate} + '%'"></strong>
             </span>
         </div>
-    </div>
+    </section>
 </th:block>
 <th:block th:fragment="extraScripts"></th:block>
 </body>

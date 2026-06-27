@@ -79,6 +79,9 @@ public class ChatController {
             model.addAttribute("selectedCourse", selected);
             model.addAttribute("messages", selected != null ? chatService.getMessages(courseId) : java.util.List.of());
             model.addAttribute("courseId", courseId);
+            if (selected != null) {
+                chatService.markCourseAsRead(loginUser, courseId);
+            }
         } else {
             model.addAttribute("messages", java.util.List.of());
         }

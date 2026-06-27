@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <body>
-<th:block th:fragment="chatRoom(messages, loginUser, courseId, adminMode, showDelete)">
+<th:block th:fragment="chatRoom(messages, loginUser, courseId, sendAction, showDelete)">
     <div class="pcfa-chat-room panel mb-0">
         <div class="pcfa-chat-messages" id="chatBox">
             <div th:each="msg : ${messages}">
@@ -39,15 +39,18 @@
             </div>
             <div th:if="${messages.empty}" class="pcfa-chat-empty text-muted">
                 <i class="bi bi-chat-dots display-6 d-block mb-2 opacity-50"></i>
-                <p class="mb-0">まだメッセージはありません。最初の一言を送ってみましょう。</p>
+                <p class="mb-0">まだメッセージはありません。下の入力欄から送信できます。</p>
             </div>
         </div>
         <div class="pcfa-chat-compose">
-            <form th:action="${adminMode} ? @{/admin/chat/send} : @{/chat/send}" method="post" id="chatForm">
+            <p class="small text-muted mb-2">
+                <i class="bi bi-info-circle me-1"></i>講師・受講者と同じルームです。Enterで送信、Shift+Enterで改行。
+            </p>
+            <form th:action="${sendAction}" method="post" id="chatForm">
                 <input type="hidden" name="courseId" th:value="${courseId}">
                 <div class="d-flex gap-2 align-items-end">
                     <textarea name="content" id="messageInput" class="form-control" rows="2"
-                              placeholder="メッセージを入力…（Enterで送信 / Shift+Enterで改行）"
+                              placeholder="メッセージを入力して送信…"
                               maxlength="500" required></textarea>
                     <button type="submit" class="btn btn-primary pcfa-chat-send">
                         <i class="bi bi-send-fill"></i><span class="d-none d-sm-inline ms-1">送信</span>
@@ -69,6 +72,7 @@
                     if (input.value.trim()) form.submit();
                 }
             });
+            input.focus();
         }
     })();
     </script>

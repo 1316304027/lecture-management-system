@@ -7,113 +7,148 @@
 </head>
 <body>
 <th:block th:fragment="main">
-    <div style="max-width: 1000px;">
-        <div class="pcfa-page-header">
-            <h1>講師ホーム</h1>
-            <p th:text="'ようこそ、' + ${loginUser.name} + ' 先生。担当コースと授業スケジュールを確認できます。'"></p>
-        </div>
-
-        <div th:if="${courseList.empty}" class="pcfa-empty-state">
-            <p class="text-muted mb-0">担当コースがありません。管理者にコースへの割り当てを依頼してください。</p>
-        </div>
-
-        <!-- 授業スケジュール（课程表） -->
-        <div class="pcfa-admin-section mb-4" th:unless="${courseList.empty}">
-            <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center">
-                <span>授業スケジュール</span>
-                <span class="badge bg-light text-dark" th:text="${scheduleRows != null ? scheduleRows.size() : 0} + ' 件'"></span>
+    <div class="page-heading mb-4">
+        <div class="page-heading-copy">
+            <span class="page-icon"><i class="bi bi-speedometer2" aria-hidden="true"></i></span>
+            <div>
+                <p class="eyebrow mb-1">Instructor Portal</p>
+                <h1 class="h3 mb-1">講師ホーム</h1>
+                <p class="text-muted mb-0" th:text="'ようこそ、' + ${loginUser.name} + ' 先生。'"></p>
             </div>
-            <div class="pcfa-admin-section-body p-0">
-                <div class="table-responsive" th:if="${scheduleRows != null and !scheduleRows.empty}">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                        <tr>
-                            <th>授業日</th>
-                            <th>コース</th>
-                            <th>時間</th>
-                            <th>状態</th>
-                            <th></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr th:each="row : ${scheduleRows}"
-                            th:classappend="${row.timing == 'today'} ? 'table-success' : ''">
-                            <td class="fw-semibold" th:text="${row.lessonDate}"></td>
-                            <td th:text="${row.courseName}"></td>
-                            <td class="small">
-                                <span th:if="${row.startTime != null}"
-                                      th:text="${#temporals.format(row.startTime, 'HH:mm')}"></span>
-                                <span th:if="${row.startTime != null and row.endTime != null}">〜</span>
-                                <span th:if="${row.endTime != null}"
-                                      th:text="${#temporals.format(row.endTime, 'HH:mm')}"></span>
-                                <span th:if="${row.startTime == null}" class="text-muted">終日</span>
-                            </td>
-                            <td>
-                                <span th:if="${row.timing == 'today'}" class="badge bg-success">本日</span>
-                                <span th:if="${row.timing == 'upcoming'}" class="badge bg-primary">予定</span>
-                                <span th:if="${row.timing == 'past'}" class="badge bg-secondary">終了</span>
-                            </td>
-                            <td class="text-end">
-                                <a th:href="@{/instructor/attendance(courseId=${row.courseId})}"
-                                   class="btn btn-sm btn-outline-secondary">出欠</a>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
+        </div>
+    </div>
+
+    <div th:if="${courseList.empty}" class="pcfa-empty-state">
+        <p class="text-muted mb-0">担当コースがありません。管理者にコースへの割り当てを依頼してください。</p>
+    </div>
+
+    <section class="row g-3 mb-4" th:unless="${courseList.empty}" aria-label="サマリー">
+        <div class="col-6 col-md-3">
+            <article class="metric-card metric-primary h-100">
+                <div class="metric-top">
+                    <span class="metric-label">担当コース</span>
+                    <span class="metric-icon"><i class="bi bi-journal-bookmark"></i></span>
                 </div>
-                <p th:if="${scheduleRows == null or scheduleRows.empty}"
-                   class="text-muted text-center py-4 mb-0 small">
-                    授業日が未登録です。管理者がコース管理で授業日を追加すると、ここに表示されます。
-                </p>
-            </div>
+                <div class="metric-value" th:text="${courseList.size()}">0</div>
+            </article>
         </div>
+        <div class="col-6 col-md-3">
+            <article class="metric-card metric-success h-100">
+                <div class="metric-top">
+                    <span class="metric-label">授業予定</span>
+                    <span class="metric-icon"><i class="bi bi-calendar-check"></i></span>
+                </div>
+                <div class="metric-value" th:text="${scheduleRows != null ? scheduleRows.size() : 0}">0</div>
+            </article>
+        </div>
+        <div class="col-6 col-md-3">
+            <article class="metric-card metric-warning h-100">
+                <div class="metric-top">
+                    <span class="metric-label">未読チャット</span>
+                    <span class="metric-icon"><i class="bi bi-chat-dots"></i></span>
+                </div>
+                <div class="metric-value" th:text="${totalUnreadChat}">0</div>
+            </article>
+        </div>
+        <div class="col-6 col-md-3">
+            <article class="metric-card metric-primary h-100">
+                <div class="metric-top">
+                    <span class="metric-label">本日の授業</span>
+                    <span class="metric-icon"><i class="bi bi-clock"></i></span>
+                </div>
+                <div class="metric-value" th:text="${todayLessonCount}">0</div>
+            </article>
+        </div>
+    </section>
 
-        <h2 class="h5 fw-bold mb-3" th:unless="${courseList.empty}">担当コース一覧</h2>
+    <section class="panel mb-4" th:unless="${courseList.empty}">
+        <div class="panel-header d-flex justify-content-between align-items-center">
+            <h2 class="h6 mb-0 section-title"><i class="bi bi-calendar3"></i><span>授業スケジュール</span></h2>
+            <span class="badge text-bg-light" th:text="${scheduleRows != null ? scheduleRows.size() : 0} + ' 件'"></span>
+        </div>
+        <div class="table-responsive" th:if="${scheduleRows != null and !scheduleRows.empty}">
+            <table class="table align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>授業日</th>
+                    <th>コース</th>
+                    <th>時間</th>
+                    <th>状態</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="row : ${scheduleRows}"
+                    th:classappend="${row.timing == 'today'} ? 'table-success' : ''">
+                    <td class="fw-semibold" th:text="${row.lessonDate}"></td>
+                    <td th:text="${row.courseName}"></td>
+                    <td class="small">
+                        <span th:if="${row.startTime != null}" th:text="${#temporals.format(row.startTime, 'HH:mm')}"></span>
+                        <span th:if="${row.startTime != null and row.endTime != null}">〜</span>
+                        <span th:if="${row.endTime != null}" th:text="${#temporals.format(row.endTime, 'HH:mm')}"></span>
+                        <span th:if="${row.startTime == null}" class="text-muted">終日</span>
+                    </td>
+                    <td>
+                        <span th:if="${row.timing == 'today'}" class="badge text-bg-success">本日</span>
+                        <span th:if="${row.timing == 'upcoming'}" class="badge text-bg-primary">予定</span>
+                        <span th:if="${row.timing == 'past'}" class="badge text-bg-secondary">終了</span>
+                    </td>
+                    <td class="text-end">
+                        <a th:href="@{/instructor/attendance(courseId=${row.courseId})}" class="btn btn-sm btn-light">出欠</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-body text-muted small text-center py-4" th:if="${scheduleRows == null or scheduleRows.empty}">
+            授業日が未登録です。管理者がコース管理で授業日を追加すると、ここに表示されます。
+        </div>
+    </section>
 
-        <div class="row g-4" th:unless="${courseList.empty}">
-            <div class="col-12 col-md-6" th:each="course : ${courseList}">
-                <div class="card pcfa-course-card h-100">
-                    <div class="card-header">
-                        <h5 class="mb-0" th:text="${course.name}">コース名</h5>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted small mb-0" th:text="${course.description} ?: '（説明なし）'"></p>
-                    </div>
-                    <div class="card-footer border-0 pt-0 pb-3 px-3">
-                        <div class="row g-2 pcfa-action-grid">
-                            <div class="col-6">
-                                <a th:href="@{/instructor/materials(courseId=${course.id})}"
-                                   class="btn btn-outline-primary pcfa-course-action w-100">教材管理</a>
-                            </div>
-                            <div class="col-6">
-                                <a th:href="@{/instructor/assignments(courseId=${course.id})}"
-                                   class="btn btn-outline-warning pcfa-course-action w-100">課題管理</a>
-                            </div>
-                            <div class="col-6">
-                                <a th:href="@{/instructor/submissions(courseId=${course.id})}"
-                                   class="btn btn-outline-success pcfa-course-action w-100">提出確認</a>
-                            </div>
-                            <div class="col-6">
-                                <a th:href="@{/instructor/attendance(courseId=${course.id})}"
-                                   class="btn btn-outline-secondary pcfa-course-action w-100">出欠確認</a>
-                            </div>
-                            <div class="col-6">
-                                <a th:href="@{/instructor/students(courseId=${course.id})}"
-                                   class="btn btn-outline-dark pcfa-course-action w-100">受講者一覧</a>
-                            </div>
-                            <div class="col-6">
-                                <a th:href="@{/instructor/announcements(courseId=${course.id})}"
-                                   class="btn btn-outline-danger pcfa-course-action w-100">お知らせ</a>
-                            </div>
-                            <div class="col-6">
-                                <a th:href="@{/chat(courseId=${course.id})}"
-                                   class="btn btn-outline-info pcfa-course-action w-100 position-relative">
-                                    チャット
-                                    <span th:if="${chatUnreadMap != null and chatUnreadMap[course.id] != null}"
-                                          class="pcfa-chat-badge"
-                                          th:text="${chatUnreadMap[course.id]}"></span>
-                                </a>
-                            </div>
+    <h2 class="h5 fw-bold mb-3" th:unless="${courseList.empty}">担当コース一覧</h2>
+
+    <div class="row g-4" th:unless="${courseList.empty}">
+        <div class="col-12 col-md-6" th:each="course : ${courseList}">
+            <div class="card pcfa-course-card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0" th:text="${course.name}">コース名</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small mb-0" th:text="${course.description} ?: '（説明なし）'"></p>
+                </div>
+                <div class="card-footer border-0 pt-0 pb-3 px-3">
+                    <div class="row g-2 pcfa-action-grid">
+                        <div class="col-6">
+                            <a th:href="@{/instructor/materials(courseId=${course.id})}"
+                               class="btn btn-outline-primary pcfa-course-action w-100">教材管理</a>
+                        </div>
+                        <div class="col-6">
+                            <a th:href="@{/instructor/assignments(courseId=${course.id})}"
+                               class="btn btn-outline-warning pcfa-course-action w-100">課題管理</a>
+                        </div>
+                        <div class="col-6">
+                            <a th:href="@{/instructor/submissions(courseId=${course.id})}"
+                               class="btn btn-outline-success pcfa-course-action w-100">提出確認</a>
+                        </div>
+                        <div class="col-6">
+                            <a th:href="@{/instructor/attendance(courseId=${course.id})}"
+                               class="btn btn-outline-secondary pcfa-course-action w-100">出欠確認</a>
+                        </div>
+                        <div class="col-6">
+                            <a th:href="@{/instructor/students(courseId=${course.id})}"
+                               class="btn btn-outline-dark pcfa-course-action w-100">受講者一覧</a>
+                        </div>
+                        <div class="col-6">
+                            <a th:href="@{/instructor/announcements(courseId=${course.id})}"
+                               class="btn btn-outline-danger pcfa-course-action w-100">お知らせ</a>
+                        </div>
+                        <div class="col-6">
+                            <a th:href="@{/chat(courseId=${course.id})}"
+                               class="btn btn-outline-info pcfa-course-action w-100 position-relative">
+                                チャット
+                                <span th:if="${chatUnreadMap != null and chatUnreadMap[course.id] != null}"
+                                      class="pcfa-chat-badge" th:text="${chatUnreadMap[course.id]}"></span>
+                            </a>
                         </div>
                     </div>
                 </div>

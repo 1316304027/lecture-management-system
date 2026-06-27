@@ -60,8 +60,12 @@ public class InstructorController {
         model.addAttribute("loginUser", loginUser);
         model.addAttribute("courseList", courses);
         model.addAttribute("chatUnreadMap", chatService.buildUnreadMap(loginUser, courses));
+        model.addAttribute("totalUnreadChat", chatService.countUnreadTotal(loginUser, courses));
         model.addAttribute("isProxy", session.getAttribute("adminUser") != null);
-        model.addAttribute("scheduleRows", buildInstructorSchedule(courses));
+        List<lecture_management_system.dto.InstructorScheduleRowDto> scheduleRows = buildInstructorSchedule(courses);
+        model.addAttribute("scheduleRows", scheduleRows);
+        long todayCount = scheduleRows.stream().filter(r -> "today".equals(r.getTiming())).count();
+        model.addAttribute("todayLessonCount", todayCount);
         return "instructor-home";
     }
 
