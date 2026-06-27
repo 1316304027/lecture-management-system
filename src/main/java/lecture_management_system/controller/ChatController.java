@@ -3,6 +3,7 @@ package lecture_management_system.controller;
 import jakarta.servlet.http.HttpSession;
 import lecture_management_system.entity.*;
 import lecture_management_system.service.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -77,10 +78,26 @@ public class ChatController {
             Course selected = courseService.findById(courseId);
             model.addAttribute("selectedCourse", selected);
             model.addAttribute("messages", selected != null ? chatService.getMessages(courseId) : java.util.List.of());
+            model.addAttribute("courseId", courseId);
         } else {
             model.addAttribute("messages", java.util.List.of());
         }
         return "admin-chat";
+    }
+
+    /**
+     * 管理者がコースチャットにメッセージ送信
+     */
+    @PostMapping("/admin/chat/send")
+    public String adminSendMessage(@RequestParam Long courseId,
+                                   @RequestParam String content,
+                                   HttpSession session) {
+        User loginUser = (User) session.getAttribute("loginUser");
+        if (loginUser == null) return "redirect:/login";
+        if (!"ADMIN".equals(loginUser.getRole())) return "redirect:/login";
+
+        chatService.sendMessage(loginUser, courseId, content);
+        return "redirect:/admin/chat?courseId=" + courseId;
     }
 
     /**

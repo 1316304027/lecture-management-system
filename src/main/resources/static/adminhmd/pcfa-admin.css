@@ -100,7 +100,18 @@
 /* ---- Charts (template + real data) ---- */
 .chart-bars.pcfa-lesson-chart {
   height: 260px;
-  grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  gap: 1rem;
+  padding: 0.5rem 0.25rem 0;
+  overflow-x: auto;
+}
+
+.chart-bars.pcfa-lesson-chart .chart-column {
+  flex: 0 0 52px;
+  width: 52px;
+  max-width: 52px;
 }
 
 .chart-bars.pcfa-lesson-chart .chart-column span {
@@ -530,4 +541,111 @@ body.sidebar-mini .sidebar-user small {
 
 body.sidebar-mini .sidebar-user {
   padding: 0.75rem 0.5rem;
+}
+
+/* ---- Chat room (WeChat-style) ---- */
+.pcfa-chat-room {
+  display: flex;
+  flex-direction: column;
+  min-height: 520px;
+  overflow: hidden;
+}
+
+.pcfa-chat-messages {
+  flex: 1;
+  min-height: 380px;
+  max-height: 62vh;
+  overflow-y: auto;
+  padding: 1.25rem;
+  background: var(--admin-surface-soft);
+}
+
+.pcfa-msg-row {
+  display: flex;
+  margin-bottom: 1rem;
+  width: 100%;
+}
+
+.pcfa-msg-row.mine { justify-content: flex-end; }
+.pcfa-msg-row.other { justify-content: flex-start; }
+
+.pcfa-msg-block { max-width: min(420px, 85%); }
+
+.pcfa-msg-meta {
+  font-size: 0.72rem;
+  color: var(--admin-muted);
+  margin-bottom: 0.25rem;
+}
+
+.pcfa-msg-bubble {
+  position: relative;
+  padding: 0.65rem 0.9rem;
+  border-radius: 16px;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.pcfa-msg-bubble.mine {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  border-radius: 16px 16px 4px 16px;
+}
+
+.pcfa-msg-bubble.other {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 16px 16px 16px 4px;
+}
+
+.pcfa-msg-delete {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.pcfa-msg-bubble.mine:hover .pcfa-msg-delete { opacity: 0.85; }
+
+.pcfa-chat-compose {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--admin-border);
+  background: var(--admin-surface);
+}
+
+.pcfa-chat-send {
+  min-width: 52px;
+  height: 44px;
+}
+
+.pcfa-chat-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+}
+
+.pcfa-assignment-chart .chart-column span {
+  background: linear-gradient(180deg, #16a34a, #22c55e);
+}
+
+.pcfa-bar-label {
+  display: block;
+  max-width: 52px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pcfa-nav-initials i {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+[data-theme="dark"] .pcfa-chat-messages {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+[data-theme="dark"] .pcfa-msg-bubble.other {
+  background: var(--admin-surface-soft);
 }

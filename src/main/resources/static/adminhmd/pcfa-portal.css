@@ -1,0 +1,133 @@
+/* Portal pages: legacy pcfa-* class compatibility on admin shell */
+
+.pcfa-page-header {
+  margin-bottom: 1.5rem;
+}
+
+.pcfa-page-header h1,
+.pcfa-page-header .h4 {
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.pcfa-admin-section {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  box-shadow: var(--admin-shadow-sm);
+  margin-bottom: 1.25rem;
+  overflow: hidden;
+}
+
+.pcfa-admin-section-header {
+  padding: 0.85rem 1.15rem;
+  font-weight: 600;
+  border-bottom: 1px solid var(--admin-border);
+  background: var(--admin-surface-soft);
+}
+
+.pcfa-admin-section-body {
+  padding: 1rem 1.15rem;
+}
+
+.pcfa-report-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.pcfa-report-stat {
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.pcfa-report-stat .val {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.pcfa-report-stat .lbl {
+  font-size: 0.78rem;
+  color: var(--admin-muted);
+  margin-top: 0.25rem;
+}
+
+.pcfa-report-stat--green .val { color: #16a34a; }
+
+.pcfa-course-card {
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  box-shadow: var(--admin-shadow-sm);
+  background: var(--admin-surface);
+}
+
+.pcfa-course-card .card-header {
+  background: var(--admin-surface-soft);
+  border-bottom: 1px solid var(--admin-border);
+  font-weight: 600;
+}
+
+.pcfa-empty-state {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  border: 1px dashed var(--admin-border);
+  border-radius: 12px;
+  background: var(--admin-surface-soft);
+}
+
+.pcfa-info-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: rgba(37, 99, 235, 0.08);
+  border: 1px solid rgba(37, 99, 235, 0.15);
+}
+
+.pcfa-chat-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+}
+
+.pcfa-course-action {
+  font-size: 0.82rem;
+}
+
+.pcfa-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.88rem;
+  color: var(--admin-muted);
+  text-decoration: none;
+  margin-bottom: 1rem;
+}
+
+.pcfa-back-link:hover { color: var(--admin-primary); }
+
+[data-theme="dark"] .pcfa-admin-section,
+[data-theme="dark"] .pcfa-report-stat,
+[data-theme="dark"] .pcfa-course-card {
+  background: var(--admin-surface);
+}
+
+[data-theme="dark"] .table-light {
+  --bs-table-bg: var(--admin-surface-soft);
+}

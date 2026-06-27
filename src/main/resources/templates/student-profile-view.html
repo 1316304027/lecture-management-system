@@ -1,25 +1,19 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/portal-layout :: layout(~{::title}, 'student', 'profile', ~{::main}, ~{::extraHead}, ~{::extraScripts}, false)}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>プロフィール | PCFA受講管理システム</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+    <th:block th:fragment="extraHead"></th:block>
 </head>
-<body class="pcfa-body">
+<body>
+<th:block th:fragment="main">
+    <a class="pcfa-back-link" th:href="@{/student/home}"><i class="bi bi-arrow-left"></i> ホームへ戻る</a>
 
-<nav class="navbar navbar-dark pcfa-navbar">
-    <a class="navbar-brand" th:href="@{/student/home}">← ホームへ戻る</a>
-    <span class="text-white small fw-bold">プロフィール</span>
-    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
-</nav>
-
-<div class="container py-4" style="max-width: 640px;">
     <div th:replace="~{fragments/profile-card :: card(${user}, ${avatarUrl}, ${courseList}, false)}"></div>
     <div class="text-center mt-3">
         <a th:href="@{/student/profile}" class="btn btn-primary pcfa-btn-primary">編集する</a>
     </div>
-</div>
+</th:block>
+<th:block th:fragment="extraScripts"></th:block>
 </body>
 </html>

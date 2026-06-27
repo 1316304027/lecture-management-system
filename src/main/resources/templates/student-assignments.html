@@ -7,28 +7,22 @@
   【修正②】画面デザインを改善
   Fix②: Improved screen design
 -->
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/portal-layout :: layout(~{::title}, 'student', 'assignments', ~{::main}, ~{::extraHead}, ~{::extraScripts}, false)}">
 <head>
-    <meta charset="UTF-8">
     <title>課題提出</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+    <th:block th:fragment="extraHead">
     <style>
         /* スコア色分け / Score color coding */
         .score-high { color: #198754; font-weight: 600; }
         .score-mid  { color: #fd7e14; font-weight: 600; }
         .score-low  { color: #dc3545; font-weight: 600; }
     </style>
+    </th:block>
 </head>
-<body class="pcfa-body">
-<nav class="navbar navbar-dark pcfa-navbar px-4 shadow-sm">
-    <a class="navbar-brand" href="/student/home">← ホーム</a>
-    <a th:href="@{/student/profile}" class="btn btn-outline-light btn-sm me-2">プロフィール</a>
-    <span class="text-white fw-bold" th:text="'課題提出 - ' + ${course.name}"></span>
-    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
-</nav>
-
-<div class="container mt-4">
+<body>
+<th:block th:fragment="main">
+    <a class="pcfa-back-link" th:href="@{/student/home}"><i class="bi bi-arrow-left"></i> ホームへ戻る</a>
 
     <!-- メッセージ / Message -->
     <div th:if="${message}" class="alert alert-dismissible fade show"
@@ -145,7 +139,8 @@
     </div>
 
     <div id="upload-msg" class="alert alert-info mt-2 d-none"></div>
-</div>
+</th:block>
+<th:block th:fragment="extraScripts">
 <script>
 document.querySelectorAll('.btn-direct-upload').forEach(function(btn) {
     btn.addEventListener('click', async function() {
@@ -177,6 +172,6 @@ document.querySelectorAll('.btn-direct-upload').forEach(function(btn) {
     });
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</th:block>
 </body>
 </html>

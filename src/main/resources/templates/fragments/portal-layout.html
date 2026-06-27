@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout (title, portalRole, activeNav, main, extraHead, extraScripts, fluid)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:replace="${title}">PCFA</title>
+    <link rel="stylesheet" th:href="@{/adminhmd/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/adminhmd/vendors/bootstrap-icons/bootstrap-icons.css}">
+    <link rel="stylesheet" th:href="@{/adminhmd/css/style.css}">
+    <link rel="stylesheet" th:href="@{/adminhmd/pcfa-admin.css}">
+    <link rel="stylesheet" th:href="@{/adminhmd/pcfa-portal.css}">
+    <th:block th:replace="${extraHead} ?: ~{}"></th:block>
+</head>
+<body th:with="homeUrl=${portalRole == 'instructor'} ? @{/instructor/home} : @{/student/home},
+               roleLabel=${portalRole == 'instructor'} ? '講師ポータル' : '受講者ポータル'">
+<div class="admin-shell">
+    <div class="sidebar-backdrop" data-sidebar-close></div>
+
+    <aside class="admin-sidebar" id="adminSidebar"
+           th:attr="aria-label=${portalRole == 'instructor'} ? '講師メニュー' : '受講者メニュー'">
+        <div class="sidebar-header">
+            <a class="brand-mark" th:href="${homeUrl}">
+                <span class="brand-icon"><i class="bi bi-mortarboard-fill" aria-hidden="true"></i></span>
+                <span class="brand-copy">
+                    <span class="brand-title">PCFA</span>
+                    <span class="brand-subtitle" th:text="${roleLabel}">ポータル</span>
+                </span>
+            </a>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a class="nav-link" th:href="${homeUrl}"
+               th:classappend="${activeNav == 'home'} ? ' active' : ''">
+                <span class="nav-icon"><i class="bi bi-house-door" aria-hidden="true"></i></span>
+                <span class="nav-text">ホーム</span>
+            </a>
+            <a th:if="${portalRole == 'student'}" class="nav-link" th:href="@{/student/profile}"
+               th:classappend="${activeNav == 'profile'} ? ' active' : ''">
+                <span class="nav-icon"><i class="bi bi-person-circle" aria-hidden="true"></i></span>
+                <span class="nav-text">プロフィール</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-user" th:if="${loginUser != null}">
+            <img th:if="${portalNavAvatarUrl != null}" class="avatar-img avatar-md sidebar-user-avatar"
+                 th:src="${portalNavAvatarUrl}" th:alt="${loginUser.name}">
+            <span th:unless="${portalNavAvatarUrl != null}"
+                  class="avatar-img avatar-md sidebar-user-avatar pcfa-nav-initials"
+                  aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+            <strong th:text="${loginUser.name}">ユーザー</strong>
+            <small th:text="${roleLabel}">ポータル</small>
+        </div>
+
+        <div class="sidebar-footer">
+            <span class="status-dot"></span>
+            <span class="sidebar-footer-text">PCFA 研修管理</span>
+        </div>
+    </aside>
+
+    <div class="admin-main">
+        <nav class="navbar admin-navbar navbar-expand bg-white">
+            <div class="container-fluid px-3 px-lg-4">
+                <button class="sidebar-toggle" type="button" data-sidebar-toggle aria-label="メニュー">
+                    <span></span><span></span><span></span>
+                </button>
+                <div class="navbar-actions ms-auto d-flex align-items-center gap-2">
+                    <form th:if="${isProxy}" action="/admin/restore-session" method="post" class="d-none d-md-inline">
+                        <button type="submit" class="btn btn-warning btn-sm">管理者へ戻る</button>
+                    </form>
+                    <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="テーマ切替">
+                        <i class="bi bi-moon-stars" data-theme-icon aria-hidden="true"></i>
+                    </button>
+                    <div class="dropdown">
+                        <button class="profile-button dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <img th:if="${portalNavAvatarUrl != null}" class="avatar-img avatar-sm"
+                                 th:src="${portalNavAvatarUrl}" th:alt="${loginUser.name}">
+                            <span th:unless="${portalNavAvatarUrl != null}"
+                                  class="avatar-img avatar-sm pcfa-nav-initials"
+                                  aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+                            <span class="profile-name d-none d-sm-inline" th:text="${loginUser.name}">ユーザー</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" th:href="${homeUrl}"><i class="bi bi-house-door me-2"></i>ホーム</a></li>
+                            <li th:if="${portalRole == 'student'}">
+                                <a class="dropdown-item" th:href="@{/student/profile}"><i class="bi bi-person-circle me-2"></i>プロフィール</a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" th:href="@{/logout}"><i class="bi bi-box-arrow-right me-2"></i>ログアウト</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="dashboard-content">
+            <th:block th:if="${fluid}">
+                <div class="pcfa-fluid-root" th:replace="${main}"></div>
+            </th:block>
+            <div th:unless="${fluid}" class="container-fluid px-3 px-lg-4 py-4">
+                <div th:replace="${main}"></div>
+            </div>
+        </main>
+
+        <footer class="admin-footer">
+            <div class="container-fluid px-3 px-lg-4">
+                <span th:text="'PCFA 受講管理システム — ' + ${roleLabel}">PCFA</span>
+            </div>
+        </footer>
+    </div>
+</div>
+
+<script th:src="@{/adminhmd/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/adminhmd/js/main.js}"></script>
+<th:block th:replace="${extraScripts} ?: ~{}"></th:block>
+</body>
+</html>

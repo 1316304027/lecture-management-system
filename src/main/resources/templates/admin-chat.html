@@ -2,7 +2,7 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/adminhmd-layout :: layout(~{::title}, 'chat', ~{::main}, ~{::extraHead}, ~{::extraScripts}, true)}">
 <head>
-    <title>チャット閲覧</title>
+    <title>チャット</title>
     <th:block th:fragment="extraHead"></th:block>
 </head>
 <body>
@@ -22,7 +22,7 @@
                     </nav>
                 </div>
             </div>
-            <p class="small text-muted mb-0 px-1">コースごとにチャットを分けて閲覧します（発表・運用向け）。</p>
+            <p class="small text-muted mb-0 px-1">コース単位で講師・受講者と会話できます。不適切な投稿は削除可能です。</p>
         </aside>
 
         <div class="pcfa-split-main">
@@ -32,7 +32,6 @@
                     <div class="panel-body text-center py-5 text-muted">
                         <i class="bi bi-chat-dots display-4 d-block mb-3 opacity-50"></i>
                         <p class="mb-0 fw-semibold">← 左のコースを選択してください</p>
-                        <p class="small mb-0 mt-2">全コース混在ではなく、コース単位で確認するのが企業システムの標準です。</p>
                     </div>
                 </div>
 
@@ -41,60 +40,14 @@
                         <div class="page-heading-copy">
                             <span class="page-icon"><i class="bi bi-chat-dots"></i></span>
                             <div>
-                                <p class="eyebrow mb-1">Chat Monitor</p>
+                                <p class="eyebrow mb-1">Course Chat</p>
                                 <h1 class="h3 mb-1" th:text="${selectedCourse.name}">コース</h1>
-                                <p class="text-muted mb-0">このコースのチャットのみ表示（新しい順）</p>
+                                <p class="text-muted mb-0">講師・受講者と同じルームでやり取り（管理者として参加）</p>
                             </div>
-                        </div>
-                        <div class="heading-actions">
-                            <span class="badge text-bg-light" th:text="${messages.size()} + ' 件'"></span>
                         </div>
                     </div>
 
-                    <section class="panel mb-0">
-                        <div class="panel-header">
-                            <h2 class="h6 mb-0 section-title"><i class="bi bi-table"></i><span>メッセージ一覧</span></h2>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table align-middle mb-0">
-                                <thead>
-                                <tr>
-                                    <th style="width:140px">送信日時</th>
-                                    <th style="width:88px">ロール</th>
-                                    <th style="width:120px">送信者</th>
-                                    <th>メッセージ</th>
-                                    <th style="width:72px" class="text-center">操作</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                <tr th:each="msg : ${messages}">
-                                    <td class="small" th:text="${#temporals.format(msg.sentAt, 'yyyy/MM/dd HH:mm')}"></td>
-                                    <td>
-                                        <span class="badge text-white"
-                                              th:classappend="${msg.sender.role == 'ADMIN'} ? 'role-admin' :
-                                                              (${msg.sender.role == 'INSTRUCTOR'} ? 'role-instructor' : 'role-student')"
-                                              th:text="${msg.sender.role == 'ADMIN'} ? '管理者' :
-                                                       (${msg.sender.role == 'INSTRUCTOR'} ? '講師' : '受講者')"></span>
-                                    </td>
-                                    <td th:text="${msg.sender.name}"></td>
-                                    <td><span class="msg-content" th:text="${msg.content}"></span></td>
-                                    <td class="text-center">
-                                        <form th:action="@{/admin/chat/delete/{id}(id=${msg.id})}" method="post"
-                                              onsubmit="return confirm('このメッセージを削除しますか？')">
-                                            <input type="hidden" name="courseId" th:value="${selectedCourse.id}">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="削除">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </td>
-                                </tr>
-                                <tr th:if="${messages.empty}">
-                                    <td colspan="5" class="text-center text-muted py-4">このコースにはメッセージがありません</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </section>
+                    <div th:replace="~{fragments/pcfa-chat-room :: chatRoom(${messages}, ${loginUser}, ${selectedCourse.id}, true, true)}"></div>
                 </th:block>
             </div>
         </div>

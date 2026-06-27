@@ -1,64 +1,63 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/portal-layout :: layout(~{::title}, 'student', 'home', ~{::main}, ~{::extraHead}, ~{::extraScripts}, false)}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>受講者ホーム | PCFA受講管理システム</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+    <th:block th:fragment="extraHead"></th:block>
 </head>
-<body class="pcfa-body">
+<body>
+<th:block th:fragment="main">
 
-<nav class="navbar navbar-dark pcfa-navbar">
-    <span class="navbar-brand mb-0">PCFA受講管理システム</span>
-    <div class="d-flex align-items-center gap-2">
-        <a th:href="@{/student/profile}" class="d-flex align-items-center gap-2 text-white text-decoration-none">
-            <img th:if="${avatarUrl}" th:src="${avatarUrl}" alt="" class="pcfa-avatar-sm">
-            <span th:unless="${avatarUrl}" class="pcfa-avatar-placeholder-sm"
-                  th:text="${#strings.substring(loginUser.name,0,1)}"></span>
-            <span class="small" th:text="${loginUser.name} + ' さん'"></span>
-        </a>
-        <form th:if="${isProxy}" action="/admin/restore-session" method="post" class="d-inline">
-            <button type="submit" class="btn btn-warning btn-sm">管理者へ戻る</button>
-        </form>
-        <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
-    </div>
-</nav>
-
-<div class="container py-4" style="max-width: 960px;">
-
-    <div class="pcfa-page-header">
-        <h1>受講者ホーム</h1>
-        <p th:text="'ようこそ、' + ${loginUser.name} + ' さん。'"></p>
+    <div class="page-heading mb-4">
+        <div class="page-heading-copy">
+            <span class="page-icon"><i class="bi bi-house-door" aria-hidden="true"></i></span>
+            <div>
+                <p class="eyebrow mb-1">Student Portal</p>
+                <h1 class="h3 mb-1">受講者ホーム</h1>
+                <p class="text-muted mb-0" th:text="'ようこそ、' + ${loginUser.name} + ' さん。'"></p>
+            </div>
+        </div>
     </div>
 
     <!-- Dashboard 統計 -->
-    <div class="row g-3 mb-4" th:unless="${courseList.empty}">
+    <section class="row g-3 mb-4" th:unless="${courseList.empty}" aria-label="サマリー">
         <div class="col-6 col-md-3">
-            <div class="pcfa-report-stat">
-                <div class="val" th:text="${courseList.size()}">0</div>
-                <div class="lbl">受講コース</div>
-            </div>
+            <article class="metric-card metric-primary h-100">
+                <div class="metric-top">
+                    <span class="metric-label">受講コース</span>
+                    <span class="metric-icon"><i class="bi bi-journal-bookmark" aria-hidden="true"></i></span>
+                </div>
+                <div class="metric-value" th:text="${courseList.size()}">0</div>
+            </article>
         </div>
         <div class="col-6 col-md-3">
-            <div class="pcfa-report-stat">
-                <div class="val" th:text="${avgAttendanceRate} + '%'">0%</div>
-                <div class="lbl">平均出席率</div>
-            </div>
+            <article class="metric-card metric-success h-100">
+                <div class="metric-top">
+                    <span class="metric-label">平均出席率</span>
+                    <span class="metric-icon"><i class="bi bi-calendar-check" aria-hidden="true"></i></span>
+                </div>
+                <div class="metric-value" th:text="${avgAttendanceRate} + '%'">0%</div>
+            </article>
         </div>
         <div class="col-6 col-md-3">
-            <div class="pcfa-report-stat">
-                <div class="val" th:text="${totalPendingAssignments}">0</div>
-                <div class="lbl">未提出課題</div>
-            </div>
+            <article class="metric-card metric-warning h-100">
+                <div class="metric-top">
+                    <span class="metric-label">未提出課題</span>
+                    <span class="metric-icon"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></span>
+                </div>
+                <div class="metric-value" th:text="${totalPendingAssignments}">0</div>
+            </article>
         </div>
         <div class="col-6 col-md-3">
-            <div class="pcfa-report-stat">
-                <div class="val" th:text="${totalUnreadChat}">0</div>
-                <div class="lbl">未読チャット</div>
-            </div>
+            <article class="metric-card metric-primary h-100">
+                <div class="metric-top">
+                    <span class="metric-label">未読チャット</span>
+                    <span class="metric-icon"><i class="bi bi-chat-dots" aria-hidden="true"></i></span>
+                </div>
+                <div class="metric-value" th:text="${totalUnreadChat}">0</div>
+            </article>
         </div>
-    </div>
+    </section>
 
     <div class="pcfa-info-bar mb-4" th:unless="${courseList.empty}">
         <span class="pcfa-info-bar-label">クイックリンク</span>
@@ -120,6 +119,7 @@
             </div>
         </div>
     </div>
-</div>
+</th:block>
+<th:block th:fragment="extraScripts"></th:block>
 </body>
 </html>

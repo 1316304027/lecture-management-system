@@ -178,6 +178,98 @@
                         </div>
                     </section>
 
+                    <!-- 課題提出率（按课题维度，与出席按授業日区分） -->
+                    <section class="pcfa-chart-grid mb-3" th:if="${assignmentStats != null and !assignmentStats.empty}">
+                        <div class="panel h-100 mb-0">
+                            <div class="panel-header">
+                                <div>
+                                    <h2 class="h5 mb-1 section-title"><i class="bi bi-upload"></i><span>課題ごとの提出率</span></h2>
+                                    <p class="text-muted mb-0">縦軸＝提出率（%）／横軸＝公開課題。受講者一覧の「提出」列と同じ集計です。</p>
+                                </div>
+                            </div>
+                            <div class="panel-body">
+                                <div class="pcfa-bar-chart-wrap">
+                                    <div class="pcfa-y-axis" aria-hidden="true">
+                                        <span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span>
+                                    </div>
+                                    <div class="pcfa-chart-area">
+                                        <div class="pcfa-chart-gridlines" aria-hidden="true"></div>
+                                        <div class="chart-bars pcfa-lesson-chart pcfa-assignment-chart" id="assignmentBarChart">
+                                            <div class="chart-column pcfa-assignment-bar"
+                                                 th:each="as, stat : ${assignmentStats}"
+                                                 th:classappend="${stat.first} ? ' is-selected' : ''"
+                                                 th:style="|--bar-size: ${as.submissionRate}%;|"
+                                                 th:attr="data-title=${as.title},
+                                                          data-rate=${as.submissionRate},
+                                                          data-submitted=${as.submittedCount},
+                                                          data-enrolled=${as.enrolledCount},
+                                                          data-graded=${as.gradedCount},
+                                                          data-avg=${as.averageScore}"
+                                                 role="button" tabindex="0">
+                                                <span></span>
+                                                <small class="pcfa-bar-label" th:text="${#strings.abbreviate(as.title, 8)}">課題</small>
+                                            </div>
+                                        </div>
+                                        <div class="pcfa-x-axis-label text-muted small">公開課題</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="panel h-100 mb-0">
+                            <div class="panel-header">
+                                <div>
+                                    <h2 class="h5 mb-1 section-title"><i class="bi bi-pie-chart"></i><span id="assignDonutTitle">選択中の課題</span></h2>
+                                    <p class="text-muted mb-0" id="assignDonutSubtitle">棒をクリックで課題単位の提出内訳</p>
+                                </div>
+                            </div>
+                            <div class="panel-body text-center py-3">
+                                <div class="donut-chart pcfa-donut-sm mx-auto" id="assignDonut"></div>
+                                <div class="legend-list mt-3 text-start" id="assignDonutLegend">
+                                    <div><span><span class="legend-dot bg-success"></span>提出済み</span><strong id="assignLegendSubmitted">—</strong></div>
+                                    <div><span><span class="legend-dot bg-secondary"></span>未提出</span><strong id="assignLegendPending">—</strong></div>
+                                    <div><span><span class="legend-dot bg-primary"></span>登録受講者</span><strong id="assignLegendEnrolled">—</strong></div>
+                                </div>
+                                <p class="small text-muted mt-3 mb-0">
+                                    平均点（採点済みのみ）：
+                                    <strong id="assignAvgScore">—</strong>
+                                </p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="panel mb-3" th:if="${assignmentStats != null and !assignmentStats.empty}">
+                        <div class="panel-header">
+                            <h2 class="h5 mb-0 section-title"><i class="bi bi-table"></i><span>課題ごとの提出状況</span></h2>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle mb-0">
+                                <thead>
+                                <tr>
+                                    <th>課題名</th>
+                                    <th class="text-end">提出</th>
+                                    <th class="text-end">未提出</th>
+                                    <th class="text-end">提出率</th>
+                                    <th class="text-end">採点済</th>
+                                    <th class="text-end">平均点</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="as : ${assignmentStats}">
+                                    <td th:text="${as.title}"></td>
+                                    <td class="text-end" th:text="${as.submittedCount}"></td>
+                                    <td class="text-end" th:text="${as.enrolledCount - as.submittedCount}"></td>
+                                    <td class="text-end fw-semibold" th:text="|${as.submissionRate}%|"></td>
+                                    <td class="text-end" th:text="${as.gradedCount}"></td>
+                                    <td class="text-end">
+                                        <span th:if="${as.averageScore != null}" th:text="|${as.averageScore}点|"></span>
+                                        <span th:unless="${as.averageScore != null}" class="text-muted">—</span>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+
                     <!-- 授業別テーブル -->
                     <section class="panel mb-3" th:if="${lessonStats != null and !lessonStats.empty}">
                         <div class="panel-header">
@@ -326,6 +418,44 @@ function filterReportRows(q) {
         if (legendPresent) legendPresent.textContent = present + ' 名';
         if (legendAbsent) legendAbsent.textContent = absent + ' 名';
         if (legendEnrolled) legendEnrolled.textContent = enrolled + ' 名';
+    }
+
+    bars.forEach(bar => {
+        bar.addEventListener('click', () => selectBar(bar));
+        bar.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectBar(bar); }});
+    });
+    selectBar(bars[0]);
+})();
+
+(function initAssignmentChart() {
+    const bars = document.querySelectorAll('.pcfa-assignment-bar');
+    if (!bars.length) return;
+    const donut = document.getElementById('assignDonut');
+    const title = document.getElementById('assignDonutTitle');
+    const subtitle = document.getElementById('assignDonutSubtitle');
+    const legendSubmitted = document.getElementById('assignLegendSubmitted');
+    const legendPending = document.getElementById('assignLegendPending');
+    const legendEnrolled = document.getElementById('assignLegendEnrolled');
+    const avgScore = document.getElementById('assignAvgScore');
+
+    function selectBar(bar) {
+        bars.forEach(b => b.classList.remove('is-selected'));
+        bar.classList.add('is-selected');
+        const rate = parseFloat(bar.dataset.rate) || 0;
+        const submitted = parseInt(bar.dataset.submitted, 10) || 0;
+        const enrolled = parseInt(bar.dataset.enrolled, 10) || 0;
+        const pending = Math.max(0, enrolled - submitted);
+        if (donut) {
+            donut.innerHTML = '<span>' + rate + '%</span>';
+            donut.style.background = 'conic-gradient(#16a34a 0 ' + rate + '%, #e2e8f0 ' + rate + '% 100%)';
+        }
+        if (title) title.textContent = bar.dataset.title || '課題';
+        if (subtitle) subtitle.textContent = '提出 ' + submitted + ' / ' + enrolled + ' 名';
+        if (legendSubmitted) legendSubmitted.textContent = submitted + ' 名';
+        if (legendPending) legendPending.textContent = pending + ' 名';
+        if (legendEnrolled) legendEnrolled.textContent = enrolled + ' 名';
+        const avg = bar.dataset.avg;
+        if (avgScore) avgScore.textContent = (avg && avg !== 'null') ? avg + ' 点' : '採点データなし';
     }
 
     bars.forEach(bar => {

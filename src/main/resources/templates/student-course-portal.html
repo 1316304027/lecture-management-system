@@ -1,45 +1,43 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/portal-layout :: layout(~{::title}, 'student', 'home', ~{::main}, ~{::extraHead}, ~{::extraScripts}, false)}">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>コースポータル | PCFA受講管理システム</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+    <th:block th:fragment="extraHead"></th:block>
 </head>
-<body class="pcfa-body">
+<body>
+<th:block th:fragment="main">
+    <a class="pcfa-back-link" th:href="@{/student/home}"><i class="bi bi-arrow-left"></i> ホームへ戻る</a>
 
-<nav class="navbar navbar-dark pcfa-navbar">
-    <a class="navbar-brand" href="/student/home">← ホームへ戻る</a>
-    <span class="text-white small fw-bold" th:text="${course.name}"></span>
-    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
-</nav>
-
-<div class="container py-4" style="max-width: 960px;">
-
-    <div class="pcfa-page-header mb-4">
-        <h1 class="h4 fw-bold mb-1" th:text="${course.name}"></h1>
-        <p class="text-muted small mb-0" th:text="${course.description} ?: '（説明なし）'"></p>
+    <div class="page-heading mb-3">
+        <div class="page-heading-copy">
+            <span class="page-icon"><i class="bi bi-mortarboard"></i></span>
+            <div>
+                <p class="eyebrow mb-1">Course Portal</p>
+                <h1 class="h3 mb-1" th:text="${course.name}"></h1>
+                <p class="text-muted mb-0" th:text="${course.description} ?: '（説明なし）'"></p>
+            </div>
+        </div>
     </div>
 
     <div class="row g-3 mb-4" th:if="${courseStats != null}">
         <div class="col-4">
-            <div class="pcfa-report-stat">
-                <div class="val" th:text="${courseStats.attendanceRate} + '%'">0%</div>
-                <div class="lbl">出席率</div>
-            </div>
+            <article class="metric-card metric-primary h-100">
+                <div class="metric-top"><span class="metric-label">出席率</span></div>
+                <div class="metric-value" th:text="${courseStats.attendanceRate} + '%'">0%</div>
+            </article>
         </div>
         <div class="col-4">
-            <div class="pcfa-report-stat">
-                <div class="val" th:text="${courseStats.pendingAssignments}">0</div>
-                <div class="lbl">未提出課題</div>
-            </div>
+            <article class="metric-card metric-warning h-100">
+                <div class="metric-top"><span class="metric-label">未提出課題</span></div>
+                <div class="metric-value" th:text="${courseStats.pendingAssignments}">0</div>
+            </article>
         </div>
         <div class="col-4">
-            <div class="pcfa-report-stat">
-                <div class="val" th:text="${chatUnread}">0</div>
-                <div class="lbl">未読チャット</div>
-            </div>
+            <article class="metric-card metric-danger h-100">
+                <div class="metric-top"><span class="metric-label">未読チャット</span></div>
+                <div class="metric-value" th:text="${chatUnread}">0</div>
+            </article>
         </div>
     </div>
 
@@ -65,9 +63,9 @@
         </div>
     </div>
 
-    <div class="card pcfa-course-card mb-4">
-        <div class="card-header">お知らせ</div>
-        <div class="card-body">
+    <section class="panel mb-3">
+        <div class="panel-header"><h2 class="h6 mb-0">お知らせ</h2></div>
+        <div class="panel-body">
             <div th:if="${announcements.empty}" class="text-muted small">お知らせはありません。</div>
             <div th:each="a : ${announcements}" class="border-bottom pb-3 mb-3">
                 <div class="d-flex justify-content-between align-items-start gap-2">
@@ -79,21 +77,21 @@
                 <p class="mb-0 small" style="white-space:pre-wrap" th:text="${a.content}"></p>
             </div>
         </div>
-    </div>
+    </section>
 
     <div class="row g-3">
         <div class="col-md-6">
-            <div class="card pcfa-course-card h-100">
-                <div class="card-header">教材一覧</div>
+            <section class="panel h-100 mb-0">
+                <div class="panel-header"><h2 class="h6 mb-0">教材一覧</h2></div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item small" th:each="m : ${materialList}" th:text="${m.title}"></li>
                     <li class="list-group-item text-muted small" th:if="${materialList.empty}">教材なし</li>
                 </ul>
-            </div>
+            </section>
         </div>
         <div class="col-md-6">
-            <div class="card pcfa-course-card h-100">
-                <div class="card-header">課題一覧</div>
+            <section class="panel h-100 mb-0">
+                <div class="panel-header"><h2 class="h6 mb-0">課題一覧</h2></div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item small" th:each="asg : ${assignmentList}">
                         <span th:text="${asg.title}"></span>
@@ -102,9 +100,10 @@
                     </li>
                     <li class="list-group-item text-muted small" th:if="${assignmentList.empty}">課題なし</li>
                 </ul>
-            </div>
+            </section>
         </div>
     </div>
-</div>
+</th:block>
+<th:block th:fragment="extraScripts"></th:block>
 </body>
 </html>

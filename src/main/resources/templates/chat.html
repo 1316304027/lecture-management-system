@@ -1,174 +1,31 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/portal-layout :: layout(~{::title}, ${loginUser.role == 'INSTRUCTOR'} ? 'instructor' : 'student', 'chat', ~{::main}, ~{::extraHead}, ~{::extraScripts}, false)}">
 <head>
-    <meta charset="UTF-8">
     <title>チャット</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
-    <style>
-
-        .chat-container {
-            max-width: 800px;
-            margin: 20px auto;
-        }
-
-        .chat-box {
-            height: 500px;
-            overflow-y: auto;
-            background: white;
-            padding: 16px;
-            border: 1px solid #dee2e6;
-        }
-
-        /* メッセージ行全体 */
-        .msg-row {
-            display: flex;
-            margin-bottom: 16px;
-            width: 100%;
-        }
-        .msg-row.mine {
-            justify-content: flex-end;
-        }
-        .msg-row.other {
-            justify-content: flex-start;
-        }
-
-        /* 吹き出し本体 */
-        .bubble {
-            padding: 10px 16px;
-            border-radius: 18px;
-            font-size: 14px;
-            line-height: 1.5;
-            /* 【修正】幅を明示的に指定 */
-            max-width: 400px;
-            min-width: 60px;
-            width: fit-content;
-            /* 【修正】文字の折り返し */
-            overflow-wrap: break-word;
-            word-break: break-word;
-            white-space: pre-wrap;
-        }
-
-        .bubble.mine {
-            background: #0d6efd;
-            color: white;
-            border-radius: 18px 18px 4px 18px;
-        }
-
-        .bubble.other {
-            background: #e9ecef;
-            color: #212529;
-            border-radius: 18px 18px 18px 4px;
-        }
-
-        .msg-meta {
-            font-size: 11px;
-            color: #6c757d;
-            margin-bottom: 4px;
-        }
-
-        /* 送信ボタンのサイズ固定 */
-        .send-btn {
-            width: 80px;
-            min-width: 80px;
-            height: 44px;
-        }
-    </style>
+    <th:block th:fragment="extraHead"></th:block>
 </head>
-<body class="pcfa-body">
-<nav class="navbar navbar-dark pcfa-navbar px-4">
-    <a class="navbar-brand"
-       th:href="${loginUser.role == 'STUDENT'} ? '/student/home' : '/instructor/home'">
-        ← ホームへ戻る
+<body>
+<th:block th:fragment="main">
+    <a class="pcfa-back-link"
+       th:href="${loginUser.role == 'INSTRUCTOR'} ? @{/instructor/home} : @{/student/home}">
+        <i class="bi bi-arrow-left"></i>
+        <span th:text="${loginUser.role == 'INSTRUCTOR'} ? '講師ホームへ戻る' : 'ホームへ戻る'">戻る</span>
     </a>
-    <span class="text-white fw-bold"
-          th:text="'💬 チャット - ' + ${course.name}"></span>
-    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
-</nav>
 
-<div class="chat-container">
-    <div class="card shadow-sm">
-        <div class="card-header bg-primary text-white fw-bold d-flex justify-content-between align-items-center">
-            <span>💬 <span th:text="${course.name}"></span></span>
-            <small>Shift+Enterで改行 / Enterで送信</small>
-        </div>
-
-        <!-- メッセージ一覧 -->
-        <div class="chat-box" id="chatBox">
-
-            <div th:each="msg : ${messages}">
-                <!-- 自分のメッセージ（右・青） -->
-                <div th:if="${msg.sender.id == loginUser.id}" class="msg-row mine">
-                    <div>
-                        <div class="msg-meta text-end"
-                             th:text="${#temporals.format(msg.sentAt, 'MM/dd HH:mm')}"></div>
-                        <div class="bubble mine" th:text="${msg.content}"></div>
-                    </div>
-                </div>
-
-                <!-- 相手のメッセージ（左・グレー） -->
-                <div th:unless="${msg.sender.id == loginUser.id}" class="msg-row other">
-                    <div>
-                        <div class="msg-meta">
-                            <span th:if="${msg.sender.role == 'STUDENT'}"
-                                  class="badge bg-info text-dark me-1">学生</span>
-                            <span th:if="${msg.sender.role == 'INSTRUCTOR'}"
-                                  class="badge bg-success me-1">教師</span>
-                            <span th:if="${msg.sender.role == 'ADMIN'}"
-                                  class="badge bg-danger me-1">管理者</span>
-                            <strong th:text="${msg.sender.name}"></strong>
-                            <span class="ms-1"
-                                  th:text="${#temporals.format(msg.sentAt, 'MM/dd HH:mm')}"></span>
-                        </div>
-                        <div class="bubble other" th:text="${msg.content}"></div>
-                    </div>
-                </div>
+    <div class="page-heading mb-3">
+        <div class="page-heading-copy">
+            <span class="page-icon"><i class="bi bi-chat-dots"></i></span>
+            <div>
+                <p class="eyebrow mb-1">Course Chat</p>
+                <h1 class="h3 mb-1" th:text="${course.name}">コース</h1>
+                <p class="text-muted mb-0">講師・受講者とリアルタイム風の会話（Enterで送信）</p>
             </div>
-
-            <!-- メッセージなし -->
-            <div th:if="${messages.empty}" class="text-center text-muted py-5">
-                <div class="fs-1">💬</div>
-                <p>まだメッセージはありません</p>
-            </div>
-        </div>
-
-        <!-- 送信フォーム -->
-        <div class="p-3 bg-light border-top">
-            <form th:action="@{/chat/send}" method="post" id="chatForm">
-                <input type="hidden" name="courseId" th:value="${courseId}">
-                <div class="d-flex gap-2 align-items-end">
-                    <textarea name="content"
-                              id="messageInput"
-                              class="form-control"
-                              placeholder="メッセージを入力...（Shift+Enterで改行）"
-                              maxlength="500"
-                              rows="2"
-                              style="border-radius:12px; resize:none;"
-                              required></textarea>
-                    <button type="submit"
-                            class="btn btn-primary send-btn">送信</button>
-                </div>
-            </form>
         </div>
     </div>
-</div>
 
-<script>
-    // 最新メッセージまでスクロール
-    window.onload = function() {
-        var box = document.getElementById('chatBox');
-        box.scrollTop = box.scrollHeight;
-    };
-
-    // Enterで送信、Shift+Enterで改行
-    document.getElementById('messageInput').addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            if (this.value.trim()) {
-                document.getElementById('chatForm').submit();
-            }
-        }
-    });
-</script>
+    <div th:replace="~{fragments/pcfa-chat-room :: chatRoom(${messages}, ${loginUser}, ${courseId}, false, false)}"></div>
+</th:block>
+<th:block th:fragment="extraScripts"></th:block>
 </body>
 </html>

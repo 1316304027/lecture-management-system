@@ -556,6 +556,7 @@ public class AdminController {
             List<StudentReportDto> reportList = reportService.getCourseReport(courseId);
             model.addAttribute("reportList", reportList != null ? reportList : List.of());
             model.addAttribute("lessonStats", reportService.getLessonAttendanceStats(courseId));
+            model.addAttribute("assignmentStats", reportService.getAssignmentAvgScores(courseId));
             if (reportList != null && !reportList.isEmpty()) {
                 double avgAtt = reportList.stream()
                         .filter(r -> r.getTotalLessons() > 0)

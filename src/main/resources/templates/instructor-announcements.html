@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/portal-layout :: layout(~{::title}, 'instructor', 'home', ~{::main}, ~{::extraHead}, ~{::extraScripts}, false)}">
 <head>
-    <meta charset="UTF-8">
     <title>コースお知らせ</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+    <th:block th:fragment="extraHead"></th:block>
 </head>
-<body class="pcfa-body">
-<nav class="navbar navbar-dark pcfa-navbar px-4 shadow-sm">
-    <a class="navbar-brand" href="/instructor/home">← ホームへ戻る</a>
-    <span class="text-white fw-bold" th:text="'お知らせ - ' + ${course.name}"></span>
-    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
-</nav>
+<body>
+<th:block th:fragment="main">
+    <a class="pcfa-back-link" th:href="@{/instructor/home}"><i class="bi bi-arrow-left"></i> 講師ホームへ戻る</a>
 
-<div class="container py-4" style="max-width: 800px;">
-    <div class="pcfa-page-header mb-4">
-        <h1 class="h4 fw-bold mb-1">コースお知らせ</h1>
-        <p class="text-muted small mb-0">
-            授業の変更・予習案内など、受講者への連絡に使います。投稿は受講者の<strong>コース詳細画面</strong>に表示されます。
-            （教材PDF・課題提出とは別機能です）
-        </p>
+    <div class="page-heading mb-3">
+        <div class="page-heading-copy">
+            <span class="page-icon"><i class="bi bi-megaphone"></i></span>
+            <div>
+                <p class="eyebrow mb-1">Announcements</p>
+                <h1 class="h3 mb-1">コースお知らせ</h1>
+                <p class="text-muted mb-0">
+                    <span th:text="${course.name}"></span> — 授業の変更・予習案内など、受講者への連絡に使います。
+                </p>
+            </div>
+        </div>
     </div>
 
     <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
@@ -31,9 +31,9 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <div class="pcfa-admin-section mb-4">
-        <div class="pcfa-admin-section-header">新規お知らせ投稿</div>
-        <div class="pcfa-admin-section-body">
+    <section class="panel mb-3">
+        <div class="panel-header"><h2 class="h6 mb-0">新規お知らせ投稿</h2></div>
+        <div class="panel-body">
             <form th:action="@{/instructor/announcements}" method="post">
                 <input type="hidden" name="courseId" th:value="${course.id}">
                 <div class="mb-3">
@@ -44,27 +44,27 @@
                     <label class="form-label small fw-semibold">お知らせ内容</label>
                     <textarea name="content" class="form-control" rows="4" placeholder="受講者への連絡事項を入力" required></textarea>
                 </div>
-                <button type="submit" class="btn btn-primary pcfa-btn-primary">お知らせを投稿</button>
+                <button type="submit" class="btn btn-primary">お知らせを投稿</button>
             </form>
         </div>
-    </div>
+    </section>
 
-    <div class="pcfa-admin-section">
-        <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center">
-            <span>投稿済みお知らせ</span>
-            <span class="badge bg-light text-dark" th:text="${announcements.size()} + ' 件'"></span>
+    <section class="panel mb-0">
+        <div class="panel-header d-flex justify-content-between align-items-center">
+            <h2 class="h6 mb-0">投稿済みお知らせ</h2>
+            <span class="badge text-bg-light" th:text="${announcements.size()} + ' 件'"></span>
         </div>
-        <div class="pcfa-admin-section-body">
+        <div class="panel-body">
             <div th:if="${announcements.empty}" class="pcfa-empty-state py-4">
                 <p class="text-muted mb-0">まだお知らせは投稿されていません。</p>
             </div>
-            <div th:each="a : ${announcements}" class="pcfa-announcement-item mb-3">
+            <div th:each="a : ${announcements}" class="mb-3 pb-3 border-bottom">
                 <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
                     <h6 class="fw-bold mb-0" th:text="${a.title}"></h6>
                     <span class="text-muted small text-nowrap"
                           th:text="${#temporals.format(a.createdAt, 'yyyy/MM/dd HH:mm')}"></span>
                 </div>
-                <p class="mb-2 text-secondary announcement-body" style="white-space:pre-wrap"
+                <p class="mb-2 text-secondary" style="white-space:pre-wrap"
                    th:id="'body-' + ${a.id}" th:text="${a.content}"></p>
                 <div class="d-flex flex-wrap gap-2">
                     <button type="button" class="btn btn-sm btn-outline-secondary"
@@ -91,14 +91,15 @@
                 </div>
             </div>
         </div>
-    </div>
-</div>
+    </section>
+</th:block>
+<th:block th:fragment="extraScripts">
 <script>
 function toggleAnnEdit(id) {
     const el = document.getElementById('edit-' + id);
     if (el) el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</th:block>
 </body>
 </html>

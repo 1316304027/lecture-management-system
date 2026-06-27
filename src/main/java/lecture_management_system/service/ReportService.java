@@ -177,13 +177,15 @@ public class ReportService {
         }).collect(Collectors.toList());
     }
 
-    /** 公開課題ごとの平均点（採点済みのみ） */
+    /** 公開課題ごとの平均点（採点済みのみ）・提出率 */
     public List<AssignmentAvgScoreDto> getAssignmentAvgScores(Long courseId) {
+        long enrolled = courseUserRepository.findByCourse_IdAndRole(courseId, "STUDENT").size();
         return assignmentRepository.findByCourse_IdAndPublishedTrue(courseId).stream()
                 .map(a -> {
                     AssignmentAvgScoreDto dto = new AssignmentAvgScoreDto();
                     dto.setAssignmentId(a.getId());
                     dto.setTitle(a.getTitle());
+                    dto.setEnrolledCount(enrolled);
                     List<Submission> subs = submissionRepository.findByAssignment_IdOrderBySubmittedAtDesc(a.getId());
                     dto.setSubmittedCount(subs.size());
                     List<Integer> scores = subs.stream()
@@ -191,6 +193,7 @@ public class ReportService {
                             .map(Submission::getScore)
                             .toList();
                     dto.setGradedCount(scores.size());
+                    dto.calcSubmissionRate();
                     if (scores.isEmpty()) {
                         dto.setAverageScore(null);
                     } else {

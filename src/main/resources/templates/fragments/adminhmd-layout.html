@@ -61,7 +61,7 @@
                th:classappend="${activeNav == 'chat'} ? ' active' : ''"
                th:attr="aria-current=${activeNav == 'chat'} ? 'page' : null">
                 <span class="nav-icon"><i class="bi bi-chat-dots" aria-hidden="true"></i></span>
-                <span class="nav-text">チャット閲覧</span>
+                <span class="nav-text">チャット</span>
             </a>
         </nav>
 
@@ -70,7 +70,7 @@
                  th:src="${adminNavAvatarUrl}" th:alt="${displayUser.name}">
             <span th:unless="${adminNavAvatarUrl != null}"
                   class="avatar-img avatar-md sidebar-user-avatar pcfa-nav-initials"
-                  th:text="${#strings.substring(displayUser.name,0,1)}">管</span>
+                  aria-hidden="true"><i class="bi bi-person-fill"></i></span>
             <strong th:text="${displayUser.name}">管理者</strong>
             <small>管理者ワークスペース</small>
         </div>
@@ -100,7 +100,7 @@
                                  th:src="${adminNavAvatarUrl}" th:alt="${displayUser != null ? displayUser.name : 'Admin'}">
                             <span th:unless="${adminNavAvatarUrl != null}"
                                   class="avatar-img avatar-sm pcfa-nav-initials"
-                                  th:text="${displayUser != null ? #strings.substring(displayUser.name,0,1) : '管'}">管</span>
+                                  aria-hidden="true"><i class="bi bi-person-fill"></i></span>
                             <span class="profile-name d-none d-sm-inline"
                                   th:text="${displayUser != null ? displayUser.name : '管理者'}">管理者</span>
                         </button>

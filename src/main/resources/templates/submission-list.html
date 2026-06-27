@@ -1,25 +1,28 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/portal-layout :: layout(~{::title}, 'student', 'home', ~{::main}, ~{::extraHead}, ~{::extraScripts}, false)}">
 <head>
-    <meta charset="UTF-8">
     <title>提出履歴 | PCFA受講管理システム</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+    <th:block th:fragment="extraHead"></th:block>
 </head>
-<body class="pcfa-body">
+<body>
+<th:block th:fragment="main">
+    <a class="pcfa-back-link" th:href="@{/student/home}"><i class="bi bi-arrow-left"></i> ホームへ戻る</a>
 
-<nav class="navbar navbar-dark pcfa-navbar">
-    <a class="navbar-brand" href="/student/home">← ホームへ戻る</a>
-    <span class="text-white small fw-bold">提出履歴</span>
-    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
-</nav>
+    <div class="page-heading mb-3">
+        <div class="page-heading-copy">
+            <span class="page-icon"><i class="bi bi-clock-history"></i></span>
+            <div>
+                <p class="eyebrow mb-1">Submissions</p>
+                <h1 class="h3 mb-1">提出履歴</h1>
+            </div>
+        </div>
+    </div>
 
-<div class="container py-4" style="max-width: 960px;">
-    <div class="card pcfa-course-card">
-        <div class="card-header">提出履歴</div>
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0">
-                <thead class="table-light">
+    <section class="panel mb-0">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
                 <tr>
                     <th>課題</th>
                     <th>ファイル名</th>
@@ -39,13 +42,14 @@
                     <td th:text="${submission.score}"></td>
                     <td th:text="${submission.evaluationComment}"></td>
                 </tr>
+                <tr th:if="${submissionList.empty}">
+                    <td colspan="5" class="text-muted text-center py-4">提出履歴はありません</td>
+                </tr>
                 </tbody>
             </table>
         </div>
-        <div class="card-footer bg-white">
-            <a href="/student/home" class="btn btn-outline-secondary btn-sm">ホームへ戻る</a>
-        </div>
-    </div>
-</div>
+    </section>
+</th:block>
+<th:block th:fragment="extraScripts"></th:block>
 </body>
 </html>

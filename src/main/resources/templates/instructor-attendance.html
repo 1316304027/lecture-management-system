@@ -1,162 +1,163 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/portal-layout :: layout(~{::title}, 'instructor', 'attendance', ~{::main}, ~{::extraHead}, ~{::extraScripts}, false)}">
 <head>
-    <meta charset="UTF-8">
     <title>出欠確認</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+    <th:block th:fragment="extraHead"></th:block>
 </head>
-<body class="pcfa-body">
-<nav class="navbar navbar-dark pcfa-navbar px-3">
-    <a class="navbar-brand" href="/instructor/home">← 講師ホーム</a>
-    <span class="text-white small fw-bold" th:text="'出欠確認 - ' + ${course.name}"></span>
-    <a href="/logout" class="btn btn-outline-light btn-sm">ログアウト</a>
-</nav>
+<body>
+<th:block th:fragment="main">
+    <a class="pcfa-back-link" th:href="@{/instructor/home}">
+        <i class="bi bi-arrow-left"></i> 講師ホームへ戻る
+    </a>
 
-<div class="container py-4" style="max-width: 1000px;">
-    <div class="pcfa-page-header mb-3">
-        <h1 class="h4 fw-bold mb-1">出欠状況</h1>
-        <p class="text-muted small mb-0" th:text="${course.name}"></p>
-    </div>
+    <div style="max-width: 1000px;">
+        <div class="pcfa-page-header mb-3">
+            <h1 class="h4 fw-bold mb-1">出欠状況</h1>
+            <p class="text-muted small mb-0" th:text="${course.name}"></p>
+        </div>
 
-    <div class="pcfa-report-summary mb-4">
-        <div class="pcfa-report-stat">
-            <div class="val" th:text="${totalLessons}">0</div>
-            <div class="lbl">登録授業数</div>
-        </div>
-        <div class="pcfa-report-stat">
-            <div class="val" th:text="${pastLessonCount}">0</div>
-            <div class="lbl">実施済み授業</div>
-        </div>
-        <div class="pcfa-report-stat pcfa-report-stat--green" th:if="${overallAttendanceRate != null}">
-            <div class="val" th:text="${overallAttendanceRate} + '%'">0%</div>
-            <div class="lbl">コース全体出席率</div>
-        </div>
-        <div class="pcfa-report-stat">
-            <div class="val" th:text="${studentList.size()}">0</div>
-            <div class="lbl">受講者数</div>
-        </div>
-    </div>
-
-    <div class="pcfa-admin-section mb-4" th:if="${lessonStats != null and !lessonStats.empty}">
-        <div class="pcfa-admin-section-header py-2">授業日別：出席率</div>
-        <div class="pcfa-admin-section-body p-0">
-            <div class="table-responsive">
-                <table class="table table-sm table-hover mb-0">
-                    <thead class="table-light">
-                    <tr>
-                        <th>授業日</th>
-                        <th class="text-end">出席人数</th>
-                        <th style="width:200px">出席率</th>
-                        <th class="text-end">率</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="ls : ${lessonStats}">
-                        <td th:text="${ls.lessonDate}"></td>
-                        <td class="text-end" th:text="${ls.presentCount} + ' / ' + ${ls.enrolledCount}"></td>
-                        <td>
-                            <div class="progress pcfa-progress-thin">
-                                <div class="progress-bar bg-success"
-                                     th:style="'width:' + ${ls.attendanceRate} + '%'"></div>
-                            </div>
-                        </td>
-                        <td class="text-end fw-semibold" th:text="${ls.attendanceRate} + '%'"></td>
-                    </tr>
-                    </tbody>
-                </table>
+        <div class="pcfa-report-summary mb-4">
+            <div class="pcfa-report-stat">
+                <div class="val" th:text="${totalLessons}">0</div>
+                <div class="lbl">登録授業数</div>
+            </div>
+            <div class="pcfa-report-stat">
+                <div class="val" th:text="${pastLessonCount}">0</div>
+                <div class="lbl">実施済み授業</div>
+            </div>
+            <div class="pcfa-report-stat pcfa-report-stat--green" th:if="${overallAttendanceRate != null}">
+                <div class="val" th:text="${overallAttendanceRate} + '%'">0%</div>
+                <div class="lbl">コース全体出席率</div>
+            </div>
+            <div class="pcfa-report-stat">
+                <div class="val" th:text="${studentList.size()}">0</div>
+                <div class="lbl">受講者数</div>
             </div>
         </div>
-    </div>
 
-    <div class="pcfa-admin-section">
-        <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <span>受講者別：出席状況</span>
-            <a th:href="@{/instructor/students(courseId=${course.id})}"
-               class="btn btn-sm btn-light">受講者一覧へ</a>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                    <tr>
-                        <th style="width:56px"></th>
-                        <th>受講者名</th>
-                        <th style="width:100px">出席回数</th>
-                        <th style="width:200px">出席率</th>
-                        <th style="width:110px">操作</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="u : ${studentList}">
-                        <td class="text-center">
-                            <img th:if="${avatarUrlMap[u.id]}" th:src="${avatarUrlMap[u.id]}" class="pcfa-avatar-sm" alt="">
-                            <span th:unless="${avatarUrlMap[u.id]}" class="pcfa-avatar-placeholder-sm"
-                                  th:text="${#strings.substring(u.name,0,1)}"></span>
-                        </td>
-                        <td class="fw-semibold" th:text="${u.name}"></td>
-                        <td>
-                            <span th:text="${countMap[u.id]}">0</span>
-                            <span class="text-muted">/</span>
-                            <span th:text="${pastLessonCount}">0</span>
-                        </td>
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="progress flex-grow-1 pcfa-progress-thin">
-                                    <div class="progress-bar"
-                                         th:classappend="${rateMap[u.id] != null and rateMap[u.id] < 70} ? 'bg-danger' : 'bg-success'"
-                                         th:style="|width: ${rateMap[u.id] != null ? rateMap[u.id] : 0}%|"></div>
+        <div class="pcfa-admin-section mb-4" th:if="${lessonStats != null and !lessonStats.empty}">
+            <div class="pcfa-admin-section-header py-2">授業日別：出席率</div>
+            <div class="pcfa-admin-section-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th>授業日</th>
+                            <th class="text-end">出席人数</th>
+                            <th style="width:200px">出席率</th>
+                            <th class="text-end">率</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="ls : ${lessonStats}">
+                            <td th:text="${ls.lessonDate}"></td>
+                            <td class="text-end" th:text="${ls.presentCount} + ' / ' + ${ls.enrolledCount}"></td>
+                            <td>
+                                <div class="progress pcfa-progress-thin">
+                                    <div class="progress-bar bg-success"
+                                         th:style="'width:' + ${ls.attendanceRate} + '%'"></div>
                                 </div>
-                                <span class="small text-nowrap"
-                                      th:text="|${rateMap[u.id] != null ? rateMap[u.id] : 0}%|"></span>
-                            </div>
-                        </td>
-                        <td>
-                            <a th:href="|/instructor/attendance?courseId=${course.id}&studentId=${u.id}#detail|"
-                               class="btn btn-sm btn-outline-secondary"
-                               th:classappend="${selectedStudent != null and selectedStudent.id == u.id} ? 'active' : ''">出席詳細</a>
-                        </td>
+                            </td>
+                            <td class="text-end fw-semibold" th:text="${ls.attendanceRate} + '%'"></td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="pcfa-admin-section">
+            <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span>受講者別：出席状況</span>
+                <a th:href="@{/instructor/students(courseId=${course.id})}"
+                   class="btn btn-sm btn-light">受講者一覧へ</a>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                        <tr>
+                            <th style="width:56px"></th>
+                            <th>受講者名</th>
+                            <th style="width:100px">出席回数</th>
+                            <th style="width:200px">出席率</th>
+                            <th style="width:110px">操作</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="u : ${studentList}">
+                            <td class="text-center">
+                                <img th:if="${avatarUrlMap[u.id]}" th:src="${avatarUrlMap[u.id]}" class="pcfa-avatar-sm" alt="">
+                                <span th:unless="${avatarUrlMap[u.id]}" class="pcfa-avatar-placeholder-sm"
+                                      th:text="${#strings.substring(u.name,0,1)}"></span>
+                            </td>
+                            <td class="fw-semibold" th:text="${u.name}"></td>
+                            <td>
+                                <span th:text="${countMap[u.id]}">0</span>
+                                <span class="text-muted">/</span>
+                                <span th:text="${pastLessonCount}">0</span>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="progress flex-grow-1 pcfa-progress-thin">
+                                        <div class="progress-bar"
+                                             th:classappend="${rateMap[u.id] != null and rateMap[u.id] < 70} ? 'bg-danger' : 'bg-success'"
+                                             th:style="|width: ${rateMap[u.id] != null ? rateMap[u.id] : 0}%|"></div>
+                                    </div>
+                                    <span class="small text-nowrap"
+                                          th:text="|${rateMap[u.id] != null ? rateMap[u.id] : 0}%|"></span>
+                                </div>
+                            </td>
+                            <td>
+                                <a th:href="|/instructor/attendance?courseId=${course.id}&studentId=${u.id}#detail|"
+                                   class="btn btn-sm btn-outline-secondary"
+                                   th:classappend="${selectedStudent != null and selectedStudent.id == u.id} ? 'active' : ''">出席詳細</a>
+                            </td>
+                        </tr>
+                        <tr th:if="${studentList.empty}">
+                            <td colspan="5" class="text-muted text-center py-4">受講者未登録</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div th:if="${selectedStudent != null}" id="detail" class="pcfa-admin-section mt-4">
+            <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <span th:text="${selectedStudent.name} + ' の出席履歴'"></span>
+                <div class="d-flex gap-2">
+                    <a th:href="@{/instructor/attendance(courseId=${course.id})}"
+                       class="btn btn-sm btn-light">← 一覧に戻る</a>
+                    <a th:href="@{/instructor/students/{studentId}/profile(studentId=${selectedStudent.id}, courseId=${course.id}, returnTo=${'/instructor/attendance?courseId=' + course.id})}"
+                       class="btn btn-sm btn-outline-secondary">プロフィール</a>
+                </div>
+            </div>
+            <div class="pcfa-admin-section-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                    <tr><th>授業日</th><th>登録時刻</th><th>状態</th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="a : ${detailHistory}">
+                        <td th:text="${a.date}"></td>
+                        <td th:text="${#temporals.format(a.attendedAt, 'yyyy/MM/dd HH:mm')}"></td>
+                        <td><span class="badge bg-success">出席</span></td>
                     </tr>
-                    <tr th:if="${studentList.empty}">
-                        <td colspan="5" class="text-muted text-center py-4">受講者未登録</td>
+                    <tr th:if="${detailHistory.empty}">
+                        <td colspan="3" class="text-muted text-center py-3">出席記録がありません</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
-
-    <div th:if="${selectedStudent != null}" id="detail" class="pcfa-admin-section mt-4">
-        <div class="pcfa-admin-section-header d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <span th:text="${selectedStudent.name} + ' の出席履歴'"></span>
-            <div class="d-flex gap-2">
-                <a th:href="@{/instructor/attendance(courseId=${course.id})}"
-                   class="btn btn-sm btn-light">← 一覧に戻る</a>
-                <a th:href="@{/instructor/students/{studentId}/profile(studentId=${selectedStudent.id}, courseId=${course.id}, returnTo=${'/instructor/attendance?courseId=' + course.id})}"
-                   class="btn btn-sm btn-outline-light">プロフィール</a>
-            </div>
-        </div>
-        <div class="pcfa-admin-section-body p-0">
-            <table class="table table-sm mb-0">
-                <thead class="table-light">
-                <tr><th>授業日</th><th>登録時刻</th><th>状態</th></tr>
-                </thead>
-                <tbody>
-                <tr th:each="a : ${detailHistory}">
-                    <td th:text="${a.date}"></td>
-                    <td th:text="${#temporals.format(a.attendedAt, 'yyyy/MM/dd HH:mm')}"></td>
-                    <td><span class="badge bg-success">出席</span></td>
-                </tr>
-                <tr th:if="${detailHistory.empty}">
-                    <td colspan="3" class="text-muted text-center py-3">出席記録がありません</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
-<script th:if="${selectedStudent != null}">
-document.getElementById('detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-</script>
+</th:block>
+<th:block th:fragment="extraScripts">
+    <script th:if="${selectedStudent != null}">
+    document.getElementById('detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    </script>
+</th:block>
 </body>
 </html>

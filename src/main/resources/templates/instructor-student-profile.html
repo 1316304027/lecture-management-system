@@ -1,21 +1,29 @@
 <!DOCTYPE html>
-<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<html lang="ja" xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{fragments/portal-layout :: layout(~{::title}, 'instructor', 'home', ~{::main}, ~{::extraHead}, ~{::extraScripts}, false)}">
 <head>
-    <meta charset="UTF-8">
     <title>受講者プロフィール</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/pcfa-theme.css}">
+    <th:block th:fragment="extraHead"></th:block>
 </head>
-<body class="pcfa-body">
-<nav class="navbar navbar-dark pcfa-navbar px-3">
-    <a class="navbar-brand" th:href="${returnUrl}">← <span th:text="${returnLabel}">出欠確認</span></a>
-    <span class="text-white small">受講者プロフィール</span>
-</nav>
-<div class="container py-4" style="max-width: 640px;">
-    <div class="alert alert-light border small mb-3">
-        <strong>閲覧専用</strong> — 講師は受講者情報の確認のみ可能です。編集・パスワード操作は管理者がユーザー管理で行います。
+<body>
+<th:block th:fragment="main">
+    <a class="pcfa-back-link" th:href="${returnUrl}">
+        <i class="bi bi-arrow-left"></i> <span th:text="${returnLabel}">戻る</span>
+    </a>
+
+    <div class="page-heading mb-3">
+        <div class="page-heading-copy">
+            <span class="page-icon"><i class="bi bi-person-circle"></i></span>
+            <div>
+                <p class="eyebrow mb-1">Student Profile</p>
+                <h1 class="h3 mb-1">受講者プロフィール</h1>
+                <p class="text-muted mb-0">閲覧専用 — 編集は管理者がユーザー管理で行います</p>
+            </div>
+        </div>
     </div>
+
     <div th:replace="~{fragments/profile-card :: card(${user}, ${avatarUrl}, ${courseList}, false)}"></div>
-</div>
+</th:block>
+<th:block th:fragment="extraScripts"></th:block>
 </body>
 </html>
