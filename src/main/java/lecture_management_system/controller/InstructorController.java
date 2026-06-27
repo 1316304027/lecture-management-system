@@ -21,6 +21,7 @@ import java.time.YearMonth;
 import java.time.DayOfWeek;
 import java.time.format.TextStyle;
 import java.util.Locale;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import lecture_management_system.dto.CalendarCellDto;
