@@ -11,10 +11,10 @@
                 </div>
                 <div th:if="${msg.sender.id == loginUser.id}" class="pcfa-msg-row mine">
                     <div class="pcfa-msg-block">
-                        <div class="pcfa-msg-meta text-end"
+                        <div class="pcfa-msg-meta"
                              th:text="${#temporals.format(msg.sentAt, 'HH:mm')}"></div>
-                        <div class="pcfa-msg-bubble mine">
-                            <span th:text="${msg.content}"></span>
+                        <div class="pcfa-msg-bubble-wrap">
+                            <div class="pcfa-msg-bubble mine" th:text="${msg.content}"></div>
                             <form th:if="${showDelete}" class="pcfa-msg-delete"
                                   th:action="@{/admin/chat/delete/{id}(id=${msg.id})}" method="post"
                                   onsubmit="return confirm('このメッセージを削除しますか？')">
