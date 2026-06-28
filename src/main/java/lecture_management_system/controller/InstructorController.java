@@ -60,7 +60,10 @@ public class InstructorController {
     // ===================== ダッシュボード（SCR-101）/ Dashboard =====================
 
     @GetMapping("/instructor/home")
-    public String home(HttpSession session, Model model) {
+    public String home(
+            @RequestParam(required = false) Integer year,
+            @RequestParam(required = false) Integer month,
+            HttpSession session, Model model) {
         User loginUser = getLoginUser(session);
         if (loginUser == null) return "redirect:/login";
 
@@ -70,12 +73,14 @@ public class InstructorController {
         model.addAttribute("chatUnreadMap", chatService.buildUnreadMap(loginUser, courses));
         model.addAttribute("totalUnreadChat", chatService.countUnreadTotal(loginUser, courses));
         model.addAttribute("isProxy", session.getAttribute("adminUser") != null);
+        model.addAttribute("adminNotices", announcementService.getRecentAdminNotices(courses, 8));
         List<lecture_management_system.dto.InstructorScheduleRowDto> scheduleRows = buildInstructorSchedule(courses);
         model.addAttribute("scheduleRows", scheduleRows);
         long todayCount = scheduleRows.stream().filter(r -> "today".equals(r.getTiming())).count();
         model.addAttribute("todayLessonCount", todayCount);
         model.addAttribute("nearTermRows", filterNearTermLessons(scheduleRows, 5));
-        addCalendarToModel(model, scheduleRows);
+        YearMonth ym = (year != null && month != null) ? YearMonth.of(year, month) : YearMonth.now();
+        addCalendarToModel(model, scheduleRows, ym);
         return "instructor-home";
     }
 
@@ -90,9 +95,16 @@ public class InstructorController {
                 .toList();
     }
 
-    private void addCalendarToModel(Model model, List<lecture_management_system.dto.InstructorScheduleRowDto> rows) {
-        YearMonth ym = YearMonth.now();
+    private void addCalendarToModel(Model model, List<lecture_management_system.dto.InstructorScheduleRowDto> rows, YearMonth ym) {
         model.addAttribute("calMonthLabel", ym.getMonth().getDisplayName(TextStyle.FULL, Locale.JAPANESE) + " " + ym.getYear());
+        model.addAttribute("calYear", ym.getYear());
+        model.addAttribute("calMonth", ym.getMonthValue());
+        YearMonth prev = ym.minusMonths(1);
+        YearMonth next = ym.plusMonths(1);
+        model.addAttribute("calPrevYear", prev.getYear());
+        model.addAttribute("calPrevMonth", prev.getMonthValue());
+        model.addAttribute("calNextYear", next.getYear());
+        model.addAttribute("calNextMonth", next.getMonthValue());
         Map<java.time.LocalDate, List<lecture_management_system.dto.InstructorScheduleRowDto>> byDate = rows.stream()
                 .collect(Collectors.groupingBy(lecture_management_system.dto.InstructorScheduleRowDto::getLessonDate));
         java.time.LocalDate first = ym.atDay(1);

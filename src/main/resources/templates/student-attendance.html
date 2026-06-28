@@ -3,18 +3,13 @@
       th:replace="~{fragments/portal-layout :: layout(~{::title}, 'student', 'attendance', ~{::main}, ~{::extraHead}, ~{::extraScripts}, false)}">
 <head>
     <title>出席登録</title>
-    <th:block th:fragment="extraHead">
-    <style>
-        .row-attended { background-color: #d1e7dd; }
-        .row-absent   { background-color: #f8d7da; }
-        .row-future   { background-color: #f8f9fa; color: #adb5bd; }
-        .progress { height: 20px; border-radius: 8px; }
-    </style>
-    </th:block>
+    <th:block th:fragment="extraHead"></th:block>
 </head>
 <body>
 <th:block th:fragment="main">
-    <a class="pcfa-back-link" th:href="@{/student/home}"><i class="bi bi-arrow-left"></i> ホームへ戻る</a>
+    <a class="pcfa-back-link" th:href="@{/student/course(courseId=${course.id})}">
+        <i class="bi bi-arrow-left"></i> コースポータルへ戻る
+    </a>
 
     <div class="page-heading mb-3">
         <div class="page-heading-copy">
@@ -27,90 +22,92 @@
         </div>
     </div>
 
-    <!-- メッセージ -->
     <div th:if="${message}" class="alert alert-dismissible fade show"
          th:classappend="${message.contains('完了')} ? 'alert-success' :
-                          (${message.contains('⏰')} ? 'alert-warning' : 'alert-info')"
+                          (${message.contains('時間')} ? 'alert-warning' : 'alert-info')"
          role="alert">
-        <strong th:text="${message}"></strong>
+        <span th:text="${message}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <!-- 本日の出席状況 -->
     <section class="panel mb-4">
-        <div class="panel-header"><h2 class="h6 mb-0">本日の出席状況</h2></div>
+        <div class="panel-header">
+            <h2 class="h6 mb-0 section-title"><i class="bi bi-sun"></i><span>本日の出席状況</span></h2>
+        </div>
         <div class="panel-body">
-            <div class="row text-center mb-3">
-                <div class="col-3">
+            <div class="row g-3 text-center mb-3">
+                <div class="col-6 col-md-3">
                     <div class="text-muted small mb-1">本日の日付</div>
-                    <div class="fw-bold small"
+                    <div class="fw-semibold small"
                          th:text="${#temporals.format(#temporals.createNow(), 'yyyy/MM/dd')}"></div>
                 </div>
-                <div class="col-3">
+                <div class="col-6 col-md-3">
                     <div class="text-muted small mb-1">授業の有無</div>
-                    <span th:if="${isTodayLesson}" class="badge bg-primary">授業あり</span>
-                    <span th:unless="${isTodayLesson}" class="badge bg-secondary">授業なし</span>
+                    <span th:if="${isTodayLesson}" class="badge text-bg-primary">授業あり</span>
+                    <span th:unless="${isTodayLesson}" class="badge text-bg-secondary">授業なし</span>
                 </div>
-                <!-- 授業時間帯（設定済みの場合のみ表示） -->
-                <div class="col-3" th:if="${todaySchedule != null and todaySchedule.startTime != null}">
+                <div class="col-6 col-md-3" th:if="${todaySchedule != null and todaySchedule.startTime != null}">
                     <div class="text-muted small mb-1">授業時間</div>
-                    <div class="fw-bold small">
+                    <div class="fw-semibold small">
                         <span th:text="${#temporals.format(todaySchedule.startTime,'HH:mm')}"></span>
                         <span th:if="${todaySchedule.endTime != null}">
                             〜 <span th:text="${#temporals.format(todaySchedule.endTime,'HH:mm')}"></span>
                         </span>
                     </div>
                 </div>
-                <div class="col-3">
+                <div class="col-6 col-md-3">
                     <div class="text-muted small mb-1">本日の出席</div>
-                    <span th:if="${isTodayAttended}" class="badge bg-success">登録済み ✅</span>
-                    <span th:unless="${isTodayAttended}" class="badge bg-warning text-dark">未登録</span>
+                    <span th:if="${isTodayAttended}" class="badge text-bg-success">登録済み</span>
+                    <span th:unless="${isTodayAttended}" class="badge text-bg-warning text-dark">未登録</span>
                 </div>
             </div>
 
-            <!-- 出席受付時間帯の案内（時刻設定済みの場合） -->
             <div th:if="${todaySchedule != null and todaySchedule.startTime != null}"
-                 class="alert alert-info py-2 mb-3 small">
-                🕐 本日の出席受付時間帯：
-                <strong th:text="${#temporals.format(todaySchedule.startTime.minusMinutes(30),'HH:mm')}"></strong>
-                〜
-                <strong th:text="${#temporals.format(todaySchedule.startTime.plusMinutes(30),'HH:mm')}"></strong>
-                （授業開始30分前〜開始30分後）
+                 class="alert alert-info py-2 mb-3 small d-flex align-items-center gap-2">
+                <i class="bi bi-clock"></i>
+                <span>
+                    出席受付：
+                    <strong th:text="${#temporals.format(todaySchedule.startTime.minusMinutes(30),'HH:mm')}"></strong>
+                    〜
+                    <strong th:text="${#temporals.format(todaySchedule.startTime.plusMinutes(30),'HH:mm')}"></strong>
+                    （開始30分前〜開始30分後）
+                </span>
             </div>
 
-            <hr class="my-2">
-            <!-- 出席率プログレスバー -->
             <div class="mb-3">
                 <div class="d-flex justify-content-between mb-1">
-                    <span class="small fw-bold">出席率</span>
-                    <span class="small fw-bold"
+                    <span class="small fw-semibold">出席率</span>
+                    <span class="small fw-semibold"
                           th:classappend="${attendanceRate >= 80} ? 'text-success' :
                                           (${attendanceRate >= 70} ? 'text-warning' : 'text-danger')"
                           th:text="${attendanceRate} + '%'"></span>
                 </div>
-                <div class="progress">
+                <div class="progress pcfa-att-progress-lg">
                     <div class="progress-bar"
                          th:classappend="${attendanceRate >= 80} ? 'bg-success' :
                                          (${attendanceRate >= 70} ? 'bg-warning' : 'bg-danger')"
                          role="progressbar"
-                         th:style="'width:' + ${attendanceRate} + '%'"
-                         th:attr="aria-valuenow=${attendanceRate}"
-                         aria-valuemin="0" aria-valuemax="100"></div>
+                         th:style="'width:' + ${attendanceRate} + '%'"></div>
                 </div>
                 <div th:if="${attendanceRate < 70 and !historyList.empty}"
-                     class="text-danger small mt-1">
-                    ⚠️ 出席率が70%を下回っています。
+                     class="text-danger small mt-2 d-flex align-items-center gap-1">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <span>出席率が70%を下回っています</span>
                 </div>
             </div>
-            <!-- 出席登録ボタン -->
+
             <form th:action="@{/student/attendance}" method="post">
                 <input type="hidden" name="courseId" th:value="${course.id}">
-                <button type="submit" class="btn btn-lg w-100"
-                        th:classappend="${isTodayLesson and !isTodayAttended} ? 'btn-primary' : 'btn-secondary'"
+                <button type="submit" class="btn w-100"
+                        th:classappend="${isTodayLesson and !isTodayAttended} ? 'btn-primary btn-lg' : 'btn-secondary'"
                         th:disabled="${!isTodayLesson or isTodayAttended}">
-                    <span th:if="${isTodayAttended}">✅ 本日は出席登録済みです</span>
+                    <span th:if="${isTodayAttended}">
+                        <i class="bi bi-check-circle me-1"></i>本日は出席登録済みです
+                    </span>
                     <span th:unless="${isTodayAttended}">
-                        <span th:if="${isTodayLesson}">📝 出席登録する</span>
+                        <span th:if="${isTodayLesson}">
+                            <i class="bi bi-pencil-square me-1"></i>出席登録する
+                        </span>
                         <span th:unless="${isTodayLesson}">本日は授業がありません</span>
                     </span>
                 </button>
@@ -118,68 +115,61 @@
         </div>
     </section>
 
-    <!-- 全授業日の出席状況一覧 -->
     <section class="panel mb-0">
-        <div class="panel-header"><h2 class="h6 mb-0">授業日別 出席状況一覧</h2></div>
+        <div class="panel-header">
+            <h2 class="h6 mb-0 section-title"><i class="bi bi-table"></i><span>授業日別 出席状況</span></h2>
+        </div>
         <div class="table-responsive">
-            <table class="table table-bordered table-sm mb-0 align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th style="width:120px">授業日</th>
-                        <th style="width:110px">授業時間</th>
-                        <th>出席状態</th>
-                        <th style="width:80px" class="text-center">登録時刻</th>
-                    </tr>
+            <table class="table table-sm pcfa-portal-table mb-0 align-middle">
+                <thead>
+                <tr>
+                    <th style="width:120px">授業日</th>
+                    <th style="width:110px">授業時間</th>
+                    <th>出席状態</th>
+                    <th style="width:90px" class="text-center">登録時刻</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="sch : ${scheduleList}"
-                        th:with="
-                            isFuture=${sch.lessonDate.isAfter(#temporals.createToday())},
-                            isToday=${sch.lessonDate.equals(#temporals.createToday())},
-                            attended=${attendanceMap != null and attendanceMap.containsKey(sch.lessonDate)}"
-                        th:class="${isFuture} ? 'row-future' :
-                                  (${attended} ? 'row-attended' : 'row-absent')">
-
-                        <!-- 授業日 -->
-                        <td>
-                            <span th:text="${sch.lessonDate}"></span>
-                            <span th:if="${isToday}"
-                                  class="badge bg-primary ms-1" style="font-size:10px">今日</span>
-                        </td>
-                        <!-- 授業時間帯 -->
-                        <td class="small">
-                            <span th:if="${sch.startTime != null}">
-                                <span th:text="${#temporals.format(sch.startTime,'HH:mm')}"></span>
-                                <span th:if="${sch.endTime != null}">
-                                    〜<span th:text="${#temporals.format(sch.endTime,'HH:mm')}"></span>
-                                </span>
+                <tr th:each="sch : ${scheduleList}"
+                    th:with="
+                        isFuture=${sch.lessonDate.isAfter(#temporals.createToday())},
+                        isToday=${sch.lessonDate.equals(#temporals.createToday())},
+                        attended=${attendanceMap != null and attendanceMap.containsKey(sch.lessonDate)}"
+                    th:class="${isFuture} ? 'pcfa-att-row-future' :
+                              (${attended} ? 'pcfa-att-row-present' : 'pcfa-att-row-absent')">
+                    <td>
+                        <span th:text="${sch.lessonDate}"></span>
+                        <span th:if="${isToday}" class="badge text-bg-primary ms-1" style="font-size:0.65rem">今日</span>
+                    </td>
+                    <td class="small">
+                        <span th:if="${sch.startTime != null}">
+                            <span th:text="${#temporals.format(sch.startTime,'HH:mm')}"></span>
+                            <span th:if="${sch.endTime != null}">
+                                〜<span th:text="${#temporals.format(sch.endTime,'HH:mm')}"></span>
                             </span>
-                            <span th:unless="${sch.startTime != null}" class="text-muted">―</span>
-                        </td>
-                        <!-- 出席状態 -->
-                        <td>
-                            <span th:if="${isFuture}" class="text-muted small">🗓️ 未実施</span>
-                            <span th:unless="${isFuture}">
-                                <span th:if="${attended}"
-                                      class="text-success fw-bold small">✅ 出席</span>
-                                <span th:unless="${attended}"
-                                      class="text-danger fw-bold small">❌ 欠席</span>
-                            </span>
-                        </td>
-                        <!-- 登録時刻 -->
-                        <td class="text-center text-muted small">
-                            <span th:if="${attended and attendanceMap[sch.lessonDate] != null}"
-                                  th:text="${#temporals.format(attendanceMap[sch.lessonDate].attendedAt, 'HH:mm')}"></span>
-                            <span th:unless="${attended}">―</span>
-                        </td>
-                    </tr>
-                    <tr th:if="${scheduleList == null or scheduleList.empty}">
-                        <td colspan="4" class="text-muted text-center py-3">授業日が設定されていません</td>
-                    </tr>
+                        </span>
+                        <span th:unless="${sch.startTime != null}" class="text-muted">―</span>
+                    </td>
+                    <td>
+                        <span th:if="${isFuture}" class="text-muted small">未実施</span>
+                        <span th:unless="${isFuture}">
+                            <span th:if="${attended}" class="badge text-bg-success">出席</span>
+                            <span th:unless="${attended}" class="badge text-bg-danger">欠席</span>
+                        </span>
+                    </td>
+                    <td class="text-center text-muted small">
+                        <span th:if="${attended and attendanceMap[sch.lessonDate] != null}"
+                              th:text="${#temporals.format(attendanceMap[sch.lessonDate].attendedAt, 'HH:mm')}"></span>
+                        <span th:unless="${attended}">―</span>
+                    </td>
+                </tr>
+                <tr th:if="${scheduleList == null or scheduleList.empty}">
+                    <td colspan="4" class="text-muted text-center py-4">授業日が設定されていません</td>
+                </tr>
                 </tbody>
             </table>
         </div>
-        <div class="panel-body border-top py-2 text-muted small d-flex gap-3">
+        <div class="panel-body border-top py-2 text-muted small d-flex flex-wrap gap-3">
             <span>出席：<strong th:text="${historyList.size()}"></strong>回</span>
             <span>出席率：
                 <strong th:classappend="${attendanceRate >= 80} ? 'text-success' :

@@ -32,7 +32,9 @@
     </div>
 
     <section class="panel mb-3">
-        <div class="panel-header"><h2 class="h6 mb-0">新規お知らせ投稿</h2></div>
+        <div class="panel-header">
+            <h2 class="h6 mb-0 section-title"><i class="bi bi-plus-circle"></i><span>新規お知らせ投稿</span></h2>
+        </div>
         <div class="panel-body">
             <form th:action="@{/instructor/announcements}" method="post">
                 <input type="hidden" name="courseId" th:value="${course.id}">
@@ -51,7 +53,7 @@
 
     <section class="panel mb-0">
         <div class="panel-header d-flex justify-content-between align-items-center">
-            <h2 class="h6 mb-0">投稿済みお知らせ</h2>
+            <h2 class="h6 mb-0 section-title"><i class="bi bi-list-ul"></i><span>投稿済みお知らせ</span></h2>
             <span class="badge text-bg-light" th:text="${announcements.size()} + ' 件'"></span>
         </div>
         <div class="panel-body">

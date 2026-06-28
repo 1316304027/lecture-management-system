@@ -54,6 +54,28 @@
         </div>
     </section>
 
+    <section id="admin-notices" class="panel mb-4 pcfa-admin-notices"
+             th:if="${adminNotices != null and !adminNotices.empty}">
+        <div class="panel-header d-flex align-items-center gap-2">
+            <h2 class="h6 mb-0 section-title">
+                <i class="bi bi-bell-fill text-warning"></i>
+                <span>管理者からのお知らせ</span>
+            </h2>
+            <span class="badge text-bg-warning text-dark ms-1" th:text="${adminNotices.size()} + '件'"></span>
+        </div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item pcfa-notice-item" th:each="n : ${adminNotices}">
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                    <strong class="small" th:text="${n.title}">タイトル</strong>
+                    <time class="text-muted small flex-shrink-0"
+                          th:text="${#temporals.format(n.createdAt, 'MM/dd HH:mm')}"></time>
+                </div>
+                <p class="mb-1 small text-primary fw-medium" th:text="${n.course.name}">コース</p>
+                <p class="mb-0 small text-muted" th:text="${n.content}">内容</p>
+            </li>
+        </ul>
+    </section>
+
     <!-- ① 担当コースを最上部に（スクロール不要で機能にアクセス） -->
     <h2 class="h5 fw-bold mb-3" th:unless="${courseList.empty}">担当コース・機能メニュー</h2>
     <div class="row g-4 mb-4" th:unless="${courseList.empty}">
@@ -91,9 +113,20 @@
     <div class="row g-3" th:unless="${courseList.empty}">
         <div class="col-lg-8">
             <section class="panel h-100 mb-0">
-                <div class="panel-header d-flex justify-content-between align-items-center">
+                <div class="panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <h2 class="h6 mb-0 section-title"><i class="bi bi-calendar3"></i><span>授業カレンダー</span></h2>
-                    <span class="text-muted small" th:text="${calMonthLabel}"></span>
+                    <div class="d-flex align-items-center gap-2">
+                        <a th:href="@{/instructor/home(year=${calPrevYear}, month=${calPrevMonth})}"
+                           class="btn btn-sm btn-light pcfa-cal-nav" title="前月">
+                            <i class="bi bi-chevron-left"></i>
+                        </a>
+                        <span class="fw-semibold small px-1" th:text="${calMonthLabel}"></span>
+                        <a th:href="@{/instructor/home(year=${calNextYear}, month=${calNextMonth})}"
+                           class="btn btn-sm btn-light pcfa-cal-nav" title="翌月">
+                            <i class="bi bi-chevron-right"></i>
+                        </a>
+                        <a th:href="@{/instructor/home}" class="btn btn-sm btn-outline-primary">今月</a>
+                    </div>
                 </div>
                 <div class="panel-body">
                     <div class="pcfa-cal-weekdays">

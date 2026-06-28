@@ -30,7 +30,9 @@
     </div>
 
     <section class="panel mb-3">
-        <div class="panel-header"><h2 class="h6 mb-0">教材アップロード（PDF・10MB以内）</h2></div>
+        <div class="panel-header">
+            <h2 class="h6 mb-0 section-title"><i class="bi bi-cloud-upload"></i><span>教材アップロード</span></h2>
+        </div>
         <div class="panel-body">
             <form th:action="@{/instructor/materials}" method="post"
                   enctype="multipart/form-data" class="row g-3 align-items-end">
@@ -59,9 +61,11 @@
     </section>
 
     <section class="panel mb-0">
-        <div class="panel-header"><h2 class="h6 mb-0">登録済み教材</h2></div>
+        <div class="panel-header">
+            <h2 class="h6 mb-0 section-title"><i class="bi bi-folder2-open"></i><span>登録済み教材</span></h2>
+        </div>
         <div class="table-responsive">
-            <table class="table align-middle mb-0">
+            <table class="table table-hover pcfa-portal-table align-middle mb-0">
                 <thead>
                 <tr>
                     <th>タイトル</th>

@@ -64,6 +64,28 @@
         </div>
     </section>
 
+    <section id="admin-notices" class="panel mb-4 pcfa-admin-notices"
+             th:if="${adminNotices != null and !adminNotices.empty}">
+        <div class="panel-header d-flex align-items-center gap-2">
+            <h2 class="h6 mb-0 section-title">
+                <i class="bi bi-bell-fill text-warning"></i>
+                <span>管理者からのお知らせ</span>
+            </h2>
+            <span class="badge text-bg-warning text-dark ms-1" th:text="${adminNotices.size()} + '件'"></span>
+        </div>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item pcfa-notice-item" th:each="n : ${adminNotices}">
+                <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+                    <strong class="small" th:text="${n.title}">タイトル</strong>
+                    <time class="text-muted small flex-shrink-0"
+                          th:text="${#temporals.format(n.createdAt, 'MM/dd HH:mm')}"></time>
+                </div>
+                <p class="mb-1 small text-primary fw-medium" th:text="${n.course.name}">コース</p>
+                <p class="mb-0 small text-muted" th:text="${n.content}">内容</p>
+            </li>
+        </ul>
+    </section>
+
     <div class="pcfa-info-bar mb-4" th:unless="${courseList.empty}">
         <span class="pcfa-info-bar-label">クイックリンク</span>
         <a th:href="@{/student/profile}" class="btn btn-sm btn-outline-success ms-auto">プロフィール編集</a>

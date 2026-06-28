@@ -52,7 +52,7 @@
     <section class="panel mb-4" th:if="${lessonStats != null and !lessonStats.empty}">
         <div class="panel-header"><h2 class="h6 mb-0">授業日別：出席率</h2></div>
         <div class="table-responsive">
-            <table class="table table-sm table-hover mb-0">
+            <table class="table table-hover pcfa-portal-table align-middle mb-0">
                 <thead>
                 <tr>
                     <th>授業日</th>
@@ -84,8 +84,8 @@
             <a th:href="@{/instructor/students(courseId=${course.id})}" class="btn btn-sm btn-light">受講者一覧へ</a>
         </div>
         <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
+                    <table class="table table-hover pcfa-portal-table align-middle mb-0">
+                        <thead>
                         <tr>
                             <th style="width:56px"></th>
                             <th>受講者名</th>

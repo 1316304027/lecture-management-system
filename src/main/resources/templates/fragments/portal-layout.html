@@ -37,6 +37,12 @@
                 <span class="nav-icon"><i class="bi bi-house-door" aria-hidden="true"></i></span>
                 <span class="nav-text">ホーム</span>
             </a>
+            <a class="nav-link" th:href="${homeUrl} + '#admin-notices'"
+               th:if="${adminNoticeCount != null and adminNoticeCount > 0}">
+                <span class="nav-icon"><i class="bi bi-bell" aria-hidden="true"></i></span>
+                <span class="nav-text">管理者通知</span>
+                <span class="badge text-bg-danger ms-auto" th:text="${adminNoticeCount}">0</span>
+            </a>
             <a class="nav-link" th:href="${profileUrl}"
                th:classappend="${activeNav == 'profile'} ? ' active' : ''">
                 <span class="nav-icon"><i class="bi bi-person-circle" aria-hidden="true"></i></span>
@@ -67,6 +73,12 @@
                     <span></span><span></span><span></span>
                 </button>
                 <div class="navbar-actions ms-auto d-flex align-items-center gap-2">
+                    <a th:href="${homeUrl} + '#admin-notices'" class="icon-button position-relative pcfa-notice-bell"
+                       th:if="${adminNoticeCount != null and adminNoticeCount > 0}"
+                       title="管理者からのお知らせ">
+                        <i class="bi bi-bell" aria-hidden="true"></i>
+                        <span class="pcfa-nav-badge" th:text="${adminNoticeCount}">0</span>
+                    </a>
                     <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="テーマ切替">
                         <i class="bi bi-moon-stars" data-theme-icon aria-hidden="true"></i>
                     </button>

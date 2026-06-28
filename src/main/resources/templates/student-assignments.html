@@ -1,144 +1,109 @@
 <!DOCTYPE html>
-<!--
-  学生課題提出画面（SCR-005）/ Student Assignment Submission Screen
-  ================================================================
-  【修正①】評価スコアを学生側でも表示（講師が採点した点数が見える）
-  Fix①: Show evaluation score to students (shows score set by instructor)
-  【修正②】画面デザインを改善
-  Fix②: Improved screen design
--->
 <html lang="ja" xmlns:th="http://www.thymeleaf.org"
       th:replace="~{fragments/portal-layout :: layout(~{::title}, 'student', 'assignments', ~{::main}, ~{::extraHead}, ~{::extraScripts}, false)}">
 <head>
     <title>課題提出</title>
-    <th:block th:fragment="extraHead">
-    <style>
-        /* スコア色分け / Score color coding */
-        .score-high { color: #198754; font-weight: 600; }
-        .score-mid  { color: #fd7e14; font-weight: 600; }
-        .score-low  { color: #dc3545; font-weight: 600; }
-    </style>
-    </th:block>
+    <th:block th:fragment="extraHead"></th:block>
 </head>
 <body>
 <th:block th:fragment="main">
-    <a class="pcfa-back-link" th:href="@{/student/home}"><i class="bi bi-arrow-left"></i> ホームへ戻る</a>
+    <a class="pcfa-back-link" th:href="@{/student/course(courseId=${course.id})}">
+        <i class="bi bi-arrow-left"></i> コースポータルへ戻る
+    </a>
 
-    <!-- メッセージ / Message -->
     <div th:if="${message}" class="alert alert-dismissible fade show"
          th:classappend="${message.contains('完了')} ? 'alert-success' : 'alert-warning'"
          role="alert">
-        <strong th:text="${message}"></strong>
+        <span th:text="${message}"></span>
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
 
-    <h5 class="fw-bold mb-3">📝 課題一覧</h5>
-
-    <div class="table-responsive">
-    <table class="table table-bordered table-hover bg-white align-middle">
-        <thead class="table-dark">
-            <tr>
-                <th>課題名</th>
-                <th style="width:150px">提出期限</th>
-                <th class="text-center" style="width:100px">状態</th>
-                <!--
-                    【修正①】スコア列を追加 / Fix①: Added score column
-                    講師が InstructorController.evaluate() で保存したスコアを表示する。
-                    Displays score saved by instructor via InstructorController.evaluate().
-                -->
-                <th class="text-center" style="width:90px">スコア</th>
-                <th>評価コメント</th>
-                <th style="min-width:260px">提出操作</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!--
-                submitted : mySubmissions の中にこの課題のレコードがあるか
-                expired   : 提出期限が現在より前か
-                sub       : 提出済みの場合のレコード（リスト。先頭が実際の提出データ）
-            -->
-            <tr th:each="a : ${assignmentList}"
-                th:with="
-                    submitted=${mySubmissions.?[assignment.id == __${a.id}__].size() > 0},
-                    expired=${#temporals.createNow().isAfter(a.deadline)},
-                    sub=${mySubmissions.?[assignment.id == __${a.id}__]}">
-
-                <!-- 課題名 / Assignment title -->
-                <td class="fw-semibold" th:text="${a.title}"></td>
-
-                <!-- 提出期限 / Deadline -->
-                <td class="small">
-                    <span th:text="${#temporals.format(a.deadline, 'yyyy/MM/dd HH:mm')}"></span>
-                    <span th:if="${expired and !submitted}" class="badge bg-danger ms-1 small">期限切れ</span>
-                </td>
-
-                <!-- 提出状態 / Submission status -->
-                <td class="text-center">
-                    <span th:if="${submitted}" class="badge bg-success">提出済み ✅</span>
-                    <span th:unless="${submitted}">
-                        <span th:if="${expired}" class="badge bg-danger">期限切れ ❌</span>
-                        <span th:unless="${expired}" class="badge bg-warning text-dark">未提出</span>
-                    </span>
-                </td>
-
-                <!--
-                    【修正①】スコア表示セル / Fix①: Score display cell
-
-                    提出済みで講師がスコアを設定している場合に色分けして表示。
-                    採点待ち（スコア未設定）の場合は「採点待ち」と表示。
-                    未提出の場合は「―」
-
-                    Display with color coding when submitted and instructor set a score.
-                    Show "採点待ち" if not yet evaluated.
-                    Show "―" if not submitted.
-                -->
-                <td class="text-center">
-                    <span th:if="${!sub.empty and sub[0].score != null}">
-                        <span th:if="${sub[0].score >= 80}" class="score-high" th:text="${sub[0].score} + '点'"></span>
-                        <span th:if="${sub[0].score >= 60 and sub[0].score < 80}" class="score-mid" th:text="${sub[0].score} + '点'"></span>
-                        <span th:if="${sub[0].score < 60}" class="score-low" th:text="${sub[0].score} + '点'"></span>
-                    </span>
-                    <span th:if="${!sub.empty and sub[0].score == null}" class="text-muted small">採点待ち</span>
-                    <span th:if="${sub.empty}" class="text-muted">―</span>
-                </td>
-
-                <!-- 評価コメント / Evaluation comment -->
-                <td class="small">
-                    <span th:if="${!sub.empty and sub[0].evaluationComment != null}"
-                          class="text-success" th:text="${sub[0].evaluationComment}"></span>
-                    <span th:if="${!sub.empty and sub[0].evaluationComment == null}"
-                          class="text-muted">コメントなし</span>
-                    <span th:if="${sub.empty}" class="text-muted">―</span>
-                </td>
-
-                <!-- 提出フォーム / Submission form -->
-                                <td>
-                    <div th:unless="${submitted or expired}"
-                         class="d-flex gap-1 align-items-center direct-upload-row"
-                         th:attr="data-assignment-id=${a.id},data-course-id=${course.id}">
-                        <input type="file" class="form-control form-control-sm upload-file"
-                               accept=".pdf" style="max-width:180px;">
-                        <button type="button" class="btn btn-sm btn-primary text-nowrap btn-direct-upload">
-                            📤 提出
-                        </button>
-                    </div>
-                    <span th:if="${submitted}" class="text-muted small">提出完了</span>
-                    <span th:if="${expired and !submitted}" class="text-muted small">期限切れ</span>
-                </td>
-            </tr>
-
-            <tr th:if="${assignmentList.empty}">
-                <td colspan="6" class="text-muted text-center py-4">公開中の課題はありません</td>
-            </tr>
-        </tbody>
-    </table>
+    <div class="page-heading mb-3">
+        <div class="page-heading-copy">
+            <span class="page-icon"><i class="bi bi-file-earmark-text"></i></span>
+            <div>
+                <p class="eyebrow mb-1">Assignments</p>
+                <h1 class="h3 mb-1">課題提出</h1>
+                <p class="text-muted mb-0" th:text="${course.name}"></p>
+            </div>
+        </div>
     </div>
 
-    <div class="text-muted small mt-1">
-        ※ アップロード可能なファイル形式：PDF（最大10MB）
-    </div>
+    <section class="panel mb-0">
+        <div class="panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h2 class="h6 mb-0 section-title">
+                <i class="bi bi-list-check"></i><span>公開課題一覧</span>
+            </h2>
+            <span class="text-muted small">PDFのみ · 最大10MB</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover pcfa-portal-table align-middle mb-0">
+                <thead>
+                <tr>
+                    <th>課題名</th>
+                    <th style="width:150px">提出期限</th>
+                    <th class="text-center" style="width:100px">状態</th>
+                    <th class="text-center" style="width:90px">スコア</th>
+                    <th>評価コメント</th>
+                    <th style="min-width:240px">提出</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="a : ${assignmentList}"
+                    th:with="
+                        submitted=${mySubmissions.?[assignment.id == __${a.id}__].size() > 0},
+                        expired=${#temporals.createNow().isAfter(a.deadline)},
+                        sub=${mySubmissions.?[assignment.id == __${a.id}__]}">
+                    <td class="fw-semibold" th:text="${a.title}"></td>
+                    <td class="small">
+                        <span th:text="${#temporals.format(a.deadline, 'yyyy/MM/dd HH:mm')}"></span>
+                        <span th:if="${expired and !submitted}" class="badge text-bg-danger ms-1">期限切れ</span>
+                    </td>
+                    <td class="text-center">
+                        <span th:if="${submitted}" class="badge text-bg-success">提出済み</span>
+                        <span th:unless="${submitted}">
+                            <span th:if="${expired}" class="badge text-bg-danger">期限切れ</span>
+                            <span th:unless="${expired}" class="badge text-bg-warning text-dark">未提出</span>
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <span th:if="${!sub.empty and sub[0].score != null}">
+                            <span th:if="${sub[0].score >= 80}" class="score-high" th:text="${sub[0].score} + '点'"></span>
+                            <span th:if="${sub[0].score >= 60 and sub[0].score < 80}" class="score-mid" th:text="${sub[0].score} + '点'"></span>
+                            <span th:if="${sub[0].score < 60}" class="score-low" th:text="${sub[0].score} + '点'"></span>
+                        </span>
+                        <span th:if="${!sub.empty and sub[0].score == null}" class="text-muted small">採点待ち</span>
+                        <span th:if="${sub.empty}" class="text-muted">―</span>
+                    </td>
+                    <td class="small">
+                        <span th:if="${!sub.empty and sub[0].evaluationComment != null}"
+                              class="text-success" th:text="${sub[0].evaluationComment}"></span>
+                        <span th:if="${!sub.empty and sub[0].evaluationComment == null}" class="text-muted">―</span>
+                        <span th:if="${sub.empty}" class="text-muted">―</span>
+                    </td>
+                    <td>
+                        <div th:unless="${submitted or expired}"
+                             class="d-flex gap-2 align-items-center direct-upload-row"
+                             th:attr="data-assignment-id=${a.id},data-course-id=${course.id}">
+                            <input type="file" class="form-control form-control-sm upload-file"
+                                   accept=".pdf" style="max-width:160px;">
+                            <button type="button" class="btn btn-sm btn-primary text-nowrap btn-direct-upload">
+                                <i class="bi bi-upload me-1"></i>提出
+                            </button>
+                        </div>
+                        <span th:if="${submitted}" class="text-muted small">提出完了</span>
+                        <span th:if="${expired and !submitted}" class="text-muted small">期限切れ</span>
+                    </td>
+                </tr>
+                <tr th:if="${assignmentList.empty}">
+                    <td colspan="6" class="text-muted text-center py-4">公開中の課題はありません</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
 
-    <div id="upload-msg" class="alert alert-info mt-2 d-none"></div>
+    <div id="upload-msg" class="alert alert-info mt-3 d-none" role="alert"></div>
 </th:block>
 <th:block th:fragment="extraScripts">
 <script>
@@ -150,8 +115,8 @@ document.querySelectorAll('.btn-direct-upload').forEach(function(btn) {
         var msg = document.getElementById('upload-msg');
         msg.classList.remove('d-none', 'alert-success', 'alert-danger', 'alert-info');
         if (!file) { msg.classList.add('alert-danger'); msg.textContent = 'PDFを選択してください'; return; }
-        if (!file.name.toLowerCase().endsWith('.pdf')) { msg.classList.add('alert-danger'); msg.textContent = 'PDFのみ'; return; }
-        if (file.size > 10 * 1024 * 1024) { msg.classList.add('alert-danger'); msg.textContent = '10MB以内'; return; }
+        if (!file.name.toLowerCase().endsWith('.pdf')) { msg.classList.add('alert-danger'); msg.textContent = 'PDFのみアップロードできます'; return; }
+        if (file.size > 10 * 1024 * 1024) { msg.classList.add('alert-danger'); msg.textContent = 'ファイルは10MB以内にしてください'; return; }
         var aid = row.dataset.assignmentId;
         var cid = row.dataset.courseId;
         btn.disabled = true;
@@ -162,8 +127,8 @@ document.querySelectorAll('.btn-direct-upload').forEach(function(btn) {
             var putRes = await fetch(presign.uploadUrl, { method: 'PUT', body: file, headers: { 'Content-Type': 'application/pdf' } });
             if (!putRes.ok) throw new Error('S3 PUT failed: ' + putRes.status);
             msg.classList.add('alert-success');
-            msg.textContent = '提出が完了しました ✅ 画面を更新しています…';
-            setTimeout(function() { location.reload(); }, 30000);
+            msg.textContent = '提出が完了しました。画面を更新しています…';
+            setTimeout(function() { location.reload(); }, 2000);
         } catch (e) {
             msg.classList.add('alert-danger');
             msg.textContent = 'エラー: ' + e.message;

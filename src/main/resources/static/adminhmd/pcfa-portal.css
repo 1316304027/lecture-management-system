@@ -176,8 +176,12 @@
 }
 
 .pcfa-cal-cell.other-month {
-  opacity: 0.35;
+  opacity: 0.4;
   background: var(--admin-surface-soft);
+}
+
+.pcfa-cal-cell.other-month:has(.pcfa-cal-event) {
+  opacity: 0.72;
 }
 
 .pcfa-cal-cell.is-today {
@@ -236,3 +240,179 @@
 .pcfa-legend-dot.today { background: #16a34a; }
 .pcfa-legend-dot.upcoming { background: #2563eb; }
 .pcfa-legend-dot.past { background: #94a3b8; }
+
+/* ---- Portal full-height chat ---- */
+.pcfa-fluid-root.pcfa-chat-fluid,
+.pcfa-chat-fluid {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 7.5rem);
+  max-height: 960px;
+  padding: 0.5rem 1rem 1rem;
+  margin: 0 auto;
+  max-width: 920px;
+}
+
+.pcfa-chat-topbar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.35rem 0 0.75rem;
+  flex-shrink: 0;
+}
+
+.pcfa-chat-back {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  color: var(--admin-text);
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.pcfa-chat-back:hover {
+  background: var(--admin-surface-soft);
+  color: var(--admin-primary);
+}
+
+.pcfa-chat-topbar-eyebrow {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--admin-primary);
+}
+
+.pcfa-chat-topbar-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.pcfa-chat-fluid .pcfa-chat-room {
+  flex: 1;
+  min-height: 0;
+  box-shadow: var(--admin-shadow);
+}
+
+.pcfa-notice-bell .pcfa-nav-badge {
+  pointer-events: none;
+}
+
+@media (max-width: 576px) {
+  .pcfa-chat-fluid {
+    height: calc(100vh - 6.5rem);
+    padding: 0.25rem 0.65rem 0.65rem;
+  }
+}
+
+/* ---- Enterprise tables (portal, matches admin panels) ---- */
+.panel .table,
+.pcfa-portal-table {
+  margin-bottom: 0;
+}
+
+.panel .table thead th,
+.pcfa-portal-table thead th {
+  background: var(--admin-surface-soft);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--admin-muted);
+  border-bottom: 1px solid var(--admin-border);
+  padding: 0.65rem 1rem;
+  white-space: nowrap;
+}
+
+.panel .table tbody td,
+.pcfa-portal-table tbody td {
+  padding: 0.7rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--admin-border);
+  font-size: 0.88rem;
+}
+
+.panel .table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.panel .table-hover tbody tr:hover {
+  background: rgba(37, 99, 235, 0.04);
+}
+
+/* Score display */
+.score-high { color: #16a34a; font-weight: 600; }
+.score-mid  { color: #d97706; font-weight: 600; }
+.score-low  { color: #dc2626; font-weight: 600; }
+
+/* Attendance row states */
+.pcfa-att-row-present { background: rgba(34, 197, 94, 0.08); }
+.pcfa-att-row-absent  { background: rgba(239, 68, 68, 0.06); }
+.pcfa-att-row-future  { background: var(--admin-surface-soft); color: var(--admin-muted); }
+
+.pcfa-att-progress {
+  height: 10px;
+  border-radius: 999px;
+}
+
+.pcfa-att-progress-lg {
+  height: 18px;
+  border-radius: 8px;
+}
+
+/* Portal split layout (submissions etc.) */
+.pcfa-portal-split .pcfa-split-main-inner {
+  padding: 0 1rem 1rem;
+}
+
+.pcfa-portal-split .pcfa-split-sidebar {
+  border-right: 1px solid var(--admin-border);
+}
+
+/* Profile edit form */
+.pcfa-profile-form-panel .pcfa-avatar-lg,
+.pcfa-profile-form-panel .pcfa-avatar-placeholder-lg {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid var(--admin-surface);
+  box-shadow: var(--admin-shadow-sm);
+}
+
+.pcfa-profile-form-panel .pcfa-avatar-placeholder-lg {
+  display: grid;
+  place-items: center;
+  background: var(--admin-surface-soft);
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--admin-primary);
+}
+
+/* Course action buttons on portal */
+.pcfa-action-grid .btn.pcfa-course-action {
+  padding: 0.55rem 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+/* Announcement items in course portal */
+.pcfa-announce-item {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.pcfa-announce-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+[data-theme="dark"] .panel .table thead th {
+  background: var(--admin-surface-soft);
+}

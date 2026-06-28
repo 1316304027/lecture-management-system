@@ -9,11 +9,27 @@
 <th:block th:fragment="main">
     <a class="pcfa-back-link" th:href="@{/student/home}"><i class="bi bi-arrow-left"></i> ホームへ戻る</a>
 
-    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+    <div class="page-heading mb-3">
+        <div class="page-heading-copy">
+            <span class="page-icon"><i class="bi bi-person-circle"></i></span>
+            <div>
+                <p class="eyebrow mb-1">Profile</p>
+                <h1 class="h3 mb-1">プロフィール編集</h1>
+                <p class="text-muted mb-0">電話番号・自己紹介・顔写真を編集できます</p>
+            </div>
+        </div>
+        <div class="heading-actions">
+            <a th:href="@{/student/profile/view}" class="btn btn-light btn-sm">プレビュー</a>
+        </div>
+    </div>
 
-    <div class="card pcfa-course-card">
-        <div class="card-header">受講者プロフィール</div>
-        <div class="card-body">
+    <div th:if="${message}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <span th:text="${message}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <section class="panel mb-0 pcfa-profile-form-panel">
+        <div class="panel-body">
             <div class="text-center mb-4">
                 <img th:if="${avatarUrl}" th:src="${avatarUrl}" alt="avatar" class="pcfa-avatar-lg mb-2">
                 <div th:unless="${avatarUrl}" class="pcfa-avatar-placeholder-lg mx-auto mb-2">
@@ -49,17 +65,10 @@
                               th:text="${loginUser.profileBio}" placeholder="自己紹介を入力してください"></textarea>
                 </div>
 
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary pcfa-btn-primary flex-fill">保存する</button>
-                    <a th:href="@{/student/profile/view}" class="btn btn-outline-secondary">プレビュー</a>
-                </div>
+                <button type="submit" class="btn btn-primary w-100">保存する</button>
             </form>
         </div>
-    </div>
-
-    <p class="text-muted small mt-3 mb-0">
-        ※ 顔写真は AWS S3 に保存されます（Presigned URL で直接アップロード）。
-    </p>
+    </section>
 </th:block>
 <th:block th:fragment="extraScripts">
 <script>

@@ -543,7 +543,7 @@ body.sidebar-mini .sidebar-user {
   padding: 0.75rem 0.5rem;
 }
 
-/* ---- Chat room (WeChat-style) ---- */
+/* ---- Chat room (enterprise messaging) ---- */
 .pcfa-chat-page .pcfa-split-main-inner {
   display: flex;
   flex-direction: column;
@@ -560,23 +560,28 @@ body.sidebar-mini .sidebar-user {
 .pcfa-chat-room {
   display: flex;
   flex-direction: column;
-  min-height: 520px;
+  min-height: 480px;
   overflow: hidden;
+  border: 1px solid var(--admin-border);
+  border-radius: 14px;
+  background: var(--admin-surface);
 }
 
 .pcfa-chat-messages {
   flex: 1;
-  min-height: 320px;
-  max-height: none;
+  min-height: 280px;
   overflow-y: auto;
-  padding: 1rem 1.25rem;
-  background: linear-gradient(180deg, var(--admin-surface-soft) 0%, var(--admin-surface) 100%);
+  padding: 0.85rem 1rem 0.5rem;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(37, 99, 235, 0.04), transparent 55%),
+    var(--admin-surface-soft);
+  scroll-behavior: smooth;
 }
 
 .pcfa-chat-date-divider {
   text-align: center;
-  margin: 1rem 0;
-  font-size: 0.72rem;
+  margin: 0.5rem 0 0.75rem;
+  font-size: 0.7rem;
   color: var(--admin-muted);
 }
 
@@ -584,48 +589,82 @@ body.sidebar-mini .sidebar-user {
   background: var(--admin-surface);
   border: 1px solid var(--admin-border);
   border-radius: 999px;
-  padding: 0.2rem 0.75rem;
+  padding: 0.15rem 0.65rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .pcfa-msg-row {
   display: flex;
-  margin-bottom: 1rem;
+  margin-bottom: 0.55rem;
   width: 100%;
 }
 
 .pcfa-msg-row.mine { justify-content: flex-end; }
-.pcfa-msg-row.other { justify-content: flex-start; align-items: flex-end; gap: 0.5rem; }
+.pcfa-msg-row.other { justify-content: flex-start; align-items: flex-start; gap: 0.45rem; }
 
 .pcfa-msg-row.mine .pcfa-msg-block { margin-left: auto; }
 
-.pcfa-msg-block { max-width: min(420px, 85%); }
+.pcfa-msg-block { max-width: min(440px, 82%); }
 
 .pcfa-msg-meta {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: var(--admin-muted);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.15rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.pcfa-msg-meta strong { font-size: 0.72rem; color: var(--admin-text); }
+
+.pcfa-role-chip {
+  display: inline-block;
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  line-height: 1.3;
+}
+
+.pcfa-role-chip.role-admin { background: #fef3c7; color: #92400e; }
+.pcfa-role-chip.role-instructor { background: #dbeafe; color: #1e40af; }
+.pcfa-role-chip.role-student { background: #dcfce7; color: #166534; }
+
+.pcfa-msg-avatar {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--admin-surface);
+  border: 1px solid var(--admin-border);
+  font-size: 0.85rem;
 }
 
 .pcfa-msg-bubble {
   position: relative;
-  padding: 0.65rem 0.9rem;
-  border-radius: 16px;
-  font-size: 0.92rem;
-  line-height: 1.5;
+  padding: 0.5rem 0.75rem;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  line-height: 1.45;
   white-space: pre-wrap;
   word-break: break-word;
 }
 
 .pcfa-msg-bubble.mine {
-  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: #fff;
-  border-radius: 16px 16px 4px 16px;
+  border-radius: 14px 14px 4px 14px;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.22);
 }
 
 .pcfa-msg-bubble.other {
   background: var(--admin-surface);
   border: 1px solid var(--admin-border);
-  border-radius: 16px 16px 16px 4px;
+  border-radius: 14px 14px 14px 4px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
 
 .pcfa-msg-delete {
@@ -639,23 +678,105 @@ body.sidebar-mini .sidebar-user {
 .pcfa-msg-bubble.mine:hover .pcfa-msg-delete { opacity: 0.85; }
 
 .pcfa-chat-compose {
-  padding: 0.85rem 1.25rem;
+  padding: 0.65rem 0.85rem 0.75rem;
   border-top: 1px solid var(--admin-border);
   background: var(--admin-surface);
-  position: sticky;
-  bottom: 0;
-  z-index: 2;
-  box-shadow: 0 -4px 12px rgba(15, 23, 42, 0.06);
+  flex-shrink: 0;
 }
 
-.pcfa-chat-send {
-  min-width: 52px;
+.pcfa-chat-input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.55rem;
+}
+
+.pcfa-chat-input {
+  flex: 1;
+  resize: none;
+  min-height: 44px;
+  max-height: 100px;
+  overflow-y: auto;
+  border-radius: 22px;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--admin-border);
+  background: var(--admin-surface-soft);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.pcfa-chat-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+  background: var(--admin-surface);
+}
+
+.pcfa-chat-send-btn {
+  flex-shrink: 0;
+  width: 44px;
   height: 44px;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.32);
+}
+
+.pcfa-chat-send-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(37, 99, 235, 0.38);
+}
+
+.pcfa-chat-send-btn:active {
+  transform: translateY(0);
+}
+
+.pcfa-chat-hint {
+  margin: 0.35rem 0 0 0.85rem;
+  font-size: 0.68rem;
+  color: var(--admin-muted);
 }
 
 .pcfa-chat-empty {
   text-align: center;
-  padding: 3rem 1rem;
+  padding: 2.5rem 1rem;
+  font-size: 0.9rem;
+}
+
+.pcfa-nav-badge {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 1.1rem;
+  height: 1.1rem;
+  padding: 0 0.25rem;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  line-height: 1.1rem;
+  text-align: center;
+}
+
+.pcfa-admin-notices .pcfa-notice-item {
+  border-left: 3px solid #f59e0b;
+  padding-left: 1rem;
+}
+
+.pcfa-cal-nav {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
 }
 
 .pcfa-assignment-chart .chart-column span {

@@ -2,7 +2,8 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 <!-- showAdminMeta=true で管理者向けアカウント情報を表示 -->
-<div th:fragment="card(user, avatarUrl, courseList, showAdminMeta)" class="card pcfa-profile-card profile-card border-0 shadow-none">
+<div th:fragment="card(user, avatarUrl, courseList, showAdminMeta)" class="panel pcfa-profile-card-wrap mb-0">
+    <div class="pcfa-profile-card profile-card border-0 shadow-none">
     <div class="pcfa-profile-cover"></div>
     <div class="card-body p-4 pt-0">
         <div class="pcfa-profile-photo-wrap text-center mb-4 pb-3 border-bottom">
@@ -66,6 +67,7 @@
             <div class="pcfa-profile-label">自己紹介</div>
             <div class="text-muted" th:text="${user.profileBio} ?: '（未登録）'"></div>
         </div>
+    </div>
     </div>
 </div>
 </body>

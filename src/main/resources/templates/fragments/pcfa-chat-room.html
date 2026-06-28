@@ -27,39 +27,40 @@
                     </div>
                 </div>
                 <div th:unless="${msg.sender.id == loginUser.id}" class="pcfa-msg-row other">
-                    <div class="pcfa-msg-avatar pcfa-avatar-placeholder-sm"
-                         th:text="${#strings.substring(msg.sender.name,0,1)}"></div>
+                    <span class="pcfa-msg-avatar pcfa-nav-initials" aria-hidden="true">
+                        <i class="bi bi-person-fill"></i>
+                    </span>
                     <div class="pcfa-msg-block">
                         <div class="pcfa-msg-meta">
-                            <span class="badge text-white"
-                                  th:classappend="${msg.sender.role == 'ADMIN'} ? 'role-admin' :
-                                                  (${msg.sender.role == 'INSTRUCTOR'} ? 'role-instructor' : 'role-student')"
+                            <span class="pcfa-role-chip"
+                                  th:classappend="${msg.sender.role == 'ADMIN'} ? ' role-admin' :
+                                                  (${msg.sender.role == 'INSTRUCTOR'} ? ' role-instructor' : ' role-student')"
                                   th:text="${msg.sender.role == 'ADMIN'} ? '管理者' :
                                            (${msg.sender.role == 'INSTRUCTOR'} ? '講師' : '受講者')"></span>
                             <strong th:text="${msg.sender.name}"></strong>
-                            <span th:text="${#temporals.format(msg.sentAt, 'HH:mm')}"></span>
+                            <time th:text="${#temporals.format(msg.sentAt, 'HH:mm')}"></time>
                         </div>
                         <div class="pcfa-msg-bubble other" th:text="${msg.content}"></div>
                     </div>
                 </div>
             </th:block>
             <div th:if="${messages.empty}" class="pcfa-chat-empty text-muted">
-                <i class="bi bi-chat-dots display-6 d-block mb-2 opacity-50"></i>
-                <p class="mb-0">まだメッセージはありません。下の入力欄から送信できます。</p>
+                <i class="bi bi-chat-heart display-6 d-block mb-2 opacity-50"></i>
+                <p class="mb-0">まだメッセージはありません。<br class="d-sm-none">下の入力欄から会話を始めましょう。</p>
             </div>
         </div>
         <div class="pcfa-chat-compose">
-            <form th:action="${sendAction}" method="post" id="chatForm">
+            <form th:action="${sendAction}" method="post" id="chatForm" class="pcfa-chat-form">
                 <input type="hidden" name="courseId" th:value="${courseId}">
-                <div class="d-flex gap-2 align-items-end">
-                    <textarea name="content" id="messageInput" class="form-control" rows="2"
-                              placeholder="メッセージを入力… Enterで送信"
-                              maxlength="500" required></textarea>
-                    <button type="submit" class="btn btn-primary pcfa-chat-send">
-                        <i class="bi bi-send-fill"></i><span class="d-none d-sm-inline ms-1">送信</span>
+                <div class="pcfa-chat-input-row">
+                    <textarea name="content" id="messageInput" class="pcfa-chat-input" rows="1"
+                              placeholder="メッセージを入力…"
+                              maxlength="500" required autocomplete="off"></textarea>
+                    <button type="submit" class="pcfa-chat-send-btn" aria-label="送信">
+                        <i class="bi bi-send-fill" aria-hidden="true"></i>
                     </button>
                 </div>
-                <p class="small text-muted mb-0 mt-2">Shift+Enterで改行 ／ 講師・受講者と同じルームです</p>
+                <p class="pcfa-chat-hint">Enterで送信 · Shift+Enterで改行</p>
             </form>
         </div>
     </div>
@@ -69,15 +70,18 @@
         if (box) box.scrollTop = box.scrollHeight;
         var input = document.getElementById('messageInput');
         var form = document.getElementById('chatForm');
-        if (input && form) {
-            input.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    if (input.value.trim()) form.submit();
-                }
-            });
-            input.focus();
-        }
+        if (!input || !form) return;
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (input.value.trim()) form.submit();
+            }
+        });
+        input.addEventListener('input', function () {
+            input.style.height = 'auto';
+            input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+        });
+        input.focus();
     })();
     </script>
 </th:block>

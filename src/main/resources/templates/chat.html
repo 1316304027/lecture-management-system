@@ -1,30 +1,26 @@
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org"
-      th:replace="~{fragments/portal-layout :: layout(~{::title}, ${loginUser.role == 'INSTRUCTOR'} ? 'instructor' : 'student', 'chat', ~{::main}, ~{::extraHead}, ~{::extraScripts}, false)}">
+      th:replace="~{fragments/portal-layout :: layout(~{::title}, ${loginUser.role == 'INSTRUCTOR'} ? 'instructor' : 'student', 'chat', ~{::main}, ~{::extraHead}, ~{::extraScripts}, true)}">
 <head>
     <title>チャット</title>
     <th:block th:fragment="extraHead"></th:block>
 </head>
 <body>
 <th:block th:fragment="main">
-    <a class="pcfa-back-link"
-       th:href="${loginUser.role == 'INSTRUCTOR'} ? @{/instructor/home} : @{/student/home}">
-        <i class="bi bi-arrow-left"></i>
-        <span th:text="${loginUser.role == 'INSTRUCTOR'} ? '講師ホームへ戻る' : 'ホームへ戻る'">戻る</span>
-    </a>
-
-    <div class="page-heading mb-3">
-        <div class="page-heading-copy">
-            <span class="page-icon"><i class="bi bi-chat-dots"></i></span>
-            <div>
-                <p class="eyebrow mb-1">Course Chat</p>
-                <h1 class="h3 mb-1" th:text="${course.name}">コース</h1>
-                <p class="text-muted mb-0">講師・受講者とリアルタイム風の会話（Enterで送信）</p>
+    <div class="pcfa-chat-fluid">
+        <header class="pcfa-chat-topbar">
+            <a class="pcfa-chat-back"
+               th:href="${loginUser.role == 'INSTRUCTOR'} ? @{/instructor/home} : @{/student/home}"
+               title="戻る">
+                <i class="bi bi-arrow-left"></i>
+            </a>
+            <div class="pcfa-chat-topbar-copy">
+                <p class="pcfa-chat-topbar-eyebrow">Course Chat</p>
+                <h1 class="pcfa-chat-topbar-title" th:text="${course.name}">コース</h1>
             </div>
-        </div>
+        </header>
+        <div th:replace="~{fragments/pcfa-chat-room :: chatRoom(${messages}, ${loginUser}, ${courseId}, '/chat/send', false)}"></div>
     </div>
-
-    <div th:replace="~{fragments/pcfa-chat-room :: chatRoom(${messages}, ${loginUser}, ${courseId}, '/chat/send', false)}"></div>
 </th:block>
 <th:block th:fragment="extraScripts"></th:block>
 </body>

@@ -75,4 +75,25 @@ public class AnnouncementService {
         a.setCreatedAt(LocalDateTime.now());
         announcementRepository.save(a);
     }
+
+    /** 担当/受講コースの管理者お知らせ（直近） */
+    public List<CourseAnnouncement> getRecentAdminNotices(List<Course> courses, int limit) {
+        if (courses == null || courses.isEmpty()) return List.of();
+        return courses.stream()
+                .flatMap(c -> getByCourse(c.getId()).stream())
+                .filter(a -> a.getAuthor() != null && "ADMIN".equals(a.getAuthor().getRole()))
+                .sorted((a, b) -> b.getCreatedAt().compareTo(a.getCreatedAt()))
+                .limit(limit)
+                .toList();
+    }
+
+    public long countRecentAdminNotices(List<Course> courses, int withinDays) {
+        if (courses == null || courses.isEmpty()) return 0;
+        LocalDateTime since = LocalDateTime.now().minusDays(withinDays);
+        return courses.stream()
+                .flatMap(c -> getByCourse(c.getId()).stream())
+                .filter(a -> a.getAuthor() != null && "ADMIN".equals(a.getAuthor().getRole()))
+                .filter(a -> a.getCreatedAt() != null && a.getCreatedAt().isAfter(since))
+                .count();
+    }
 }

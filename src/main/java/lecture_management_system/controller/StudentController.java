@@ -72,6 +72,7 @@ public class StudentController {
         model.addAttribute("totalUnreadChat", studentDashboardService.totalUnreadChat(courseStatsMap));
         model.addAttribute("avgAttendanceRate", studentDashboardService.averageAttendanceRate(courseStatsMap));
         model.addAttribute("isProxy", session.getAttribute("adminUser") != null);
+        model.addAttribute("adminNotices", announcementService.getRecentAdminNotices(courses, 8));
         return "student-home";
     }
 
