@@ -53,7 +53,7 @@ aws:
     region: ap-northeast-1
   ses:
     # SES で検証済みの送信元メール（EC2 IAM に ses:SendEmail 権限が必要）
-    from-email: ${SES_FROM_EMAIL:admin@test.com}
+    from-email: ${SES_FROM_EMAIL:gigyokushinn@gmail.com}
     region: ap-northeast-1
 
 app:
