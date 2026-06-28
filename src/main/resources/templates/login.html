@@ -7,44 +7,67 @@
     <link rel="stylesheet" th:href="@{/adminhmd/css/bootstrap.min.css}">
     <link rel="stylesheet" th:href="@{/adminhmd/vendors/bootstrap-icons/bootstrap-icons.css}">
     <link rel="stylesheet" th:href="@{/adminhmd/css/style.css}">
+    <link rel="stylesheet" th:href="@{/adminhmd/pcfa-login.css}">
 </head>
-<body class="auth-body">
+<body class="auth-body pcfa-login-body">
 <button class="icon-button theme-toggle auth-theme-toggle" type="button" data-theme-toggle
         aria-label="テーマ切替" title="テーマ切替">
     <i class="bi bi-moon-stars" data-theme-icon aria-hidden="true"></i>
 </button>
-<main class="auth-page">
-    <section class="auth-card">
-        <a class="auth-brand" th:href="@{/login}">
-            <span class="brand-icon"><i class="bi bi-mortarboard-fill" aria-hidden="true"></i></span>
+<main class="auth-page pcfa-login-page">
+    <section class="auth-card pcfa-login-card">
+        <a class="auth-brand pcfa-login-brand" th:href="@{/login}">
+            <span class="brand-icon pcfa-login-brand-icon">
+                <i class="bi bi-mortarboard-fill" aria-hidden="true"></i>
+            </span>
             <span>
                 <strong>PCFA 受講管理システム</strong>
-                <small>研修コースの受講管理ポータル</small>
             </span>
         </a>
-        <div class="auth-visual">
-            <img th:src="@{/adminhmd/images/png/dasher-ui-bootstrap-5.jpg}" alt="PCFA 管理画面">
+
+        <div class="pcfa-login-hero" aria-hidden="true">
+            <div class="pcfa-login-hero-grid">
+                <div class="pcfa-login-hero-item">
+                    <i class="bi bi-shield-check"></i>
+                    <span>管理者</span>
+                </div>
+                <div class="pcfa-login-hero-item">
+                    <i class="bi bi-person-workspace"></i>
+                    <span>講師</span>
+                </div>
+                <div class="pcfa-login-hero-item">
+                    <i class="bi bi-mortarboard"></i>
+                    <span>受講者</span>
+                </div>
+            </div>
+            <p class="pcfa-login-hero-caption">コース・出席・課題・チャットを一元管理</p>
         </div>
-        <form th:action="@{/login}" method="post">
+
+        <form th:action="@{/login}" method="post" class="pcfa-login-form">
             <div class="mb-4">
                 <p class="eyebrow mb-1">Secure Access</p>
                 <h1 class="h3 mb-1">ログイン</h1>
-                <p class="text-muted mb-0">メールアドレスとパスワードでサインイン</p>
+                <p class="text-muted mb-0 small">メールアドレスとパスワードでサインイン</p>
             </div>
             <div th:if="${errorMessage}" class="alert alert-danger py-2 small" th:text="${errorMessage}"></div>
             <div class="mb-3">
                 <label class="form-label" for="loginEmail">メールアドレス</label>
                 <input class="form-control" id="loginEmail" type="email" name="email" required
-                       placeholder="mail@example.com">
+                       placeholder="mail@example.com" autocomplete="username">
             </div>
             <div class="mb-4">
                 <label class="form-label" for="loginPassword">パスワード</label>
-                <input class="form-control" id="loginPassword" type="password" name="password" required>
+                <input class="form-control" id="loginPassword" type="password" name="password" required
+                       autocomplete="current-password">
             </div>
-            <button class="btn btn-primary w-100" type="submit">
+            <button class="btn btn-primary w-100 pcfa-login-submit" type="submit">
                 <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> ログイン
             </button>
         </form>
+
+        <p class="pcfa-login-footer text-muted small mb-0">
+            PCFA Training Management · AWS EC2 / RDS / S3 / SES
+        </p>
     </section>
 </main>
 <script th:src="@{/adminhmd/js/bootstrap.bundle.min.js}"></script>
