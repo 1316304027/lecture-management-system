@@ -81,10 +81,15 @@
     <section class="panel mb-4">
         <div class="panel-header d-flex justify-content-between align-items-center flex-wrap gap-2">
             <h2 class="h6 mb-0">受講者別：出席状況</h2>
-            <a th:href="@{/instructor/students(courseId=${course.id})}" class="btn btn-sm btn-light">受講者一覧へ</a>
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <input type="search" class="form-control form-control-sm pcfa-panel-search"
+                       placeholder="氏名で検索…" id="attendanceStudentSearch"
+                       oninput="pcfaFilterTable(this, 'attendanceStudentTable')">
+                <a th:href="@{/instructor/students(courseId=${course.id})}" class="btn btn-sm btn-light">受講者一覧へ</a>
+            </div>
         </div>
-        <div class="table-responsive">
-                    <table class="table table-hover pcfa-portal-table align-middle mb-0">
+        <div class="table-responsive pcfa-table-scroll">
+                    <table class="table table-hover pcfa-portal-table align-middle mb-0" id="attendanceStudentTable">
                         <thead>
                         <tr>
                             <th style="width:56px"></th>
@@ -95,7 +100,8 @@
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="u : ${studentList}">
+                        <tr th:each="u : ${studentList}"
+                            th:attr="data-search=${u.name + ' ' + u.email}">
                             <td class="text-center">
                                 <img th:if="${avatarUrlMap[u.id]}" th:src="${avatarUrlMap[u.id]}" class="pcfa-avatar-sm" alt="">
                                 <span th:unless="${avatarUrlMap[u.id]}" class="pcfa-avatar-placeholder-sm"
@@ -161,6 +167,15 @@
     </section>
 </th:block>
 <th:block th:fragment="extraScripts">
+    <script>
+    function pcfaFilterTable(input, tableId) {
+        var term = (input.value || '').toLowerCase();
+        document.querySelectorAll('#' + tableId + ' tbody tr').forEach(function(row) {
+            var text = (row.getAttribute('data-search') || row.textContent || '').toLowerCase();
+            row.style.display = !term || text.indexOf(term) >= 0 ? '' : 'none';
+        });
+    }
+    </script>
     <script th:if="${selectedStudent != null}">
     document.getElementById('detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     </script>

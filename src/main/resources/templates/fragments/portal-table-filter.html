@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html lang="ja" xmlns:th="http://www.thymeleaf.org">
+<body>
+<script th:fragment="filterScript">
+function pcfaFilterTable(input, tableId) {
+    var term = (input.value || '').toLowerCase();
+    document.querySelectorAll('#' + tableId + ' tbody tr').forEach(function(row) {
+        var text = (row.getAttribute('data-search') || row.textContent || '').toLowerCase();
+        row.style.display = !term || text.indexOf(term) >= 0 ? '' : 'none';
+    });
+}
+</script>
+</body>
+</html>
