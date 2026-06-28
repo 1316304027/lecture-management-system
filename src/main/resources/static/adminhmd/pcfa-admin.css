@@ -599,12 +599,50 @@ body.sidebar-mini .sidebar-user {
   width: 100%;
 }
 
-.pcfa-msg-row.mine { justify-content: flex-end; }
-.pcfa-msg-row.other { justify-content: flex-start; align-items: flex-start; gap: 0.45rem; }
+.pcfa-msg-row.mine {
+  justify-content: flex-end;
+}
 
-.pcfa-msg-row.mine .pcfa-msg-block { margin-left: auto; }
+.pcfa-msg-row.other {
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
 
-.pcfa-msg-block { max-width: min(440px, 82%); }
+/* 气泡宽度随文字收缩，长文才换行撑开（微信式） */
+.pcfa-msg-block {
+  max-width: min(440px, 78%);
+  width: fit-content;
+  min-width: 0;
+  flex: 0 1 auto;
+}
+
+.pcfa-msg-row.mine .pcfa-msg-block {
+  margin-left: 0;
+  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+}
+
+.pcfa-msg-row.other .pcfa-msg-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.pcfa-msg-bubble {
+  position: relative;
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+  vertical-align: top;
+}
 
 .pcfa-msg-meta {
   font-size: 0.68rem;
@@ -641,16 +679,6 @@ body.sidebar-mini .sidebar-user {
   background: var(--admin-surface);
   border: 1px solid var(--admin-border);
   font-size: 0.85rem;
-}
-
-.pcfa-msg-bubble {
-  position: relative;
-  padding: 0.5rem 0.75rem;
-  border-radius: 14px;
-  font-size: 0.9rem;
-  line-height: 1.45;
-  white-space: pre-wrap;
-  word-break: break-word;
 }
 
 .pcfa-msg-bubble.mine {
